@@ -1,0 +1,82 @@
+mesh: data/vehicles/mesh/vw2.ms3d
+texture: data/vehicles/texture/vw_tex2.png
+enginesound: data/vehicles/sound/engine_sound_02.wav
+scale: 1.0, 1.0, 1.2
+rotation: 0.0, 0.0, 0.0
+mass: 1780.0
+engine_centre_of_mass: -0.1
+centre_of_mass: 0.1
+num_of_tyres: 4
+chassis_rotation_limit: 0.85
+chassis_rotation_rate: 0.005
+max_brake_force: 450.0
+max_gears: 4
+gear: 12000.0 400.0
+gear: 18000.0 400.0
+gear: 23000.0 400.0
+gear: 28000.0 400.0
+change_gear_time: 12
+max_steer_angle: 25.0
+max_steer_rate: 0.1
+engine_steer_div: 200.0
+torque_multi: 1.0
+-----front_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.4, 0.4, 0.35
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position: 1.175, 0.0, -0.92
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.43
+suspension_spring: 150.0
+suspension_damper: 5.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 0
+-----front_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.4, 0.4, 0.35
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position: 1.175, 0.0, 0.92
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.43
+suspension_spring: 150.0
+suspension_damper: 5.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 0
+-----rear_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.4, 0.4, 0.35
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position: -1.33, 0.0, -0.9
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.43
+suspension_spring: 150.0
+suspension_damper: 5.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1
+-----rear_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.4, 0.4, 0.35
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position: -1.33, 0.0, 0.9
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.43
+suspension_spring: 150.0
+suspension_damper: 5.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1

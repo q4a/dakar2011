@@ -1,0 +1,82 @@
+mesh: data/vehicles/mesh/blue_jeep.ms3d
+texture: null
+enginesound: data/vehicles/sound/engine_sound_09.wav
+scale: 1.0, 1.0, 1.2
+rotation: 0.0, 0.0, 0.0
+mass: 2150.0
+engine_centre_of_mass: 0.30
+centre_of_mass: 0.1
+num_of_tyres: 4
+chassis_rotation_limit: 0.92
+chassis_rotation_rate: 0.01
+max_brake_force: 275.0
+max_gears: 4
+gear: 8000.0 300.0
+gear: 12000.0 300.0
+gear: 16000.0 300.0
+gear: 19500.0 300.0
+change_gear_time: 35
+max_steer_angle: 20.0
+max_steer_rate: 0.1
+engine_steer_div: 200.0
+torque_multi: 1.0
+-----front_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.4
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position:  1.15, 0.0, -1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.6
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1
+-----front_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.4
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position:  1.15, 0.0, 1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.6
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1
+-----rear_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.4
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position:  -1.2, 0.0, -1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.6
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1
+-----rear_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.4
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position:  -1.2, 0.0, 1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.6
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1

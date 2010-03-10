@@ -1,0 +1,156 @@
+# Project: Dakar2011
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = Dakar2011_private.res
+OBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o $(RES)
+LINKOBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o $(RES)
+LIBS =  -L"lib" ../irrlicht-1.6.1/bin/Win32-gcc/libIrrlicht.a ../irrKlang-1.2.0/lib/Win32-gcc/libirrKlang.a ../NewtonWin-2.09/sdk/x32/dll_vs7/newton.lib ../Dev-Cpp/lib/libwsock32.a ../Cg/lib/cg.lib ../Cg/lib/cgD3D8.lib ../Cg/lib/cgD3D9.lib ../Cg/lib/cgGL.lib ../Dev-Cpp/lib/libopengl32.a ../freealut-1.1.0-bin/lib/alut.lib ../openal11sdk/libs/Win32/OpenAL32.lib  -s 
+INCS =  -I"include"  -I"../irrlicht-1.6.1/include"  -I"../irrKlang-1.2.0/include"  -I"../NewtonWin-2.09/sdk"  -I"../Cg/include"  -I"../irrlicht-1.6.1/source/Irrlicht"  -I"../freealut-1.1.0-bin/include"  -I"../openal11sdk/include" 
+CXXINCS =  -I"lib/gcc/mingw32/3.4.2/include"  -I"include/c++/3.4.2/backward"  -I"include/c++/3.4.2/mingw32"  -I"include/c++/3.4.2"  -I"include"  -I"../irrlicht-1.6.1/include"  -I"../irrKlang-1.2.0/include"  -I"../NewtonWin-2.09/sdk"  -I"../Cg/include"  -I"../irrlicht-1.6.1/source/Irrlicht"  -I"../freealut-1.1.0-bin/include"  -I"../openal11sdk/include" 
+BIN  = Dakar2011.exe
+CXXFLAGS = $(CXXINCS) -DIRRLICHT_SDK_16 -DUSE_MY_SOUNDENGINE -DMY_DEBUG -DUSE_EDITOR -DIRR_CG_7   -fexceptions -O3
+CFLAGS = $(INCS)   -fexceptions -O3
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before Dakar2011.exe all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+$(BIN): $(OBJ)
+	$(CPP) $(LINKOBJ) -o "Dakar2011.exe" $(LIBS)
+
+Dakar2011.o: Dakar2011.cpp
+	$(CPP) -c Dakar2011.cpp -o Dakar2011.o $(CXXFLAGS)
+
+NewtonRaceCar.o: NewtonRaceCar.cpp
+	$(CPP) -c NewtonRaceCar.cpp -o NewtonRaceCar.o $(CXXFLAGS)
+
+Materials.o: Materials.cpp
+	$(CPP) -c Materials.cpp -o Materials.o $(CXXFLAGS)
+
+BigTerrain.o: BigTerrain.cpp
+	$(CPP) -c BigTerrain.cpp -o BigTerrain.o $(CXXFLAGS)
+
+SmallTerrain.o: SmallTerrain.cpp
+	$(CPP) -c SmallTerrain.cpp -o SmallTerrain.o $(CXXFLAGS)
+
+CustomDGRayCastCar.o: CustomDGRayCastCar.cpp
+	$(CPP) -c CustomDGRayCastCar.cpp -o CustomDGRayCastCar.o $(CXXFLAGS)
+
+dMathDefines.o: dMathDefines.cpp
+	$(CPP) -c dMathDefines.cpp -o dMathDefines.o $(CXXFLAGS)
+
+dMatrix.o: dMatrix.cpp
+	$(CPP) -c dMatrix.cpp -o dMatrix.o $(CXXFLAGS)
+
+dQuaternion.o: dQuaternion.cpp
+	$(CPP) -c dQuaternion.cpp -o dQuaternion.o $(CXXFLAGS)
+
+NewtonCustomJoint.o: NewtonCustomJoint.cpp
+	$(CPP) -c NewtonCustomJoint.cpp -o NewtonCustomJoint.o $(CXXFLAGS)
+
+my_shaders.o: my_shaders.cpp
+	$(CPP) -c my_shaders.cpp -o my_shaders.o $(CXXFLAGS)
+
+settings.o: settings.cpp
+	$(CPP) -c settings.cpp -o settings.o $(CXXFLAGS)
+
+message.o: message.cpp
+	$(CPP) -c message.cpp -o message.o $(CXXFLAGS)
+
+gameplay.o: gameplay.cpp
+	$(CPP) -c gameplay.cpp -o gameplay.o $(CXXFLAGS)
+
+wrappers.o: wrappers.cpp
+	$(CPP) -c wrappers.cpp -o wrappers.o $(CXXFLAGS)
+
+pools.o: pools.cpp
+	$(CPP) -c pools.cpp -o pools.o $(CXXFLAGS)
+
+multiplayer.o: multiplayer.cpp
+	$(CPP) -c multiplayer.cpp -o multiplayer.o $(CXXFLAGS)
+
+CBillboardGroupSceneNode.o: CBillboardGroupSceneNode.cpp
+	$(CPP) -c CBillboardGroupSceneNode.cpp -o CBillboardGroupSceneNode.o $(CXXFLAGS)
+
+CTreeGenerator.o: CTreeGenerator.cpp
+	$(CPP) -c CTreeGenerator.cpp -o CTreeGenerator.o $(CXXFLAGS)
+
+CTreeSceneNode.o: CTreeSceneNode.cpp
+	$(CPP) -c CTreeSceneNode.cpp -o CTreeSceneNode.o $(CXXFLAGS)
+
+CConfigMap.o: CConfigMap.cpp
+	$(CPP) -c CConfigMap.cpp -o CConfigMap.o $(CXXFLAGS)
+
+CConfigReader.o: CConfigReader.cpp
+	$(CPP) -c CConfigReader.cpp -o CConfigReader.o $(CXXFLAGS)
+
+CGUITexturedSkin.o: CGUITexturedSkin.cpp
+	$(CPP) -c CGUITexturedSkin.cpp -o CGUITexturedSkin.o $(CXXFLAGS)
+
+CImageGUISkin.o: CImageGUISkin.cpp
+	$(CPP) -c CImageGUISkin.cpp -o CImageGUISkin.o $(CXXFLAGS)
+
+SkinLoader.o: SkinLoader.cpp
+	$(CPP) -c SkinLoader.cpp -o SkinLoader.o $(CXXFLAGS)
+
+eventreceiver_game.o: eventreceiver_game.cpp
+	$(CPP) -c eventreceiver_game.cpp -o eventreceiver_game.o $(CXXFLAGS)
+
+eventreceiver_menu.o: eventreceiver_menu.cpp
+	$(CPP) -c eventreceiver_menu.cpp -o eventreceiver_menu.o $(CXXFLAGS)
+
+my_shaders2.o: my_shaders2.cpp
+	$(CPP) -c my_shaders2.cpp -o my_shaders2.o $(CXXFLAGS)
+
+IrrCg.o: IrrCg.cpp
+	$(CPP) -c IrrCg.cpp -o IrrCg.o $(CXXFLAGS)
+
+IrrCgMaterial.o: IrrCgMaterial.cpp
+	$(CPP) -c IrrCgMaterial.cpp -o IrrCgMaterial.o $(CXXFLAGS)
+
+effects.o: effects.cpp
+	$(CPP) -c effects.cpp -o effects.o $(CXXFLAGS)
+
+CObjectWire.o: CObjectWire.cpp
+	$(CPP) -c CObjectWire.cpp -o CObjectWire.o $(CXXFLAGS)
+
+mySound.o: mySound.cpp
+	$(CPP) -c mySound.cpp -o mySound.o $(CXXFLAGS)
+
+competitors.o: competitors.cpp
+	$(CPP) -c competitors.cpp -o competitors.o $(CXXFLAGS)
+
+MyThread.o: MyThread.cpp
+	$(CPP) -c MyThread.cpp -o MyThread.o $(CXXFLAGS)
+
+MapReaderThread.o: MapReaderThread.cpp
+	$(CPP) -c MapReaderThread.cpp -o MapReaderThread.o $(CXXFLAGS)
+
+MyRoad.o: MyRoad.cpp
+	$(CPP) -c MyRoad.cpp -o MyRoad.o $(CXXFLAGS)
+
+editor.o: editor.cpp
+	$(CPP) -c editor.cpp -o editor.o $(CXXFLAGS)
+
+itiner_hud.o: itiner_hud.cpp
+	$(CPP) -c itiner_hud.cpp -o itiner_hud.o $(CXXFLAGS)
+
+VehiclePool.o: VehiclePool.cpp
+	$(CPP) -c VehiclePool.cpp -o VehiclePool.o $(CXXFLAGS)
+
+RaceEngine.o: RaceEngine.cpp
+	$(CPP) -c RaceEngine.cpp -o RaceEngine.o $(CXXFLAGS)
+
+CustomMultiBodyVehicle.o: CustomMultiBodyVehicle.cpp
+	$(CPP) -c CustomMultiBodyVehicle.cpp -o CustomMultiBodyVehicle.o $(CXXFLAGS)
+
+Dakar2011_private.res: Dakar2011_private.rc 
+	$(WINDRES) -i Dakar2011_private.rc --input-format=rc -o Dakar2011_private.res -O coff 

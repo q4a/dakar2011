@@ -1,0 +1,13 @@
+Build 2.1.1.
+
+- AI competitors
+- Itiner text: verdana bold, size: 125
+- Menu button text: Maiandra GD Bold, size: 50
+
+
+Build 2.1.1.301
+
+- new terrain reading: with a separete reader thread
+- new road engine
+- editor to editing: roads, objects, and itiner points
+

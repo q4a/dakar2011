@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="Dakar2011" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="default">
+				<Option output="Dakar2011" prefix_auto="1" extension_auto="1" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-DIRRLICHT_SDK_16" />
+			<Add directory="..\irrlicht-svn\include" />
+			<Add directory="..\irrKlang-1.1.3\include" />
+			<Add directory="..\NewtonWin-2.09\sdk" />
+			<Add directory="..\IrrCg_v0_7\include" />
+			<Add directory="..\Cg\include" />
+			<Add directory="..\irrlicht-svn\source\Irrlicht" />
+		</Compiler>
+		<Linker>
+			<Add option="../irrlicht-svn/bin/Win32-gcc/libIrrlicht.a" />
+			<Add option="../irrKlang-1.1.3/lib/Win32-gcc/libirrKlang.a" />
+			<Add option="../NewtonWin-2.09/sdk/x32/dll_vs7/newton.lib" />
+			<Add option="../Dev-Cpp/lib/libwsock32.a" />
+			<Add option="../Cg/lib/cg.lib" />
+			<Add option="../Cg/lib/cgD3D8.lib" />
+			<Add option="../Cg/lib/cgD3D9.lib" />
+			<Add option="../Cg/lib/cgGL.lib" />
+			<Add option="../Dev-Cpp/lib/libopengl32.a" />
+			<Add option="Dakar2011_private.res" />
+		</Linker>
+		<Unit filename="BigTerrain.cpp" />
+		<Unit filename="BigTerrain.h" />
+		<Unit filename="CBillboardGroupSceneNode.cpp" />
+		<Unit filename="CBillboardGroupSceneNode.h" />
+		<Unit filename="CConfigMap.cpp" />
+		<Unit filename="CConfigMap.h" />
+		<Unit filename="CConfigReader.cpp" />
+		<Unit filename="CConfigReader.h" />
+		<Unit filename="CGUITexturedSkin.cpp" />
+		<Unit filename="CGUITexturedSkin.h" />
+		<Unit filename="CImageGUISkin.cpp" />
+		<Unit filename="CImageGUISkin.h" />
+		<Unit filename="CScreenQuad.h" />
+		<Unit filename="CTreeGenerator.cpp" />
+		<Unit filename="CTreeGenerator.h" />
+		<Unit filename="CTreeSceneNode.cpp" />
+		<Unit filename="CTreeSceneNode.h" />
+		<Unit filename="CustomDGRayCastCar.cpp" />
+		<Unit filename="CustomDGRayCastCar.h" />
+		<Unit filename="CustomJointLibraryStdAfx.h" />
+		<Unit filename="Dakar2011.cpp" />
+		<Unit filename="IrrCg.cpp" />
+		<Unit filename="IrrCg.h" />
+		<Unit filename="IrrCgExtensionHandler.h" />
+		<Unit filename="IrrCgMaterial.cpp" />
+		<Unit filename="IrrCgMaterial.h" />
+		<Unit filename="Materials.cpp" />
+		<Unit filename="Materials.h" />
+		<Unit filename="MyList.h" />
+		<Unit filename="NewtonCustomJoint.cpp" />
+		<Unit filename="NewtonCustomJoint.h" />
+		<Unit filename="NewtonRaceCar.cpp" />
+		<Unit filename="NewtonRaceCar.h" />
+		<Unit filename="STreeMesh.h" />
+		<Unit filename="SkinLoader.cpp" />
+		<Unit filename="SkinLoader.h" />
+		<Unit filename="SmallTerrain.cpp" />
+		<Unit filename="SmallTerrain.h" />
+		<Unit filename="clipRects.h" />
+		<Unit filename="dMathDefines.cpp" />
+		<Unit filename="dMathDefines.h" />
+		<Unit filename="dMatrix.cpp" />
+		<Unit filename="dMatrix.h" />
+		<Unit filename="dQuaternion.cpp" />
+		<Unit filename="dQuaternion.h" />
+		<Unit filename="dVector.h" />
+		<Unit filename="effects.cpp" />
+		<Unit filename="effects.h" />
+		<Unit filename="eventreceiver.h" />
+		<Unit filename="eventreceiver_game.cpp" />
+		<Unit filename="eventreceiver_game.h" />
+		<Unit filename="eventreceiver_menu.cpp" />
+		<Unit filename="eventreceiver_menu.h" />
+		<Unit filename="gameplay.cpp" />
+		<Unit filename="gameplay.h" />
+		<Unit filename="message.cpp" />
+		<Unit filename="message.h" />
+		<Unit filename="multiplayer.cpp" />
+		<Unit filename="multiplayer.h" />
+		<Unit filename="my_shaders.cpp" />
+		<Unit filename="my_shaders.h" />
+		<Unit filename="my_shaders2.cpp" />
+		<Unit filename="pools.cpp" />
+		<Unit filename="pools.h" />
+		<Unit filename="settings.cpp" />
+		<Unit filename="settings.h" />
+		<Unit filename="wrappers.cpp" />
+		<Unit filename="wrappers.h" />
+		<Extensions>
+			<code_completion />
+			<debugger />
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>

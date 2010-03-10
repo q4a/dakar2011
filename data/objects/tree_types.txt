@@ -1,0 +1,72 @@
+data/objects/trees/Oak.xml
+data/objects/treetextures/OakBark.png
+data/objects/treetextures/OakLeaf.png
+data/objects/treetextures/OakBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/Aspen.xml
+data/objects/treetextures/AspenBark.png
+data/objects/treetextures/AspenLeaf.png
+data/objects/treetextures/AspenBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/Pine_rep.xml
+data/objects/treetextures/PineBark.png
+data/objects/treetextures/PineLeaf.png
+data/objects/treetextures/PineBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/Willow.xml
+data/objects/treetextures/WillowBark.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/branch1.xml
+data/objects/treetextures/branch1.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/branch2.xml
+data/objects/treetextures/branch1.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/branch3.xml
+data/objects/treetextures/branch1.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/branch4.xml
+data/objects/treetextures/branch2.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
+data/objects/trees/branch5.xml
+data/objects/treetextures/branch2.png
+data/objects/treetextures/WillowLeaf.png
+data/objects/treetextures/WillowBillboard.png
+rot: 0.0, 0.0, 0.0
+sca: 1.0, 1.0, 1.0
+box: 0.8, 4.0, 0.8
+ofs: 0.0, 0.0, 0.0
