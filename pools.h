@@ -29,6 +29,7 @@ enum PoolObjectType
     NORMAL = 0,
     GRASS,
     TREE,
+    MY_TREE,
     NONE,
 };
 
@@ -86,6 +87,11 @@ void releasePools();
 void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld);
 void loadGrassTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld);
 void loadTreeTypes(const c8* treetype,
+                   ISceneManager* smgr,
+                   IVideoDriver* driver,
+                   IrrlichtDevice* device,
+                   NewtonWorld* nWorld);
+void loadMyTreeTypes(const c8* treetype,
                    ISceneManager* smgr,
                    IVideoDriver* driver,
                    IrrlichtDevice* device,

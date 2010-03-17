@@ -184,7 +184,7 @@ SmallTerrain::SmallTerrain(video::IImage* heightMap,
         for (int j = 0; j < (objectReps[i].rep*obj_density)/100;j++)
         {
             vector3df pos;
-            int tries = 10;
+            int tries = 1;
             do
             {
                 pos = vector3df(terrain->getPosition().X+(((float)rand())/32768.f)*SMALLTERRAIN_SIZE,
@@ -192,7 +192,7 @@ SmallTerrain::SmallTerrain(video::IImage* heightMap,
                                 terrain->getPosition().Z+(((float)rand())/32768.f)*SMALLTERRAIN_SIZE);
                 tries--;
             } while (!skip_densitymap && tries > 0 && m_bigTerrain->getDensity(pos.X, pos.Z) < 0.1f);
-            if (tries > 0)
+            if (tries > 0 || m_bigTerrain->getDensity(pos.X, pos.Z) > 0.6f)
             {
                 SObjectWrapper* objectWrapper = new SObjectWrapper(m_bigTerrain);
                 objectWrapper->setPosition(pos);

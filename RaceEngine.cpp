@@ -16,6 +16,7 @@
 #include "my_shaders.h"
 //extern video::ITexture* shadowMap;
 #include "message.h"
+#include "fonts.h"
 
 #define FAR_VALUE (farValue / 2.f)
 #define NEAR_VALUE ((farValue / 2.f)-100.f)
@@ -53,7 +54,8 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
       crashed(false), visible(false), vehicle(0), forResetCnt(0),
       currentRand(0.f), nameText(0)
 {
-    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ env->getSkin()->getFont(), competitor->getName().c_str());
+    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_BASE1], competitor->getName().c_str());
+    nameText->setScale(vector3df(3.0f, 3.0f, 3.0f));
     nameText->setVisible(false);
 }
 

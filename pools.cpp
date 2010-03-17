@@ -46,7 +46,16 @@ struct STreeDesign
     video::ITexture* BillTexture;
 };
 
+struct SMyTreeDesign
+{
+    video::ITexture* treeTexture;
+    video::ITexture* leafTexture;
+    vector3df leafOffset;
+    core::dimension2d<f32> leafSize;
+};
+
 core::array<STreeDesign*> treeDesigns;
+core::array<SMyTreeDesign*> myTreeDesigns;
 
 //int treetypes_num = 0;
 
@@ -688,6 +697,69 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectPool.addLast(objectWrapper);
         }
     }
+    else
+    if (type==MY_TREE) // normal object
+    {
+        int type = (int) textureName;
+
+        if (type>=myTreeDesigns.size())
+        {
+            printf("no such my tree type %d, we have types to %d\n", type, myTreeDesigns.size());
+            return;
+        }
+        
+        for (int j = 0; j < num /*&& numOfObjects < MAX_OBJECT_NUM*/; j++)
+        {
+
+            IAnimatedMesh* objectMesh = *poolMesh;
+            if(objectMesh == 0)
+            {
+                if(!strcmp(name+strlen(name)-3, "mso"))
+                    objectMesh = readMySimpleObject(name);
+                else
+                    objectMesh = smgr->getMesh(name);
+                *poolMesh = objectMesh;
+            }
+            
+            IAnimatedMeshSceneNode* objectNode = smgr->addAnimatedMeshSceneNode(objectMesh);
+            IAnimatedMeshSceneNode* farObjectNode = 0;
+            
+            IBillboardSceneNode* leaf = smgr->addBillboardSceneNode(objectNode, myTreeDesigns[type]->leafSize, myTreeDesigns[type]->leafOffset);
+
+            ObjectWrapper* objectWrapper = new ObjectWrapper(nWorld);
+            objectWrapper->objectNode = objectNode;
+            objectWrapper->farObjectNode = farObjectNode;
+            objectNode->setMaterialFlag(video::EMF_LIGHTING, false);
+            leaf->setMaterialFlag(video::EMF_LIGHTING, false);
+
+//            objectNodes[numOfObjects]->setMaterialFlag(video::EMF_LIGHTING, true);
+            if (globalLight)
+            {
+                //if (stencil_shadows)
+                    objectWrapper->shadowNode = objectNode->addShadowVolumeSceneNode();
+                objectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
+                if (farObjectNode)
+                    farObjectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
+            }
+            
+            objectNode->setMaterialTexture(0, myTreeDesigns[type]->treeTexture);
+            objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+
+            leaf->setMaterialTexture(0, myTreeDesigns[type]->leafTexture);
+            leaf->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+            
+            objectNode->setRotation(rot);
+            objectNode->setScale(sca);
+            
+            //objectWrapper->calculateCollision(box, ofs);
+            objectWrapper->calculateCollision(objectMesh, box, sca, name, j);
+            objectWrapper->setVisible(false);
+            objectWrapper->setFarVisible(false);
+            objectWrapper->addShadow = !stencil_shadows;
+            objectWrapper->type = NORMAL;
+            objectPool.addLast(objectWrapper);
+        }
+    }
 }
 
 void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
@@ -981,6 +1053,16 @@ void releasePools()
     }
     treeDesigns.clear();
     
+    for (int i = 0; i < myTreeDesigns.size(); i++)
+    {
+        if (myTreeDesigns[i])
+        {
+            delete myTreeDesigns[i];
+            myTreeDesigns[i] = 0;
+        }
+    }
+    myTreeDesigns.clear();
+    
     for (int i = 0; i < itinerTypes.size(); i++)
     {
         if (itinerTypes[i])
@@ -1052,11 +1134,19 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         }
         else
         {
-            createObjectPool(meshName, farMeshName,
-                              smgr, driver, nWorld,
-                              object_pool_size, NORMAL,
-                              textureName,
-                              rot, sca, box, ofs);
+            if (!strstr(meshName, "my_tree"))
+                // normal object, high poly
+                createObjectPool(meshName, farMeshName,
+                                  smgr, driver, nWorld,
+                                  object_pool_size, NORMAL,
+                                  textureName,
+                                  rot, sca, box, ofs);
+            else // my tree object, like the grass
+                createObjectPool(meshName, farMeshName,
+                                  smgr, driver, nWorld,
+                                  grass_pool_size, NORMAL,
+                                  textureName,
+                                  rot, sca, box, ofs);
         }
     }
     fclose(f);
@@ -1182,6 +1272,95 @@ void loadTreeTypes(const c8* treetype,
                           object_pool_size, TREE,
                           (char*)i,
                           rot, sca, box, ofs);
+    }
+    
+    fclose(f);
+}
+
+void loadMyTreeTypes(const c8* treetype,
+                   ISceneManager* smgr,
+                   IVideoDriver* driver,
+                   IrrlichtDevice* device,
+                   NewtonWorld* nWorld
+                   )
+{
+    FILE* f;
+    int ret = 0;
+    c8 meshName[256];
+    c8 treetexture[256];
+    c8 leaftexture[256];
+
+    int type;
+    vector3df rot(0.f,0.f,0.f);
+    vector3df sca(1.f,1.f,1.f);
+    vector3df box(0.f,0.f,0.f);
+    vector3df ofs(0.f,0.f,0.f);
+
+    vector3df leafOffset(0.f,0.f,0.f);
+    core::dimension2d<f32> leafSize(5.f, 5.f);
+    
+    dprintf(printf("Read my tree types: %s\n", treetype));
+
+    if (myTreeDesigns.size() > 0)
+    {
+        dprintf(printf("my tree types has already been readed %d types, return.\n", myTreeDesigns.size()));
+        return;
+    }
+
+    f = fopen(treetype, "r");
+    
+    if (!f)
+    {
+        printf("my treetypes file unable to open: %s\n", treetype);
+        return;       
+    }
+
+    //treeDesigns = new STreeDesign[treetypes_num];
+    //memset(treeDesigns, 0, treetypes_num * sizeof(STreeDesign));
+    //
+    // Load tree designs
+    //
+    for ( s32 i=0; ; i++ )
+    {
+        ret = fscanf(f, "%s\n%s\n%s\n"
+                        "lfo: %f, %f, %f\n" \
+                        "lfs: %f, %f\n" \
+                        "rot: %f, %f, %f\n" \
+                        "sca: %f, %f, %f\n" \
+                        "box: %f, %f, %f\n" \
+                        "ofs: %f, %f, %f\n",
+                        meshName, treetexture, leaftexture,
+                        &leafOffset.X, &leafOffset.Y, &leafOffset.Z,
+                        &leafSize.Width, &leafSize.Height,
+                        &rot.X, &rot.Y, &rot.Z,
+                        &sca.X, &sca.Y, &sca.Z,
+                        &box.X, &box.Y, &box.Z,
+                        &ofs.X, &ofs.Y, &ofs.Z);
+    
+        if (ret < 16)
+        {
+            //printf("treetypes file unable to read elements: %s\n", treetype);
+            //fclose(f);
+            //return;
+            break;
+        }
+        
+        SMyTreeDesign* myTreeDesign = new SMyTreeDesign;
+        
+        myTreeDesign->treeTexture = driver->getTexture(treetexture);
+        myTreeDesign->leafTexture = driver->getTexture(leaftexture);
+        myTreeDesign->leafSize = leafSize;
+        myTreeDesign->leafOffset = leafOffset;
+
+        myTreeDesigns.push_back(myTreeDesign);
+
+        assert(myTreeDesigns.size()==i+1);
+        
+        createObjectPool(meshName, "null",
+                         smgr, driver, nWorld,
+                         object_pool_size, MY_TREE,
+                         (char*)i,
+                         rot, sca, box, ofs);
     }
     
     fclose(f);

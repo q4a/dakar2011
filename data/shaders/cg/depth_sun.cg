@@ -1,0 +1,47 @@
+//#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+             float2 Uv     : TEXCOORD0,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+	     out float2 oUv: TEXCOORD0,
+             out float3 objPos: TEXCOORD1,
+             out float3 oNormal: TEXCOORD2,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld
+)
+{
+  oPosition = mul(mWorldViewProj, vPosition);
+// + float4(normalize(vNormal), 1.0)*0.2
+  oNormal = vNormal;
+  //objPos = vPosition;
+  objPos = mul(mWorld, vPosition).xyz;
+  oUv = Uv;
+  color = float4(0, 0, 0, 1.0);
+}
+
+void main_f( float4 position 	: POSITION,
+             float4 color	: COLOR,
+	     float2 texCoord	: TEXCOORD0,
+             float3 objPos	: TEXCOORD1,
+             float3 normal	: TEXCOORD2,
+             uniform sampler2D tex0 : register(s0),
+//	     uniform float3 eyePositionF,
+	     uniform float3 sunPositionF,
+	     uniform float sunScaleF,
+//	     uniform float  far_value,
+//             uniform float ov_limit,
+//             uniform float car_speed,
+             out float4 oColor	: COLOR)
+{
+//  float d = distance(objPos, sunPositionF);
+//  oColor = float4(0.0,0.0,0.0,1.0);
+//  oColor.r = 1.0 - (d / (sunScaleF * 0.9));
+//  oColor.r = oColor.r * oColor.r;
+
+  oColor = float4(0.0,0.0,1.0,1.0);
+  oColor.r = tex2D(tex0, texCoord).r;
+}

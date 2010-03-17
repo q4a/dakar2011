@@ -1,0 +1,81 @@
+#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+	     float2 Uv     : TEXCOORD0,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+             out float2 oUv: TEXCOORD0,
+             out float3 objPos: TEXCOORD1,
+             out float3 oNormal: TEXCOORD2,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld,
+             uniform float4x4 mInvWorld,
+//             uniform float4x4 mTransWorld,
+             uniform float3 mLightColor,
+             uniform float3 mLightPos
+             //uniform float coll_tick
+)
+{
+  //coll_effect(coll_tick, vPosition);
+  oPosition = mul(mWorldViewProj, vPosition);
+  oUv = Uv;
+  oNormal = vNormal;
+  //objPos = vPosition.xyz;
+  objPos = mul(mWorld, vPosition).xyz;
+
+  float3 normal = mul(float4(vNormal,0.0), mInvWorld).xyz;
+	
+  // renormalize normal 
+  normal = normalize(normal);
+	
+  // position in world coodinates
+//  float3 worldpos = mul(mTransWorld, vPosition);
+  float3 worldpos = objPos;
+	
+  // calculate light vector, vtxpos - lightpos
+  float3 L = normalize(mLightPos - float3(0.0, 0.0, 0.0));
+
+  // calculate light color 
+  float3 tmp = mLightColor * max(dot(normal, L), 0.0);
+	
+  color = float4(tmp, 1.0);
+}
+
+void main_f( float4 position 	: POSITION,
+             float4 color	: COLOR,
+	     float2 Uv		: TEXCOORD0,
+             float3 objPos	: TEXCOORD1,
+             float3 normal	: TEXCOORD2,
+	     uniform sampler2D tex0 : register(s0),
+             uniform float3 clightPos,
+             uniform float3 clightDir,
+	     uniform float3 eyePositionF,
+             uniform float clight,
+             uniform float day_multi,
+             uniform float ov_limit,
+             uniform float etick,
+             out float4 oColor	: COLOR)
+{
+  float4 col = tex2D (tex0, Uv);
+  float3 diffuseLight = float3(0.0, 0.0, 0.0);
+  float4 multip = calc_multip(color, 0.7);
+
+  oColor.xyz = multip.xyz * col.xyz;
+  //oColor.xyz = (color.xyz + float3(0.2, 0.2, 0.2)) * col.xyz;
+  oColor.xyz *= 1.8;
+
+  oColor.a = col.a;
+
+  //oColor.a = 1.0;
+  spotAttenLighting(clightPos, clightDir, objPos, normal, day_multi, diffuseLight);
+  if (clight>0.0) oColor.xyz = oColor.xyz * diffuseLight;
+
+  // fog stuff  
+  //add_fog(eyePositionF, objPos, oColor);
+  add_fog_tra(eyePositionF, objPos, oColor, ov_limit, etick);
+
+  oColor = day_effect(oColor, position, day_multi);
+}

@@ -1,7 +1,7 @@
 [Project]
 FileName=Dakar2011.dev
 Name=Dakar2011
-UnitCount=92
+UnitCount=96
 Type=1
 Ver=1
 ObjFiles=
@@ -33,7 +33,7 @@ CompilerSettings=0000001000001000000100
 Major=2
 Minor=1
 Release=1
-Build=1301
+Build=1348
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -958,7 +958,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit93]
-FileName=CustomMultiBodyVehicle.cpp
+FileName=error.cpp
 CompileCpp=1
 Folder=Dakar2011
 Compile=1
@@ -968,7 +968,7 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit94]
-FileName=CustomMultiBodyVehicle.h
+FileName=error.h
 CompileCpp=1
 Folder=Dakar2011
 Compile=1
@@ -981,6 +981,26 @@ BuildCmd=
 FileName=CustomMultiBodyVehicle.cpp
 CompileCpp=1
 Folder=Dakar2011
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit95]
+FileName=fonts.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit96]
+FileName=fonts.cpp
+CompileCpp=1
+Folder=
 Compile=1
 Link=1
 Priority=1000

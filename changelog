@@ -1,4 +1,16 @@
-Build 2.1.1.
+Build 2.1.1.1339
+
+- Add new fonts
+- Add error message window (only on Windows)
+- Add new trees
+- remove shadow mapping from the settings by default
+  (somehow it can cause exreme slowness)
+- Modified AI competitors (make some random behaviour)
+- Modified the newton race car physics (still need to do)
+- some bug fixes
+
+
+Build 2.1.1.600
 
 - AI competitors
 - Itiner text: verdana bold, size: 125

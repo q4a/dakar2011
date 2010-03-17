@@ -40,6 +40,8 @@
 #include "editor.h"
 #include "Dakar2011_private.h"
 #include "itiner_hud.h"
+#include "error.h"
+#include "fonts.h"
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -179,7 +181,10 @@ int main()
                                           0);                          // eventReceiver
 */    
     if (!device)
-       return 1;  // failed to initialize driver
+    {
+        myError(1, "Cannot initialize Irrlicht device!");
+        return 1;  // failed to initialize driver
+    }
     /*
     for (int i = 0; i < 100; i++)
     {
@@ -237,7 +242,10 @@ int main()
 #endif
 
 	if (!soundEngine)
+	{
+        myError(2, "Cannot initialize sound device!");
 		return 1; // error starting up the engine     
+    }
 		
     IVideoDriver* driver = device->getVideoDriver();
     ISceneManager* smgr = device->getSceneManager();
@@ -305,7 +313,7 @@ int main()
                         info_bg, true, 0, -1, info_bg);
     polyText->setVisible(false);
     posText = env->addStaticText(L"POS: ",
-                        core::rect<int>(10,70,160,86),
+                        core::rect<int>(10,70,350,86),
                         info_bg, true, 0, -1, info_bg);
     posText->setVisible(false);
     {
@@ -327,15 +335,15 @@ int main()
     hudInfo->setVisible(false);
 
     demageText = env->addStaticText(L"Demage: ",
-                        core::rect<int>(10,screenSize.Height-70,210,screenSize.Height-54),
+                        core::rect<int>(10,screenSize.Height-70,230,screenSize.Height-54),
                         false, true, 0, -1, false);
     demageText->setVisible(false);
     speedText = env->addStaticText(L"Speed: ",
-                        core::rect<int>(10,screenSize.Height-50,210,screenSize.Height-34),
+                        core::rect<int>(10,screenSize.Height-50,230,screenSize.Height-34),
                         false, true, 0, -1, false);
     speedText->setVisible(false);
     timeText = env->addStaticText(L"Time: ",
-                        core::rect<int>(10,screenSize.Height-30,210,screenSize.Height-14),
+                        core::rect<int>(10,screenSize.Height-30,230,screenSize.Height-14),
                         false, true, 0, -1, false);
     timeText->setVisible(false);
 
@@ -382,8 +390,64 @@ int main()
 //    bgImage->setImage(env->getSkin()->getSpriteBank()->getTexture(0));
 	//set other font
 	//env->getSkin()->setFont(env->getFont("data/fonts/fonthaettenschweiler.bmp"));
-	env->getSkin()->setFont(env->getFont("data/fonts/fontlucida.png"));
-	env->getSkin()->setFont(env->getBuiltInFont(), EGDF_TOOLTIP);
+	setupFonts(env);
+	
+	env->getSkin()->setFont(fonts[FONT_NORMALBOLD]);
+	env->getSkin()->setFont(fonts[FONT_BUILTIN], EGDF_TOOLTIP);
+/*
+EGDC_3D_DARK_SHADOW 	
+Dark shadow for three-dimensional display elements. 
+EGDC_3D_SHADOW 	
+Shadow color for three-dimensional display elements (for edges facing away from the light source). 
+EGDC_3D_FACE 	
+Face color for three-dimensional display elements and for dialog box backgrounds. 
+EGDC_3D_HIGH_LIGHT 	
+Highlight color for three-dimensional display elements (for edges facing the light source.). 
+EGDC_3D_LIGHT 	
+Light color for three-dimensional display elements (for edges facing the light source.). 
+EGDC_ACTIVE_BORDER 	
+Active window border. 
+EGDC_ACTIVE_CAPTION 	
+Active window title bar text. 
+EGDC_APP_WORKSPACE 	
+Background color of multiple document interface (MDI) applications. 
+EGDC_BUTTON_TEXT 	
+Text on a button. 
+EGDC_GRAY_TEXT 	
+Grayed (disabled) text. 
+EGDC_HIGH_LIGHT 	
+Item(s) selected in a control. 
+EGDC_HIGH_LIGHT_TEXT 	
+Text of item(s) selected in a control. 
+EGDC_INACTIVE_BORDER 	
+Inactive window border. 
+EGDC_INACTIVE_CAPTION 	
+Inactive window caption. 
+EGDC_TOOLTIP 	
+Tool tip text color. 
+EGDC_TOOLTIP_BACKGROUND 	
+Tool tip background color. 
+EGDC_SCROLLBAR 	
+Scrollbar gray area. 
+EGDC_WINDOW 	
+Window background. 
+EGDC_WINDOW_SYMBOL 	
+Window symbols like on close buttons, scroll bars and check boxes. 
+EGDC_ICON 	
+Icons in a list or tree. 
+EGDC_ICON_HIGH_LIGHT 	
+Selected icons in a list or tree. 
+EGDC_COUNT 	
+this value is not used, it only specifies the amount of default colors available.
+*/
+//    SColor guicol(255, 111, 85, 23);
+    SColor guicol(255, 90, 70, 16);
+//	env->getSkin()->setColor(EGDC_ACTIVE_CAPTION, guicol);
+//	env->getSkin()->setColor(EGDC_APP_WORKSPACE, guicol);
+	env->getSkin()->setColor(EGDC_BUTTON_TEXT, guicol);
+//	env->getSkin()->setColor(EGDC_GREY_TEXT, guicol);
+//	env->getSkin()->setColor(EGDC_INACTIVE_CAPTION, guicol);
+//	env->getSkin()->setColor(, guicol);
 
     MessageText::addText(L"Please wait [            ]", 1);
 
@@ -568,32 +632,17 @@ int main()
 	// disable mouse cursor
     //device->getCursorControl()->setVisible(false);
 
+    useShaders = useCgShaders = true; // force using of shaders
     dprintf(printf("2 %p %d\n", hudImage, useCgShaders));
-    if (useShaders)
+    try
     {
-#ifndef DISABLE_CG_SHADERS
-        if (useCgShaders)
-        {
-            try
-            {
-                setupShaders2 (device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
-            } catch(...)
-            {
-                printf("Cg shader setup casued exception, fall back to standard shaders\n");
-                setupShaders (device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
-                useCgShaders = false;
-            }
-        }
-        else
-#endif
-        {
-            setupShaders (device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
-            useCgShaders = false;
-        }
-        if (!useShaders) useCgShaders = false;
+        setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
+    } catch(...)
+    {
+        printf("Cg shader setup casued exception, fall back to standard shaders\n");
+        myError(3, "Cannot initialize shaders! Maybe your hardware does not support it.");
+        return 1;
     }
-    else
-        useCgShaders = false;
     // assert(0); // for shader debug
     
     if (!useCgShaders)
@@ -669,6 +718,7 @@ int main()
     loadGrassTypes("data/objects/grass_types.txt", smgr, driver, nWorld);
     MessageText::addText(L"Please wait [        *   ]", 1, true);
     loadTreeTypes("data/objects/tree_types.txt", smgr, driver, device, nWorld);
+    loadMyTreeTypes("data/objects/my_tree_types.txt", smgr, driver, device, nWorld);
     MessageText::addText(L"Please wait [         *  ]", 1, true);
     printPoolStat();
     vehiclePool = new CVehiclePool(device, smgr, driver, nWorld, soundEngine, "data/vehicles/vehicle_list.txt");
@@ -1313,9 +1363,13 @@ int main()
                         str += (int)camera->getPosition().Y;
                         str += ", ";
                         str += (int)camera->getPosition().Z;
+                        str += " (";
+                        str += (int)(camera->getPosition().X/20.f);
+                        str += ", ";
+                        str += (int)(1024.f - (camera->getPosition().Z/20.f));
+                        str += ")";
                         posText->setText(str.c_str());
                         
-                        updateEditor();
                     }
 
                     str = L"Demage: ";
@@ -1362,6 +1416,7 @@ int main()
                 if (quitGame) break;
                 calculate_day_delta(tick);
           }
+          updateEditor(); // TODO: put back into the one sec. update
           pdprintf(printf("15\n"));
           
           if (isMultiplayer)
@@ -1376,10 +1431,10 @@ int main()
           //tick = device->getTimer()->getTime();
           if (inGame == 0)
           {
-              if (bigTerrain)
-                  bigTerrain->checkMapsQueue();
               if (tick > lasttick + 16/*(1000/min_fps/*(lastFPS+1)) && inGame == 0*/)
               {
+                  if (bigTerrain)
+                      bigTerrain->checkMapsQueue();
                   if (bigTerrain)
                       bigTerrain->updateTime(tick);
                   //#ifndef USE_EDITOR
@@ -1484,7 +1539,7 @@ int main()
     	CRaceEngine::getRaceState().clear();
     }
 
-	printf("release pools\n");
+	printf("release pools\n"); // will release tree designs, and my tree designs
 	releasePools();
 
 	printf("release itiner types\n");
@@ -1496,6 +1551,9 @@ int main()
 	   delete vehiclePool;
 	   vehiclePool = 0;
     }
+    
+    printf("release fonts\n");
+    releaseFonts();
 
     printf("cleanup materials\n");
 	CleanUpMaterials(nWorld);

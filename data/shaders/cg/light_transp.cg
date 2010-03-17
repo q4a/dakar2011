@@ -1,0 +1,55 @@
+#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+	     float2 Uv     : TEXCOORD0,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+             out float2 oUv: TEXCOORD0,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mInvWorld,
+//             uniform float4x4 mTransWorld,
+             uniform float3 mLightColor,
+             uniform float3 mLightPos
+)
+{
+  oPosition = mul(mWorldViewProj, vPosition);
+  oUv = Uv;
+
+  float3 normal = mul(float4(vNormal,0.0), mInvWorld).xyz;
+	
+  // renormalize normal 
+  normal = normalize(normal);
+	
+  // position in world coodinates
+//  float3 worldpos = mul(mTransWorld, vPosition);
+  float3 worldpos = vPosition;
+
+  // calculate light vector, vtxpos - lightpos
+  float3 lightVector = float3(0.0, 0.0, 0.0) - mLightPos;
+	
+  // normalize light vector 
+  lightVector = normalize(lightVector);
+	
+  // calculate light color 
+  float3 tmp = dot(-lightVector, normal);
+  tmp = lit(tmp.x, tmp.y, 1.0);
+	
+  tmp = mLightColor * tmp.y;
+  color = float4(tmp.x, tmp.y, tmp.z, 0.0);
+	
+}
+
+void main_f( float4 color	: COLOR,
+	     float2 Uv		: TEXCOORD0,
+	     uniform sampler2D tex0 : register(s0),
+             out float4 oColor	: COLOR,
+             uniform float param)
+{
+    	float4 col = tex2D( tex0, Uv);
+	clip(col.a - param);
+        //oColor = (color + float4(0.2, 0.2, 0.2, 1.0)) * col;
+    	oColor = float4(0,0,0,0);
+}

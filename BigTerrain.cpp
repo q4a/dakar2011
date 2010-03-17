@@ -957,7 +957,8 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             // new stuff
             playerCompetitor->lastTime = diffTime;
             playerCompetitor->globalTime += diffTime;
-            raceEngine->insertIntoFinishedState(playerCompetitor);
+            if (raceEngine)
+                raceEngine->insertIntoFinishedState(playerCompetitor);
         }
         else
         {

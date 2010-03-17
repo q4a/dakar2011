@@ -1,0 +1,82 @@
+#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+	     float2 Uv0     : TEXCOORD0,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+             out float2 oUv0: TEXCOORD0,
+             out float3 objPos: TEXCOORD1,
+             out float3 oNormal: TEXCOORD2,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld,
+             uniform float4x4 mInvWorld,
+//             uniform float4x4 mTransWorld,
+//             uniform float4x4 mTextureMatrix,
+             uniform float3 mLightColor,
+             uniform float3 mLightPos,
+             uniform float3 eyePosition,
+             uniform float shininess,
+//	     uniform float car_engine,
+	     uniform float coll_tick_x,
+	     uniform float coll_tick_y
+)
+{
+
+//  coll_effect(coll_tick, vPosition);
+  coll_effect_xy(coll_tick_x, coll_tick_y, vPosition);
+
+  oPosition = mul(mWorldViewProj, vPosition);
+  oUv0 = Uv0;
+  oNormal = vNormal;
+  //objPos = vPosition.xyz;
+  objPos = mul(mWorld, vPosition).xyz;
+
+
+  float3 normal = mul(float4(vNormal,0.0), mInvWorld).xyz;
+	
+  // renormalize normal 
+  normal = normalize(normal);
+	
+  // position in world coodinates
+//  float3 worldpos = mul(mTransWorld, vPosition);
+  float3 worldpos = objPos;
+	
+  // calculate light vector, vtxpos - lightpos
+  float3 L = normalize(mLightPos - float3(0.0, 0.0, 0.0));
+  float3 V = normalize(eyePosition - worldpos);
+  float3 H = normalize(L + V);
+	
+  // calculate light color 
+  float3 tmp = dot(normal, L);
+  tmp.y = dot(normal, H); 
+  tmp = lit(tmp.x, tmp.y, shininess);
+	
+  tmp = mLightColor * tmp.y * tmp.z;
+  color = float4(tmp, 1.0);
+}
+
+void main_f( float4 position 	: POSITION,
+             float4 color	: COLOR,
+	     float2 Uv0		: TEXCOORD0,
+             float3 objPos	: TEXCOORD1,
+             float3 normal	: TEXCOORD2,
+//             float4 texCoordProj	: TEXCOORD3,
+	     uniform sampler2D tex0 : register(s0),
+	     uniform sampler2D tex1 : register(s1),
+             uniform float day_multi,
+             uniform float car_dirt,
+             out float4 oColor	: COLOR)
+{
+  float4 col = tex2D (tex0, Uv0);
+  float dirt = 1.0 - (tex2D(tex1, Uv0)).r;
+
+  col.xyz = lerp(col.xyz, float3(0.18,0.1,0.04), dirt*car_dirt);
+
+  oColor = (color + float4(0.2, 0.2, 0.2, 1.0)) * col;
+  oColor *= 2.0;
+
+  oColor = day_effect(oColor, position, day_multi);
+}

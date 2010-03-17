@@ -1,0 +1,70 @@
+#include "common.cg"
+
+void main_v(float4 position : POSITION,
+            float3 normal   : NORMAL,
+            float2 Uv       : TEXCOORD0,
+
+            out float4 oPosition       : POSITION,
+            out float4 color     : COLOR0,
+            out float2 oUv       : TEXCOORD0,
+            out float3 objPos    : TEXCOORD1,
+            out float3 oNormal   : TEXCOORD2,
+	    
+	    uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld
+	    )
+{
+  oPosition = mul(mWorldViewProj, position);
+  //oPosition = position;
+  oUv = Uv;
+  objPos = position.xyz;
+  //objPos = mul(mWorld, position).xyz;
+  oNormal = normal;
+}
+
+
+struct fragment
+{
+	float4 position  : POSITION;
+	float4 color0    : COLOR0;
+	float2 texcoord0 : TEXCOORD0;
+        float3 objPos    : TEXCOORD1;
+        float3 normal    : TEXCOORD2;
+};
+
+struct pixel
+{
+	float4 color : COLOR;
+};
+
+pixel main_f( fragment IN,
+              uniform sampler2D tex0,
+              uniform float param,
+              uniform float3 clightPos,
+              uniform float3 clightDir,
+	      uniform float3 eyePositionF,
+              uniform float clight,
+              uniform float day_multi,
+              uniform float ov_limit,
+              uniform float etick
+	      )
+{
+  pixel OUT;
+
+  float4 col = tex2D( tex0, IN.texcoord0 );
+  float3 diffuseLight = float3(0.0, 0.0, 0.0);
+
+  //col.a = col.a * 0.3;
+  clip(col.a - param);
+
+  spotAttenLighting(clightPos, clightDir, IN.objPos, IN.normal, day_multi, diffuseLight);
+  if (clight>0.0) col.xyz = col.xyz * diffuseLight;
+
+  // fog stuff  
+  //add_fog(eyePositionF, IN.objPos, col);
+  add_fog_tra(eyePositionF, IN.objPos, col, ov_limit, etick);
+  
+  OUT.color = day_effect(col, IN.position, day_multi);
+
+  return OUT;
+}
