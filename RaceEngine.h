@@ -19,6 +19,9 @@
 #include "CQuad.h"
 #include "competitors.h"
 
+//#define SPEED_BASE_AI 1
+
+
 // Irrlicht Namespaces
 using namespace irr;
 using namespace core;
@@ -47,18 +50,22 @@ public:
     u32 startTime;
     u32 finishTime;
     int nextPoint;
-    float nextPointCD;
     vector2df currentPos;
-    vector2df dir;
-    float nextPointDist;
     bool crashed;
     bool visible;
     NewtonRaceCar* vehicle;
     CRaceEngine* m_raceEngine;
     unsigned int forResetCnt;
     float currentRand;
-    
     ITextSceneNode* nameText;
+    vector2df dir;
+#ifdef SPEED_BASE_AI
+    float nextPointCD;
+    //float nextPointDist;
+#else
+    float passedDistance;
+    float distanceStep;
+#endif
 };
 
 class CRaceEngine

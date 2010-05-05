@@ -30,6 +30,7 @@ extern bool stencil_shadows;
 extern int shadow_map_size;
 extern bool useShaders;
 extern bool useCgShaders;
+extern bool useAdvCgShaders;
 extern bool use_detailed_terrain;
 extern bool use_highres_textures;
 extern video::E_DRIVER_TYPE driverType;
@@ -115,6 +116,11 @@ extern float obj_wire_size;
 extern float obj_wire_mult;
 
 extern bool show_names;
+
+extern bool editorMode;
+extern bool followCarlos;
+
+extern unsigned int terrain_tesselation;
 
 void readSettings(const char*);
 

@@ -14,6 +14,8 @@
 #include "Materials.h"
 #include <assert.h>
 
+#include "linux_includes.h"
+
 #ifdef MY_DEBUG
 # define dprintf(x) x
 #else
@@ -46,7 +48,8 @@ CMyRoad::~CMyRoad()
 {
     if (roadNode)
     {
-        roadNode->drop();
+        //roadNode->drop();
+        roadNode->remove();
     }
     basePoints.clear();
     if (newtonBody)

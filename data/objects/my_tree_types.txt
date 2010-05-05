@@ -7,6 +7,7 @@ rot: 0.0, 0.0, 0.0
 sca: 4.0, 4.0, 4.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree2.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree2.png
@@ -16,6 +17,7 @@ rot: 0.0, 0.0, 0.0
 sca: 6.0, 6.0, 6.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree3.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree3.png
@@ -25,6 +27,7 @@ rot: 0.0, 0.0, 0.0
 sca: 8.0, 8.0, 8.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree4.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree4.png
@@ -34,6 +37,7 @@ rot: 0.0, 0.0, 0.0
 sca: 5.0, 5.0, 5.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree5.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree5.png
@@ -43,6 +47,7 @@ rot: 0.0, 0.0, 0.0
 sca: 6.0, 6.0, 6.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree6.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree6.png
@@ -52,6 +57,7 @@ rot: 0.0, 0.0, 0.0
 sca: 4.0, 4.0, 4.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree7.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree7.png
@@ -61,6 +67,7 @@ rot: 0.0, 0.0, 0.0
 sca: 5.0, 5.0, 5.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0
 data/objects/my_tree8.mso
 data/objects/treetextures/OakBark.png
 data/objects/treetextures/my_tree8.png
@@ -70,3 +77,4 @@ rot: 0.0, 0.0, 0.0
 sca: 7.0, 7.0, 7.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
+cat: 0

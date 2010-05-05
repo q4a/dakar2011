@@ -74,12 +74,12 @@ using namespace IrrCg;
 #ifndef IrrCgSharedLib
 
 // Get OpenGL Texture Name. Like standard Irrlicht getOpenGLTextureName().
-#ifdef IrrCgOGL
+#ifndef __linux__
+#ifdef IrrCgOGL // duplicate
 GLuint irr::video::COpenGLTexture::getOpenGLTextureName() const
 {
     return TextureName;
 }
-
 #if IRRLICHT_VERSION_MINOR > 5
 // Set OpenGL Active Texture. Like standard Irrlicht OpenGL setActiveTexture().
 bool irr::video::COpenGLDriver::setActiveTexture(u32 stage, const video::ITexture* texture)
@@ -150,9 +150,11 @@ bool irr::video::COpenGLDriver::setTexture(u32 stage, const video::ITexture* tex
 	}
 	return true;
 }
-#endif
+#endif // version
 
-#endif
+#endif // ogl
+
+#endif // ! linux
 
 // Get Direct3D Texture Name. Like standard Irrlicht getDX9Texture().
 #ifdef IrrCgD3D9

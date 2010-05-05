@@ -30,6 +30,7 @@ using namespace gui;
 #include "CObjectWire.h"
 #include "MyLock.h"
 #include "MyList.h"
+#include "TerrainPool.h"
 
 //#define CP_NUM 6
 
@@ -50,7 +51,8 @@ class BigTerrain
 public:
        BigTerrain(const c8* name, IrrlichtDevice* p_device, ISceneManager* p_smgr,
                   IVideoDriver* p_driver, NewtonWorld* p_nWorld, u32 pstageTime, u32 pgtime,
-                  scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap, int p_stageNum);
+                  scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap, int p_stageNum,
+                  TerrainPool* p_terrainPool);
        ~BigTerrain();
 
        core::vector3df updatePos(float newX, float newY, int obj_density, bool force, bool showPerc = false);
@@ -66,7 +68,7 @@ public:
        void removeActiveItinerPoint(SItinerPoint* itinerPoint);
        
        float getHeight(float x, float y) const;
-       float getDensity(float x, float y) const;
+       float getDensity(float x, float y, int category = -1) const;
        scene::ISceneNode* getTerrain(float x, float y) const;
        SmallTerrain* getSmallTerrain(float x, float y) const;
        float getSmallTerrainSize() const;
@@ -108,6 +110,9 @@ public:
        core::array<SAIPoint*>& getAIPoints() {return aiPoints;}
        
        float getSpeed() {return speed;}
+       
+       u32 getStageTime() {return stageTime;}
+       float getStageLength() {return stageLength;}
 
 private:
        void applyRoadOnHeightMap();
@@ -121,6 +126,8 @@ private:
        void applyAverage3(int px, int py, int avgCol);
        
        void doCache();
+       
+       void calculateAIPointTimes();
               
 public:
        friend class CMapReaderThread;
@@ -176,6 +183,7 @@ public:
        int cps;
        u32 penality;
        u32 stageTime;
+       float stageLength;
        u32 gtime;
 
        c8 groundSoundName[256];
@@ -204,6 +212,7 @@ public:
        float speed;
        CMyList<SMapsQueueElement*> mapsQueue;
        scene::ISceneNode* skydome;
+       TerrainPool* m_terrainPool;
 /*       
        NewtonBody* bodyl;
        NewtonCollision* collisionl;

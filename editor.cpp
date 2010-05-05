@@ -28,7 +28,7 @@ void initEditor(IGUIEnvironment* env)
 {
 #ifdef USE_EDITOR
     editorText = env->addStaticText(L"POS: ",
-                        core::rect<int>(10,110,260,600),
+                        core::rect<int>(10,110,300,600),
                         false/*info_bg*/, true, 0, -1, true);
     editorText->setVisible(false);
 #endif // USE_EDITOR
@@ -45,8 +45,8 @@ void updateEditor()
 {
 #ifdef USE_EDITOR
     core::stringw str;
-    str = L"Help:\n0 - addPoint to road\n1 - prev road\n2 - next road\n3 - new road\n4 - save roads\n5 - load roads\nF7 - remove last point\n\n";
-    str += L"6 - add new obj\n7 - prev obj\n8 - next obj\n9 - refresh object wire\nU - save obj\nF8 - remove last obj\n\n";
+    str = L"Help:\n0 - addPoint to road (LMB)\n1 - prev road\n2 - next road\n3 - new road\n4 - save roads\n5 - load roads\nF7 - remove last point\n\n";
+    str += L"6 - add new obj (RMB)\n7 - prev obj\n8 - next obj\n9 - refresh object wire\nU - save obj\nF8 - remove last obj\n\n";
     str += L"Del - add new itiner\nIns - prev itiner\nHome - next itiner\nEnd - remove nearest obj\n\n";
     
     str += L"Road: ";
@@ -54,13 +54,16 @@ void updateEditor()
     str += L"/";
     str += bigTerrain->getRoadList().size();
     str += L"\nLen: ";
-    if (currentRoad >= 0 && currentRoad <= bigTerrain->getRoadList().size() - 1)
+    //printf("%d %d", currentRoad, bigTerrain->getRoadList().size() - 1);
+    if (currentRoad >= 0 && currentRoad <= (int)bigTerrain->getRoadList().size() - 1)
         str += bigTerrain->getRoadList()[currentRoad]->getBasePoints().size();
     
     str += L"\n\n";
     str += L"Obj: ";
     str += getPoolNameFromId(currentObj);
-    str += L"\nIti: ";
+    str += L" (";
+    str += getPoolCategoryFromId(currentObj);
+    str += L")\nIti: ";
     str += getItinerNameFromId(currentItiner);
     str += L"\nFix objs: ";
     str += bigTerrain->getObjectWrappers().size();
@@ -76,7 +79,7 @@ void actionEditor(int key)
 		case irr::KEY_KEY_0:
             {
                 printf("add new base point\n");
-                if (currentRoad >= 0 && currentRoad <= bigTerrain->getRoadList().size() - 1)
+                if (currentRoad >= 0 && currentRoad <= (int)bigTerrain->getRoadList().size() - 1)
                 {
                     bigTerrain->getRoadList()[currentRoad]->addBasePoint(vector3df(
                                                                         camera->getPosition().X,
@@ -90,7 +93,7 @@ void actionEditor(int key)
 		case irr::KEY_F7:
             {
                 printf("remove last base point\n");
-                if (currentRoad >= 0 && currentRoad <= bigTerrain->getRoadList().size() - 1 &&
+                if (currentRoad >= 0 && currentRoad <= (int)bigTerrain->getRoadList().size() - 1 &&
                     bigTerrain->getRoadList()[currentRoad]->getBasePoints().size() > 0)
                 {
                     bigTerrain->getRoadList()[currentRoad]->getBasePoints().erase(bigTerrain->getRoadList()[currentRoad]->getBasePoints().size()-1);
@@ -103,7 +106,7 @@ void actionEditor(int key)
                 printf("prev road\n");
                 if (currentRoad <= 0)
                 {
-                    currentRoad = bigTerrain->getRoadList().size() - 1;
+                    currentRoad = (int)bigTerrain->getRoadList().size() - 1;
                 }
                 else
                 {
@@ -114,7 +117,7 @@ void actionEditor(int key)
 		case irr::KEY_KEY_2:
             {
                 printf("next road\n");
-                if (currentRoad >= bigTerrain->getRoadList().size()-1 )
+                if (currentRoad >= (int)bigTerrain->getRoadList().size()-1 )
                 {
                     currentRoad = 0;
                 }

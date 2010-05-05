@@ -163,13 +163,30 @@ T get(int index=0)
 
 void del(int index=0)
 {
-    if( !first ) return T();
+    if( !first ) return;
     element *searchthis=first;
     int i=0;
     while( i<index && searchthis!=last ) {
         searchthis=searchthis->next;
         i++;
     }
+
+    if( !searchthis ) return;
+    if( searchthis->next )
+        searchthis->next->prev=searchthis->prev;
+    else
+        last=searchthis->prev;
+    if( searchthis->prev )
+        searchthis->prev->next=searchthis->next;
+    else
+        first=searchthis->next;
+    delete searchthis;
+    len--;
+}
+
+void del(element* searchthis)
+{
+    if( !first ) return;
 
     if( !searchthis ) return;
     if( searchthis->next )

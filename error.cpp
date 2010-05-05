@@ -1,3 +1,14 @@
+/****************************************************************
+*                                                               *
+*    Name: error.cpp                                            *
+*                                                               *
+*    Creator: Balazs Tuska                                      *
+*                                                               *
+*    Description:                                               *
+*       This file contains some error handling functions.       *
+*       Messages towards the user.                              *
+*                                                               *
+****************************************************************/
 
 #include "error.h"
 #include <stdio.h>
@@ -106,3 +117,28 @@ extern "C" void myMessage(int num, const char *msg, ...)
 }
 
 #endif
+
+static irr::IrrlichtDevice* device;
+static irr::IOSOperator* os;
+static unsigned int initialTM = 0;
+static unsigned int initialFM = 0;
+
+void initializeUsedMemory(irr::IrrlichtDevice* p_device)
+{
+    device = p_device;
+    os = device->getOSOperator();
+    os->getSystemMemory(&initialTM, &initialFM);
+}
+
+unsigned int getUsedMemory()
+{
+    unsigned int tmpTM = 0;
+    unsigned int tmpFM = 0;
+    os->getSystemMemory(&tmpTM, &tmpFM);
+    return initialFM - tmpFM;
+}
+
+void printUsedMemory(unsigned int num)
+{
+    myMessage(num, "Memory: %u", getUsedMemory()/(1024));
+}

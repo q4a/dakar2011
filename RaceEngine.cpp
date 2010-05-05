@@ -18,11 +18,13 @@
 #include "message.h"
 #include "fonts.h"
 
+#include "linux_includes.h"
+
 #define FAR_VALUE (farValue / 2.f)
 #define NEAR_VALUE ((farValue / 2.f)-100.f)
 #define START_SECS 10
-#define REACHED_POINT_DIST 10.f
-#define REACHED_POINT_DIST_NEAR 50.f
+#define REACHED_POINT_DIST 15.f
+#define REACHED_POINT_DIST_NEAR 20.f
 #define ANGLE_LIMIT 30.f
 #define AI_STEP (1.15f) // orig: (1.05f)
 
@@ -50,12 +52,17 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
                    SCompetitor* p_competitor, u32 p_startingCD)
     : m_bigTerrain(p_bigTerrain), m_raceEngine(p_raceEngine),
       competitor(p_competitor), startingCD(p_startingCD), startTime(0),
-      finishTime(0), nextPoint(0), nextPointCD(0.f), currentPos(), dir(),
+      finishTime(0), nextPoint(0), currentPos(),
       crashed(false), visible(false), vehicle(0), forResetCnt(0),
-      currentRand(0.f), nameText(0)
+      currentRand(0.f), nameText(0),
+#ifdef SPEED_BASE_AI
+      nextPointCD(0.f), dir()//, nextPointDist(0.f)
+#else
+      passedDistance(0.f), distanceStep(0.f)
+#endif
 {
-    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_BASE1], competitor->getName().c_str());
-    nameText->setScale(vector3df(3.0f, 3.0f, 3.0f));
+    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_SPECIAL14], competitor->getName().c_str(), video::SColor(255, 255, 255, 0));
+    //nameText->setScale(vector3df(3.0f, 3.0f, 3.0f));
     nameText->setVisible(false);
 }
 
@@ -173,7 +180,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         }
         else
         {
-            torque = ((speedLimitHigh - speed)/speedLimitDist);
+            torque = 0.75f + ((speedLimitHigh - speed)/speedLimitDist) * 0.25f;
         }
         
         // calculate torque more, and brake
@@ -203,7 +210,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         }
         
         // if we are near to the nextPoint calculate some to the next-next point
-        if (distToNextPoint<REACHED_POINT_DIST_NEAR && fabsf(angleToNextNext) > (angleLimit*2.f)/3.f)
+        if (distToNextPoint<(REACHED_POINT_DIST_NEAR+(speed*0.5f)) && fabsf(angleToNextNext) > (angleLimit*2.f)/3.f)
         {
             float brakeMulti = 1.0f;
             if (speed > brakeSpeedLimit*3)
@@ -229,6 +236,9 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         vehicle->setHandBrakes(brake);
         vehicle->setSteering(steer);
         vehicle->setTireTorque(torque);
+#ifndef SPEED_BASE_AI
+        passedDistance += distanceStep/10.f;
+#endif
     }
     else // not visible or there is no free pool vehicle
     {
@@ -241,6 +251,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         
         vector2df oldPos(currentPos);
         
+#ifdef SPEED_BASE_AI
         vector2df cp(m_bigTerrain->getAIPoints()[nextPoint]->getPosition().X,
                      m_bigTerrain->getAIPoints()[nextPoint]->getPosition().Z);
         float ndist = 0.f;
@@ -251,31 +262,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
                           m_bigTerrain->getAIPoints()[nextPoint+1]->getPosition().Z);
             ndist = cp.getDistanceFrom(ncp);
         }
-        /*
-        float angleMulti = 1.f;
-        if (nextPoint > 0 && nextPoint < m_bigTerrain->getAIPoints().size()-1)
-        {
-            vector2df pcp(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
-                          m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
-            vector2df ncp(m_bigTerrain->getAIPoints()[nextPoint+1]->getPosition().X,
-                          m_bigTerrain->getAIPoints()[nextPoint+1]->getPosition().Z);
-            float prevAngle = (cp - pcp).getAngle()-180.f;
-            float nextAngle = (ncp - cp).getAngle()-180.f;
-            float angleTo = prevAngle - nextAngle;
-            normalizeAngle180(angleTo);
-            angleTo = fabsf(angleTo);
-            if (angleTo > ANGLE_LIMIT*2.f)
-            {
-                angleMulti = 0.3f;
-            }
-            else
-            if (angleTo > ANGLE_LIMIT/2.f)
-            {
-                angleMulti = 0.3f + ((ANGLE_LIMIT*2.f - angleTo) / (ANGLE_LIMIT*1.5f));
-                if (angleMulti>1.f) angleMulti = 1.f;
-            }
-        }
-        */
+
         if (dir.getLength() < ndist)
         {
             currentPos += dir;
@@ -291,6 +278,30 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         {
             goToNextPoint(currentTime);
         }
+#else // SPEED_BASE_AI
+        passedDistance += distanceStep;
+        if (passedDistance > m_bigTerrain->getAIPoints()[nextPoint]->getDistance())
+        {
+            goToNextPoint(currentTime);
+        }
+        if (!finishTime && nextPoint > 0 && nextPoint < m_bigTerrain->getAIPoints().size())
+        {
+            vector2df cp(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                         m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+            vector2df ncp(m_bigTerrain->getAIPoints()[nextPoint]->getPosition().X,
+                          m_bigTerrain->getAIPoints()[nextPoint]->getPosition().Z);
+            float dist = m_bigTerrain->getAIPoints()[nextPoint-1]->getDistance();
+            float ndist = m_bigTerrain->getAIPoints()[nextPoint]->getDistance();
+            vector2df dir = (ncp - cp) * ((passedDistance-dist)/(ndist-dist));
+            currentPos = cp + dir;
+            // remove me
+//            if (competitor->num==300)
+//            {
+//                printf("num 300 nextPoint %d, pos: x %f z %f passed dist %f dist %f ndist %f\n", nextPoint, currentPos.X, currentPos.Y, passedDistance,
+//                        dist, ndist);
+//            }
+        }
+#endif // SPEED_BASE_AI
     }
     return true;
 }
@@ -303,7 +314,19 @@ void SStarter::switchToVisible()
     {
         visible = true;
         vector3df pos(currentPos.X, m_bigTerrain->getHeight(currentPos.X, currentPos.Y)+1.5f, currentPos.Y);
+#ifdef SPEED_BASE_AI
         vector3df rot(0.f, (float)dir.getAngle(/*With(vector2df(-1.0f, 0.0f)*/)/*-180.f*/, 0.f);
+#else
+        vector3df rot;
+        if (nextPoint > 0 && nextPoint < m_bigTerrain->getAIPoints().size())
+        {
+            vector2df cp(m_bigTerrain->getAIPoints()[nextPoint]->getPosition().X,
+                         m_bigTerrain->getAIPoints()[nextPoint]->getPosition().Z);
+            vector2df pcp(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                          m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+            rot = vector3df(0.f, (float)(cp-pcp).getAngle(/*With(vector2df(-1.0f, 0.0f)*/)/*-180.f*/, 0.f);
+        }
+#endif
         vehicle->activate(pos,
                       rot,
                       ""/*m_bigTerrain->getGroundSoundName()*/,
@@ -340,15 +363,32 @@ void SStarter::switchToNotVisible()
 
 void SStarter::goToNextPoint(u32 currentTime)
 {
-    if (nextPoint < m_bigTerrain->getAIPoints().size()-1)
+    if (nextPoint < m_bigTerrain->getAIPoints().size())
     {
+#ifdef SPEED_BASE_AI
         vector3df cp(m_bigTerrain->getAIPoints()[nextPoint]->getPosition());
         currentPos = vector2df(cp.X, cp.Z);
         nextPoint++;
-        currentRand = (((float)(rand() % 100) - 50.f) / 1000.f) + ((float)competitor->strength / 50000.f);
-        calculateTo(m_bigTerrain->getAIPoints()[nextPoint]->getPosition());
+#else
+        if (visible)
+        {
+            passedDistance = m_bigTerrain->getAIPoints()[nextPoint]->getDistance();
+            nextPoint++;
+        }
+        else
+        {
+            while (nextPoint < m_bigTerrain->getAIPoints().size() &&
+                   passedDistance > m_bigTerrain->getAIPoints()[nextPoint]->getDistance())
+            {
+                nextPoint++;
+            }
+        }
+#endif
     }
-    else
+//    if (competitor->num==300)
+//        printf("num: %d, nextPoint: %d/%d\n", competitor->num, nextPoint, m_bigTerrain->getAIPoints().size());
+//    else
+    if (nextPoint >= m_bigTerrain->getAIPoints().size())
     {
         // no more point finish the stage
         finishTime = currentTime - startTime;
@@ -368,10 +408,29 @@ void SStarter::goToNextPoint(u32 currentTime)
         str += position;
         MessageText::addText(str.c_str(), 2);
     }
+    else
+    {
+#ifndef SPEED_BASE_AI
+        if (nextPoint > 0)
+        {
+            vector2df cp(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                         m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+            vector2df ncp(m_bigTerrain->getAIPoints()[nextPoint]->getPosition().X,
+                          m_bigTerrain->getAIPoints()[nextPoint]->getPosition().Z);
+            float dist = m_bigTerrain->getAIPoints()[nextPoint-1]->getDistance();
+            float ndist = m_bigTerrain->getAIPoints()[nextPoint]->getDistance();
+            dir = (ncp - cp) * ((passedDistance-dist)/(ndist-dist));
+            currentPos = cp;// + dir;
+        }
+#endif
+        currentRand = (((float)(rand() % 100) - 50.f) / 1000.f) + ((float)competitor->strength / 50000.f);
+        calculateTo(m_bigTerrain->getAIPoints()[nextPoint]->getPosition());
+    }
 }
 
 void SStarter::calculateTo(vector3df &p_nextPointPos)
 {
+#ifdef SPEED_BASE_AI
     vector2df nextPointPos(p_nextPointPos.X, p_nextPointPos.Z);
     
     float speed = ((m_bigTerrain->getSpeed() / 3.6f) * (float)competitor->strength) / 100.f;
@@ -386,6 +445,11 @@ void SStarter::calculateTo(vector3df &p_nextPointPos)
     //dir = dir / (dist / speed);
     dir = dir.normalize();
     dir = dir * (dist / nextPointCD);
+#else
+    distanceStep = (m_bigTerrain->getStageLength() / (float)m_bigTerrain->getStageTime()) *
+                   ((float)competitor->strength / 100.f) *
+                   (1.0f+currentRand);
+#endif
 }
 
 CRaceEngine::CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env,
@@ -543,7 +607,8 @@ bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
     
     for (int i = 0; i < starters.size(); i++)
     {
-        ret = fprintf(f, "starter[%d]: %d %u %u %u %u %u %u %u %d %f %f %f %f %f %f\n",
+#ifdef SPEED_BASE_AI
+        ret = fprintf(f, "starter[%d]: %d %u %u %u %u %u %u %u %d %f %f %f %f %f\n",
                       i,
                       starters[i]->competitor->num,
                       starters[i]->competitor->lastTime,
@@ -558,14 +623,36 @@ bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
                       starters[i]->currentPos.X,
                       starters[i]->currentPos.Y,
                       starters[i]->dir.X,
-                      starters[i]->dir.Y,
-                      starters[i]->nextPointDist
+                      starters[i]->dir.Y
+                      //, starters[i]->nextPointDist
                       );
-        if (ret < 16)
+        if (ret < 15)
         {
             printf("error writing save file ret %d errno %d\n", ret, errno);
             return false;
         }
+#else // SPEED_BASE_AI
+        ret = fprintf(f, "starter[%d]: %d %u %u %u %u %u %u %u %d %f %f %f\n",
+                      i,
+                      starters[i]->competitor->num,
+                      starters[i]->competitor->lastTime,
+                      starters[i]->competitor->lastPenalityTime,
+                      starters[i]->competitor->globalTime,
+                      starters[i]->competitor->globalPenalityTime,
+                      starters[i]->startingCD,
+                      starters[i]->startTime,
+                      starters[i]->finishTime,
+                      starters[i]->nextPoint,
+                      starters[i]->currentPos.X,
+                      starters[i]->currentPos.Y,
+                      starters[i]->passedDistance
+                      );
+        if (ret < 13)
+        {
+            printf("error writing save file ret %d errno %d\n", ret, errno);
+            return false;
+        }
+#endif // SPEED_BASE_AI
     }
     return true;
 }
@@ -623,8 +710,8 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
             printf("error reading save file num %d not found in raceState\n", compnum);
             return false;
         }
-        
-        ret = fscanf(f, "%u %u %u %u %u %u %u %d %f %f %f %f %f %f\n",
+#ifdef SPEED_BASE_AI
+        ret = fscanf(f, "%u %u %u %u %u %u %u %d %f %f %f %f %f\n",
                       &starter->competitor->lastTime,
                       &starter->competitor->lastPenalityTime,
                       &starter->competitor->globalTime,
@@ -637,15 +724,34 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
                       &starter->currentPos.X,
                       &starter->currentPos.Y,
                       &starter->dir.X,
-                      &starter->dir.Y,
-                      &starter->nextPointDist
+                      &starter->dir.Y
+                      //, &starter->nextPointDist
                       );
-        if (ret < 14)
+        if (ret < 13)
         {
             printf("error writing save file ret %d errno %d\n", ret, errno);
             return false;
         }
-        
+#else // SPEED_BASE_AI
+        ret = fscanf(f, "%u %u %u %u %u %u %u %d %f %f %f\n",
+                      &starter->competitor->lastTime,
+                      &starter->competitor->lastPenalityTime,
+                      &starter->competitor->globalTime,
+                      &starter->competitor->globalPenalityTime,
+                      &starter->startingCD,
+                      &starter->startTime,
+                      &starter->finishTime,
+                      &starter->nextPoint,
+                      &starter->currentPos.X,
+                      &starter->currentPos.Y,
+                      &starter->passedDistance
+                      );
+        if (ret < 11)
+        {
+            printf("error writing save file ret %d errno %d\n", ret, errno);
+            return false;
+        }
+#endif // SPEED_BASE_AI
         starters.push_back(starter);
         if (starter->finishTime!=0) insertIntoFinishedState(starter->competitor);
     }

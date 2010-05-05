@@ -1,7 +1,7 @@
 [Project]
 FileName=Dakar2011.dev
 Name=Dakar2011
-UnitCount=96
+UnitCount=98
 Type=1
 Ver=1
 ObjFiles=
@@ -33,7 +33,7 @@ CompilerSettings=0000001000001000000100
 Major=2
 Minor=1
 Release=1
-Build=1348
+Build=1547
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -999,6 +999,26 @@ BuildCmd=
 
 [Unit96]
 FileName=fonts.cpp
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit97]
+FileName=TerrainPool.h
+CompileCpp=1
+Folder=
+Compile=1
+Link=1
+Priority=1000
+OverrideBuildCmd=0
+BuildCmd=
+
+[Unit98]
+FileName=TerrainPool.cpp
 CompileCpp=1
 Folder=
 Compile=1

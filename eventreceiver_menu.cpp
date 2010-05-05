@@ -3477,7 +3477,15 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
     if (raceEngine->getFinishedState().size()==0)
     {
         str = L"There is no result yet. This is the state at the begining of the stage:\n\n";
-// comment this out in the real game
+// todo comment this out in the real game
+        if (bigTerrain)
+        {
+            str += L"Stage length: ";
+            str += (int)bigTerrain->getStageLength();
+            str += L" m, Stage time: ";
+            str += bigTerrain->getStageTime();
+            str += L" sec\n\n";
+        }
         core::array<SStarter*> stageStarters;
         for (int i = 0; i < raceEngine->getStarters().size(); i++)
         {
@@ -3529,8 +3537,16 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
             str += L",  Next point: ";
             str += stageStarters[i]->nextPoint;
             str += L" (";
+#ifdef SPEED_BASE_AI
             str += (int)stageStarters[i]->nextPointCD;
-            str += L")\n";
+#else
+            str += (int)stageStarters[i]->passedDistance;
+            str += L", ";
+            str += stageStarters[i]->distanceStep;
+#endif
+            str += L") startCD: ";
+            str += stageStarters[i]->startingCD;
+            str += L"\n";
         }
 /*
         for (int i = 0; i < raceEngine->getStarters().size(); i++)

@@ -85,3 +85,7 @@ serialized_file_path: data/bigterrains/serialized/
 driver_type: d3d9
 obj_wire_size: 128
 obj_wire_mult: 3
+editor_mode: yes
+adv_cg_shaders: yes
+follow_carlos: yes
+terrain_tesselation: 1

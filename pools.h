@@ -52,7 +52,8 @@ int createObjectPool(const c8* name,
                     const vector3df& rot,
                     const vector3df& sca,
                     const vector3df& box,
-                    const vector3df& ofs
+                    const vector3df& ofs,
+                    int category
 );
 
 void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
@@ -100,6 +101,7 @@ void loadItinerTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
 
 int getPoolIdFromName(const char* name);
 const char* getPoolNameFromId(int ind);
+const int getPoolCategoryFromId(int ind);
 int getPoolsSize();
 
 int getItinerIdFromName(const char* name);

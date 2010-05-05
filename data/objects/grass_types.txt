@@ -1,20 +1,27 @@
 data/objects/my_cactus_grass.mso
 data/objects/cactus_grass.png
+cat: 0
 
 data/objects/my_cactus_grass_ss.mso
 data/objects/cactus_grass_ss.png
+cat: 0
 
 data/objects/my_grass1.mso
 data/objects/grass.png
+cat: 0
 
 data/objects/my_grass1_ss.mso
 data/objects/grass_ss.png
+cat: 0
 
 data/objects/my_grass3.mso
 data/objects/grass3.png
+cat: 0
 
 data/objects/my_grass4.mso
 data/objects/grass4.png
+cat: 0
 
 data/objects/my_grass5.mso
 data/objects/grass5.png
+cat: 0

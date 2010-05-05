@@ -33,7 +33,13 @@ DWORD WINAPI CMyThread::ThreadEntry (void* pArg)
 }
 #endif
 
-CMyThread::CMyThread() : underTermination(false), tid(0), currentCritSection(0)
+CMyThread::CMyThread()
+    : underTermination(false)
+#ifdef __linux__
+#else
+      , tid(0),
+      currentCritSection(0)
+#endif
 {
 #ifdef __linux__
 #else
@@ -48,11 +54,14 @@ CMyThread::CMyThread() : underTermination(false), tid(0), currentCritSection(0)
     InitializeCriticalSection(&critSection[1]);
 #endif
     lock();
+#ifdef __linux__
+#else
     dprintf(printf("create thread: handle %p, tid %d\n", handle, tid);)
     if (handle)
     {
         ResumeThread(handle);
     }
+#endif
 }
 
 CMyThread::~CMyThread()
@@ -72,7 +81,10 @@ CMyThread::~CMyThread()
 
 void CMyThread::kill()
 {
+#ifdef __linux__
+#else
     dprintf(printf("thread terminate: handle %p, tid %d\n", handle, tid);)
+#endif
     underTermination = true;
     unlock();
 #ifdef __linux__
@@ -86,7 +98,10 @@ void CMyThread::kill()
 
 void CMyThread::run_in()
 {
+#ifdef __linux__
+#else
     dprintf(printf("thread entering into the loop: handle %p, tid %d\n", handle, tid);)
+#endif
     while (!underTermination)
     {
         lock();
@@ -95,11 +110,20 @@ void CMyThread::run_in()
         LeaveCriticalSection(&critSection[1 - currentCritSection]);
 #endif
         if (underTermination) break;
+#ifdef __linux__
+#else
         dprintf(printf("thread call run: handle %p, tid %d\n", handle, tid);)
+#endif
         run();
+#ifdef __linux__
+#else
         dprintf(printf("thread run returned: handle %p, tid %d\n", handle, tid);)
+#endif
     }
+#ifdef __linux__
+#else
     dprintf(printf("thread leave the loop will terminate: handle %p, tid %d\n", handle, tid);)
+#endif
 }
 
 void CMyThread::lock()

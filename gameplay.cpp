@@ -62,6 +62,7 @@ gui::IGUIImage* bgImage = 0;
 gui::IGUIImage* hudImage = 0;
 gui::IGUIImage* hudCompassImage = 0;
 gui::IGUIImage* hudInfo = 0;
+gui::IGUIImage* crossImage = 0;
 bool showCompass = false;
 scene::IAnimatedMeshSceneNode* compassArrow = 0;
 scene::ISceneNode* skydome = 0;
@@ -126,8 +127,9 @@ CVehiclePool* vehiclePool = 0;
 
 SCompetitor* playerCompetitor = 0;
 CRaceEngine* raceEngine = 0;
-bool editorMode = true;
 static CRaceEngine* loadedRaceEngine = 0;
+
+TerrainPool* terrainPool = 0;
 
 const char* bgImagesHi[MAX_BGIMAGE+1] =
 {
@@ -252,7 +254,7 @@ void loadGameplay(  const c8* name,
         strcpy(stages[i]->name, bigterrain_name);
         memset(stages[i]->info, 0, sizeof(stages[i]->info));
         stages[i]->stageTime = stageTime;
-        stages[i]->stageNum = stageNum;
+        //stages[i]->stageNum = stageNum;
         //stages[i]->stagePart = stagePart;
         gtime += stageTime;
         stages[i]->gtime = gtime;
@@ -315,7 +317,7 @@ void startGame(int stageNum, SState* state)
     
     bigTerrain = new BigTerrain(stages[stageNum]->name, device, smgr, driver, nWorld,
                                 stages[stageNum]->stageTime, stages[stageNum]->gtime,
-                                skydome, shadowMap, stageNum);
+                                skydome, shadowMap, stageNum, terrainPool);
 
     str = L"Loading: 50%";
     MessageText::addText(str.c_str(), 1, true);
@@ -412,7 +414,11 @@ void startGame(int stageNum, SState* state)
     compassText->setVisible(showCompass);
     compassArrow->setVisible(showCompass);
     hudInfo->setVisible(info_bg);
-    editorSetVisible(display_extra_info);
+    crossImage->setVisible(false);
+    if (editorMode)
+    {
+        editorSetVisible(display_extra_info);
+    }
 /*
     projMat.buildProjectionMatrixOrthoLH(device->getSceneManager()->getActiveCamera()->getFOV(),
         device->getSceneManager()->getActiveCamera()->getFOV(),
@@ -555,7 +561,11 @@ void endGame()
     compassText->setVisible(false);
     compassArrow->setVisible(false);
     hudInfo->setVisible(false);
-    editorSetVisible(false);
+    crossImage->setVisible(false);
+    if (editorMode)
+    {
+        editorSetVisible(false);
+    }
     
     if (isMultiplayer)
         leaveStageToServer();

@@ -191,6 +191,8 @@ int main()
    	    dprintf(printf("DEBUG: %i device run device %p\n", i, device); device->run();)
     }
     */
+    initializeUsedMemory(device);
+
 	core::array<SJoystickInfo> joystickInfo;
 	if(device->activateJoysticks(joystickInfo))
 	{
@@ -232,7 +234,7 @@ int main()
 	}
 
                                           
-    device->setWindowCaption(L"Dakar 2010");
+    device->setWindowCaption(L"Dakar 2011");
 
 	// start the sound engine with default parameters
 #ifdef USE_MY_SOUNDENGINE
@@ -304,7 +306,7 @@ int main()
     }
 
     fpsText = env->addStaticText(L"FPS: ",
-                        core::rect<int>(10,30,70,46),
+                        core::rect<int>(10,30,80,46),
                         info_bg, true, 0, -1, info_bg);
     fpsText->setVisible(false);
     polyText = env->addStaticText(L"POLYS: ",         // 110
@@ -325,25 +327,33 @@ int main()
         versionText->setVisible(false);
     }
     
-    initEditor(env);
+    if (editorMode)
+    {
+        initEditor(env);
+    }
+
+    const int fontH = 25;
+    const int fontO = 10;
 
     ITexture* hudInfoTexture = driver->getTexture("data/hud/info_bg.png");
-	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-73, 7+hudInfoTexture->getSize().Width, screenSize.Height-73+hudInfoTexture->getSize().Height), 0, -1, L"hudInfo");
+//	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-3, 7+350/*hudInfoTexture->getSize().Width*/, screenSize.Height-(fontO)+3/*+hudInfoTexture->getSize().Height*/), 0, -1, L"hudInfo");
+	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-1, 7+hudInfoTexture->getSize().Width, screenSize.Height-(fontO+fontH*3)-1+hudInfoTexture->getSize().Height), 0, -1, L"hudInfo");
+//	hudInfo->setScaleImage(true);
 	hudInfo->setScaleImage(false);
 	hudInfo->setUseAlphaChannel(true);
     hudInfo->setImage(hudInfoTexture);
     hudInfo->setVisible(false);
 
     demageText = env->addStaticText(L"Demage: ",
-                        core::rect<int>(10,screenSize.Height-70,230,screenSize.Height-54),
+                        core::rect<int>(10,screenSize.Height-(fontO+fontH*3),350,screenSize.Height-(fontO+fontH*2)),
                         false, true, 0, -1, false);
     demageText->setVisible(false);
     speedText = env->addStaticText(L"Speed: ",
-                        core::rect<int>(10,screenSize.Height-50,230,screenSize.Height-34),
+                        core::rect<int>(10,screenSize.Height-(fontO+fontH*2),350,screenSize.Height-(fontO+fontH)),
                         false, true, 0, -1, false);
     speedText->setVisible(false);
     timeText = env->addStaticText(L"Time: ",
-                        core::rect<int>(10,screenSize.Height-30,230,screenSize.Height-14),
+                        core::rect<int>(10,screenSize.Height-(fontO+fontH),350,screenSize.Height-fontO),
                         false, true, 0, -1, false);
     timeText->setVisible(false);
 
@@ -442,12 +452,20 @@ this value is not used, it only specifies the amount of default colors available
 */
 //    SColor guicol(255, 111, 85, 23);
     SColor guicol(255, 90, 70, 16);
+    SColor guicol2(255, 255, 255, 255);
 //	env->getSkin()->setColor(EGDC_ACTIVE_CAPTION, guicol);
 //	env->getSkin()->setColor(EGDC_APP_WORKSPACE, guicol);
 	env->getSkin()->setColor(EGDC_BUTTON_TEXT, guicol);
 //	env->getSkin()->setColor(EGDC_GREY_TEXT, guicol);
 //	env->getSkin()->setColor(EGDC_INACTIVE_CAPTION, guicol);
 //	env->getSkin()->setColor(, guicol);
+    demageText->setOverrideFont(fonts[FONT_SPECIAL16]);
+    speedText->setOverrideFont(fonts[FONT_SPECIAL16]);
+    timeText->setOverrideFont(fonts[FONT_SPECIAL16]);
+
+    demageText->setOverrideColor(guicol2);
+    speedText->setOverrideColor(guicol2);
+    timeText->setOverrideColor(guicol2);
 
     MessageText::addText(L"Please wait [            ]", 1);
 
@@ -507,18 +525,27 @@ this value is not used, it only specifies the amount of default colors available
     ItinerHud::init(device, env, screenSize, (int)hudSize);
 
     const int hudCompassPositionX = 10; //hudPositionX - hudCompassSize / 2.f;
-    const int hudCompassPositionY = screenSize.Height-100-(int)hudCompassSize;//(int)hudCompassSize-10;
+    const int hudCompassPositionY = screenSize.Height-(fontO+fontH*3)-30-(int)hudCompassSize;//(int)hudCompassSize-10;
     compassText = env->addStaticText(L"DOUBLE TIME!",
-                        core::rect<int>(hudCompassPositionX, screenSize.Height-90, 210, screenSize.Height-74),
+                        core::rect<int>(hudCompassPositionX, screenSize.Height-(fontO+fontH*3)-20, 210, screenSize.Height-(fontO+fontH*3)-4),
                         info_bg, true, 0, -1, info_bg);
     compassText->setVisible(false);
 	hudCompassImage = env->addImage(core::rect<int>(hudCompassPositionX, hudCompassPositionY,
-                                                    (int)(hudCompassSize)+10, (int)(hudCompassSize)+hudCompassPositionY),
+                                                    (int)(hudCompassSize)+hudCompassPositionX, (int)(hudCompassSize)+hudCompassPositionY),
                                     0, -1, L"hudCompass");
 	hudCompassImage->setScaleImage(true);
 	hudCompassImage->setUseAlphaChannel(true);
     hudCompassImage->setImage(hudCompassTexture);
     hudCompassImage->setVisible(false);
+
+    ITexture* crossTexture = driver->getTexture("data/hud/cross.png");
+	crossImage = env->addImage(core::rect<int>(screenSize.Width/2-10, screenSize.Height/2-10,
+                                               screenSize.Width/2+10, screenSize.Height/2+10),
+                               0, -1, L"cross");
+	crossImage->setScaleImage(false);
+	crossImage->setUseAlphaChannel(true);
+    crossImage->setImage(crossTexture);
+    crossImage->setVisible(false);
 
 /*
     hudCompassImage = new CQuad(vector3df(0.f, 0.f, 0.f), vector3df(1.0f, 1.0f, 0.f));
@@ -643,6 +670,7 @@ this value is not used, it only specifies the amount of default colors available
         myError(3, "Cannot initialize shaders! Maybe your hardware does not support it.");
         return 1;
     }
+    //myError(0, "hello");
     // assert(0); // for shader debug
     
     if (!useCgShaders)
@@ -722,6 +750,7 @@ this value is not used, it only specifies the amount of default colors available
     MessageText::addText(L"Please wait [         *  ]", 1, true);
     printPoolStat();
     vehiclePool = new CVehiclePool(device, smgr, driver, nWorld, soundEngine, "data/vehicles/vehicle_list.txt");
+    //terrainPool = new TerrainPool(12, smgr, driver);
     MessageText::addText(L"Please wait [          * ]", 1, true);
     loadItinerTypes("data/itiner/itiner_types.txt", smgr, driver, nWorld);
     loadCompetitors("data/competitors/car.txt");
@@ -953,12 +982,37 @@ this value is not used, it only specifies the amount of default colors available
             pdprintf(printf("1\n"));
             if (!fpsCam && car && inGame == 0)
             {
-                vector3df campos = (car->getMatrix() * viewpos_cur).getTranslation();
-                vector3df camtar = (car->getMatrix() * viewdest_cur).getTranslation();
+                vector3df campos;
+                vector3df camtar;
+                vector3df centar;
+                bool useCarlosView = false;
+                int carlosNum = 1;
+                
+                if (followCarlos && raceEngine)
+                {
+                    if (raceEngine->getStarters()[carlosNum]->competitor == playerCompetitor) carlosNum--;
+                    if (raceEngine->getStarters()[carlosNum]->vehicle)
+                    {
+                        useCarlosView = true;
+                        printf("%f %f\n", raceEngine->getStarters()[carlosNum]->vehicle->getSpeed()*1.6f, raceEngine->getStarters()[carlosNum]->vehicle->getTorqueReal());
+                    }
+                }
+                
                 //vector3df carpos = car->getMatrix().getTranslation();
                 matrix4 tcentar;
                 tcentar.setTranslation(vector3df(viewdest_cur[12], viewpos_cur[13] , viewdest_cur[14]));
-                vector3df centar = (car->getMatrix() * tcentar).getTranslation();
+                if (!useCarlosView)
+                {
+                    /*vector3df */campos = (car->getMatrix() * viewpos_cur).getTranslation();
+                    /*vector3df */camtar = (car->getMatrix() * viewdest_cur).getTranslation();
+                    /*vector3df */centar = (car->getMatrix() * tcentar).getTranslation();
+                }
+                else
+                {
+                    campos = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * viewpos_cur).getTranslation();
+                    camtar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * viewdest_cur).getTranslation();
+                    centar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * tcentar).getTranslation();
+                }
                 
                 camera->setTarget(camtar);
                 if ((view_num+view_mask)!=0 || !useDynCam || dynCamReset)
@@ -1371,21 +1425,21 @@ this value is not used, it only specifies the amount of default colors available
                         posText->setText(str.c_str());
                         
                     }
-
+/*
                     str = L"Demage: ";
                     str += (int)(car->getDemagePer());
                     str += "%";
                     demageText->setText(str.c_str());
     
                     str = L"Speed: ";
-                    str += (int)(car->getSpeed()*1.6f/*3.0f*/);
+                    str += (int)(car->getSpeed()*1.6f); // 3.0f
                     str += " km/h (";
                     if (gear_type=='a')
                         str += L"A";
                     else
                         str += L"M";
                     str += ": ";
-                    str += (int)(car->getGear()/*1.6/*3.0f*/);
+                    str += (int)(car->getGear()/*1.6); // 3.0f
                     str += ")";
                     speedText->setText(str.c_str());
                     
@@ -1405,10 +1459,12 @@ this value is not used, it only specifies the amount of default colors available
                     //str += day_delta_multi;
                     str += L")";
                     timeText->setText(str.c_str());
-    
+*/    
                     //bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, density_grasses, false);
                 }
+                pdprintf(printf("14c\n"));
                 MessageText::updateText(tick);
+                pdprintf(printf("14cb\n"));
                 ItinerHud::updateItiner(tick);
 
                 lastFPS = fps;
@@ -1416,7 +1472,49 @@ this value is not used, it only specifies the amount of default colors available
                 if (quitGame) break;
                 calculate_day_delta(tick);
           }
-          updateEditor(); // TODO: put back into the one sec. update
+          pdprintf(printf("14d\n"));
+          if (car && bigTerrain)
+          {
+                core::stringw str;
+                str = L"Demage: ";
+                str += (int)(car->getDemagePer());
+                str += "%";
+                demageText->setText(str.c_str());
+        
+                str = L"Speed: ";
+                str += (int)(car->getSpeed()*1.6f/*3.0f*/);
+                str += " km/h (";
+                if (gear_type=='a')
+                    str += L"A";
+                else
+                    str += L"M";
+                str += ": ";
+                str += (int)(car->getGear()/*1.6/*3.0f*/);
+                str += ")";
+                speedText->setText(str.c_str());
+                
+                //u32 endTime = bigTerrain->getEndTime() ? bigTerrain->getEndTime() : tick + bigTerrain->getPenality();
+                u32 diffTime;
+                if (bigTerrain->getTimeEnded())
+                    diffTime = bigTerrain->getCurrentTime();
+                else
+                    diffTime = bigTerrain->getCurrentTime() + bigTerrain->getPenality();//bigTerrain->getStartTime()? (endTime - bigTerrain->getStartTime()):0;
+                // stage time
+                str = L"Time: ";
+                BigTerrain::addTimeToStr(str, diffTime);
+                // stagetime plus global time
+                diffTime += globalTime;
+                str += L" (";
+                BigTerrain::addTimeToStr(str, diffTime);
+                //str += day_delta_multi;
+                str += L")";
+                timeText->setText(str.c_str());
+          }
+          if (editorMode)
+          {
+                pdprintf(printf("14e\n"));
+                updateEditor(); // TODO: put back into the one sec. update
+          }
           pdprintf(printf("15\n"));
           
           if (isMultiplayer)

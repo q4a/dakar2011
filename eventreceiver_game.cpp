@@ -346,6 +346,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                     camera->setTarget(core::vector3df(camtar[12],camtar[13],camtar[14]));
 	                camera->setFarValue(/*bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI*/DEFAULT_FAR_VALUE);
 	                camera->setNearValue(nearValue);
+	                crossImage->setVisible(fpsCam);
                     return true;
                 }
                 return false;

@@ -2,6 +2,7 @@
 // This file is part of the "irrCg".
 // For conditions of distribution and use, see copyright notice in License.txt
 
+#ifndef IRR_CG_7
 #include "irrlicht.h"
 
 #include <Cg/cg.h>
@@ -200,3 +201,4 @@ namespace IrrCg
         Active = vActive;
     }
 }
+#endif // ! IRR_CG_7

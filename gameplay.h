@@ -25,6 +25,7 @@
 #include "VehiclePool.h"
 #include "competitors.h"
 #include "RaceEngine.h"
+#include "TerrainPool.h"
 
 // Irrlicht Namespaces
 using namespace irr;
@@ -93,6 +94,7 @@ extern gui::IGUIImage* bgImage;
 extern gui::IGUIImage* hudImage;
 extern gui::IGUIImage* hudCompassImage;
 extern gui::IGUIImage* hudInfo;
+extern gui::IGUIImage* crossImage;
 extern bool showCompass;
 extern scene::IAnimatedMeshSceneNode* compassArrow;
 extern scene::ISceneNode* skydome;
@@ -170,6 +172,8 @@ extern CVehiclePool* vehiclePool;
 
 extern SCompetitor* playerCompetitor;
 extern CRaceEngine* raceEngine;
+
+extern TerrainPool* terrainPool;
 
 struct SState
 {

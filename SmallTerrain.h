@@ -24,15 +24,13 @@ using namespace gui;
 
 #include <Newton.h>
 
-#define TERRAIN_SCALE tScale
-#define SMALLTERRAIN_HEIGHTMAP_SIZE stHeightmapSize
-#define SMALLTERRAIN_SIZE ((float)SMALLTERRAIN_HEIGHTMAP_SIZE*TERRAIN_SCALE)
 //3840.f
 //#define SMALLTERRAIN_SIZE 3360.f
 //#define SMALLTERRAIN_SIZE 7200.f
-#define TERRAIN_TEXTURE_NUM 6
+#define TERRAIN_TEXTURE_NUM 5
 
 #include "wrappers.h"
+#include "TerrainPool.h"
 
 class BigTerrain;
 class CObjectWire;
@@ -61,7 +59,8 @@ public:
                     int stageNum,
                     BigTerrain* p_bigTerrain,
                     core::array<SObjectPoolIdRepPair> &objectReps, int obj_density,
-                    core::array<CMyRoad*> &bigRoadList);
+                    core::array<CMyRoad*> &bigRoadList,
+                    TerrainPool* p_terrainPool);
        ~SmallTerrain();
        
        void setActive(bool pvisible);
@@ -132,6 +131,9 @@ private:
        
        // ocean
        IAnimatedMeshSceneNode* oceanNode;
+       ITexture* partTexture;
+       //scene::ITerrainSceneNode* lterrain;
+       TerrainPool* m_terrainPool;
 };
 
 #endif // __SMALLTERRAIN_H__

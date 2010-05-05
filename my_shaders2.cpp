@@ -11,7 +11,7 @@
 #include "my_shaders.h"
 #ifndef DISABLE_CG_SHADERS
 
-
+#include "error.h"
 #include <Cg/cg.h>
 
 // IrrCg
@@ -1280,7 +1280,7 @@ void setupShaders2 (IrrlichtDevice* device,
 	{
 		dprintf(printf("WARNING: Pixel shaders disabled "\
 			"because of missing driver/hardware support.\n"));
-            useShaders = useCgShaders = false;
+        useShaders = useCgShaders = useAdvCgShaders = false;
 	}
 	
 	if (!driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0) &&
@@ -1288,8 +1288,27 @@ void setupShaders2 (IrrlichtDevice* device,
 	{
 		dprintf(printf("WARNING: Vertex shaders disabled "\
 			"because of missing driver/hardware support.\n"));
-            useShaders = useCgShaders = false;
+        useShaders = useCgShaders = useAdvCgShaders = false;
 	}
+	
+	if (0 && useAdvCgShaders)
+	{
+        if (driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0) &&
+            driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0))
+        {
+            vs_version = "vs_3_0";
+            ps_version = "ps_3_0";
+
+    	    light_2tex_2_psFileName = "data/shaders/cg/light_2tex_2_adv.cg";
+            light_2tex_2_vsFileName = light_2tex_2_psFileName;
+            myMessage(12, "Your system does support Vertex or Pixel shader 3.0");
+        }
+        else
+        {
+            myMessage(12, "Your system does not support Vertex or Pixel shader 3.0, use 2.0");
+            useAdvCgShaders = false;
+        }
+    }
 
     if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
     {

@@ -131,10 +131,16 @@ struct SAIPoint : public SObjectWrapper
 {
 public:
     SAIPoint(BigTerrain* p_bigTerrain)
-        : SObjectWrapper(p_bigTerrain)//, poolId(ITINER_POOLID_OFFSET)
+        : SObjectWrapper(p_bigTerrain), time(0), distance(0.f)//, poolId(ITINER_POOLID_OFFSET)
     {
     }
     ~SAIPoint() {}
+    
+    void setDistance(float d) {distance = d;}
+    void setTime(u32 t) {time = t;}
+
+    float getDistance() {return distance;}
+    u32 getTime() {return time;}
 
     // comment it out if you don't need the visible stuff
     //virtual void setVisible(bool pvisible) {}
@@ -142,6 +148,8 @@ public:
     //virtual void setNearVisible(){}
     
 private:
+    u32 time;
+    float distance;
 };
 
 #endif // __wrappers_h__

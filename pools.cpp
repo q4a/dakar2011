@@ -251,8 +251,10 @@ struct nameNum
     CMyList<ObjectWrapper*> objectPool;
     IAnimatedMesh* objectMesh;
     IAnimatedMesh* farObjectMesh;
+    int category;
 };
-static CMyList<nameNum*> objectPools;
+//static CMyList<nameNum*> objectPools;
+static core::array<nameNum*> objectPools;
 
 struct SItinerNameTexture
 {
@@ -269,12 +271,13 @@ int createObjectPool(const c8* name,
                     const vector3df& rot,
                     const vector3df& sca,
                     const vector3df& box,
-                    const vector3df& ofs
+                    const vector3df& ofs,
+                    int category
 )
 {
     int ind = 0;
     //printf("create pool: %s, t: %s\n", name, textureName);
-    for (ind = 0; ind < objectPools.length();ind++)
+    for (ind = 0; ind < objectPools.size();ind++)
     {
         if (strcmp(objectPools[ind]->name, name)==0)
         {
@@ -283,12 +286,15 @@ int createObjectPool(const c8* name,
         }
     }
     
-    if (ind == objectPools.length()) // not found pool create new one
+    if (ind == objectPools.size()) // not found pool create new one
     {
         nameNum* newElement = new nameNum;
         strcpy(newElement->name, name);
         newElement->objectMesh = newElement->farObjectMesh = 0;
-        objectPools.addLast(newElement);
+        if (category > 2) category = 2;
+        if (category < 0) category = 0;
+        newElement->category = category;
+        objectPools.push_back(newElement);
         generateElementsToPool(smgr, driver, nWorld,
                             ind, num, type,
                             textureName, fname,
@@ -312,7 +318,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
 {
     c8* name;
     
-    if (poolId >= objectPools.length()) return;
+    if (poolId >= objectPools.size()) return;
     
     name = objectPools[poolId]->name;
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
@@ -764,7 +770,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
 
 void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
 {
-    if (poolId >= objectPools.length()) return 0;
+    if (poolId >= objectPools.size()) return 0;
     
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
     
@@ -821,7 +827,7 @@ void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
 
 void putPoolElement(int poolId, void* arg)
 {
-    if (poolId >= objectPools.length()) return;
+    if (poolId >= objectPools.size()) return;
     
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
     
@@ -872,7 +878,7 @@ void setNearPoolElement(void* arg)
 void printPoolStat()
 {
     printf("Object pool size: %d, grass pool size: %d\n", object_pool_size, grass_pool_size);
-    for (int ind = 0; ind < objectPools.length();ind++)
+    for (int ind = 0; ind < objectPools.size();ind++)
     {
         printf("%d. Poolname: '%s', free objects: %d\n", ind, objectPools[ind]->name, objectPools[ind]->objectPool.length());
     }
@@ -1020,7 +1026,7 @@ SAnimatedMesh* readMySimpleObject(const char* name)
 
 void releasePools()
 {
-    for (int i = 0; i < objectPools.length();i++)
+    for (int i = 0; i < objectPools.size();i++)
     {
         nameNum* delThis = objectPools[i];
         
@@ -1036,7 +1042,7 @@ void releasePools()
             delThis->farObjectMesh->drop();
         delete delThis;
     }
-    objectPools.delList();
+    objectPools.clear();
 
     for (int i = 0; i < treeDesigns.size(); i++)
     {
@@ -1085,6 +1091,7 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
     vector3df sca(1.f,1.f,1.f);
     vector3df box(0.f,0.f,0.f);
     vector3df ofs(0.f,0.f,0.f);
+    int category = 0;
 
     dprintf(printf("Read object types: %s\n", name));
     
@@ -1109,28 +1116,30 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
                         "rot: %f, %f, %f\n" \
                         "sca: %f, %f, %f\n" \
                         "box: %f, %f, %f\n" \
-                        "ofs: %f, %f, %f\n",
+                        "ofs: %f, %f, %f\n" \
+                        "cat: %d\n",
                 meshName, textureName,
                 farMeshName,
                 &rot.X, &rot.Y, &rot.Z,
                 &sca.X, &sca.Y, &sca.Z,
                 &box.X, &box.Y, &box.Z,
-                &ofs.X, &ofs.Y, &ofs.Z
+                &ofs.X, &ofs.Y, &ofs.Z,
+                &category
                 );
-        if (ret < 15)
+        if (ret < 16)
         {
             // no more object
             //printf("|%s| |%s|\n", meshName, textureName);
             break;
         }
         
-        if (i==0)
+        if (i==0) // ai_point
         {
             createObjectPool(meshName, farMeshName,
                               smgr, driver, nWorld,
                               object_pool_size*100, NORMAL,
                               textureName,
-                              rot, sca, box, ofs);
+                              rot, sca, box, ofs, category);
         }
         else
         {
@@ -1140,13 +1149,13 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
                                   smgr, driver, nWorld,
                                   object_pool_size, NORMAL,
                                   textureName,
-                                  rot, sca, box, ofs);
+                                  rot, sca, box, ofs, category);
             else // my tree object, like the grass
                 createObjectPool(meshName, farMeshName,
                                   smgr, driver, nWorld,
                                   grass_pool_size, NORMAL,
                                   textureName,
-                                  rot, sca, box, ofs);
+                                  rot, sca, box, ofs, category);
         }
     }
     fclose(f);
@@ -1164,6 +1173,7 @@ void loadGrassTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, N
     vector3df sca(1.f,1.f,1.f);
     vector3df box(0.f,0.f,0.f);
     vector3df ofs(0.f,0.f,0.f);
+    int category = 0;
 
     dprintf(printf("Generate grass types: %s\n", name));
 
@@ -1177,13 +1187,13 @@ void loadGrassTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, N
 
     while (true)
     {
-        ret = fscanf(f, "%s\n%s\n", objectName, textureName);
+        ret = fscanf(f, "%s\n%s\ncat: %d\n", objectName, textureName, &category);
         createObjectPool(objectName, "null",
                          smgr, driver, nWorld,
                          grass_pool_size, GRASS,
                          textureName,
-                         rot, sca, box, ofs);
-        if (ret < 2)
+                         rot, sca, box, ofs, category);
+        if (ret < 3)
         {
             break;
         }
@@ -1211,6 +1221,7 @@ void loadTreeTypes(const c8* treetype,
     vector3df sca(1.f,1.f,1.f);
     vector3df box(0.f,0.f,0.f);
     vector3df ofs(0.f,0.f,0.f);
+    int category = 0;
     
     dprintf(printf("Read tree types: %s\n", treetype));
 
@@ -1239,14 +1250,16 @@ void loadTreeTypes(const c8* treetype,
                         "rot: %f, %f, %f\n" \
                         "sca: %f, %f, %f\n" \
                         "box: %f, %f, %f\n" \
-                        "ofs: %f, %f, %f\n",
+                        "ofs: %f, %f, %f\n" \
+                        "cat: %d\n",
                         meshName, treetexture, leaftexture, billtexture,
                         &rot.X, &rot.Y, &rot.Z,
                         &sca.X, &sca.Y, &sca.Z,
                         &box.X, &box.Y, &box.Z,
-                        &ofs.X, &ofs.Y, &ofs.Z);
+                        &ofs.X, &ofs.Y, &ofs.Z,
+                        &category);
     
-        if (ret < 16)
+        if (ret < 17)
         {
             //printf("treetypes file unable to read elements: %s\n", treetype);
             //fclose(f);
@@ -1271,7 +1284,7 @@ void loadTreeTypes(const c8* treetype,
                           smgr, driver, nWorld,
                           object_pool_size, TREE,
                           (char*)i,
-                          rot, sca, box, ofs);
+                          rot, sca, box, ofs, category);
     }
     
     fclose(f);
@@ -1295,6 +1308,7 @@ void loadMyTreeTypes(const c8* treetype,
     vector3df sca(1.f,1.f,1.f);
     vector3df box(0.f,0.f,0.f);
     vector3df ofs(0.f,0.f,0.f);
+    int category = 0;
 
     vector3df leafOffset(0.f,0.f,0.f);
     core::dimension2d<f32> leafSize(5.f, 5.f);
@@ -1328,16 +1342,18 @@ void loadMyTreeTypes(const c8* treetype,
                         "rot: %f, %f, %f\n" \
                         "sca: %f, %f, %f\n" \
                         "box: %f, %f, %f\n" \
-                        "ofs: %f, %f, %f\n",
+                        "ofs: %f, %f, %f\n" \
+                        "cat: %d\n",
                         meshName, treetexture, leaftexture,
                         &leafOffset.X, &leafOffset.Y, &leafOffset.Z,
                         &leafSize.Width, &leafSize.Height,
                         &rot.X, &rot.Y, &rot.Z,
                         &sca.X, &sca.Y, &sca.Z,
                         &box.X, &box.Y, &box.Z,
-                        &ofs.X, &ofs.Y, &ofs.Z);
+                        &ofs.X, &ofs.Y, &ofs.Z,
+                        &category);
     
-        if (ret < 16)
+        if (ret < 21)
         {
             //printf("treetypes file unable to read elements: %s\n", treetype);
             //fclose(f);
@@ -1360,7 +1376,7 @@ void loadMyTreeTypes(const c8* treetype,
                          smgr, driver, nWorld,
                          object_pool_size, MY_TREE,
                          (char*)i,
-                         rot, sca, box, ofs);
+                         rot, sca, box, ofs, category);
     }
     
     fclose(f);
@@ -1405,7 +1421,7 @@ void loadItinerTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
 int getPoolIdFromName(const char* name)
 {
     int ind = 0;
-    for (ind = 0; ind < objectPools.length();ind++)
+    for (ind = 0; ind < objectPools.size();ind++)
     {
         if (strstr(objectPools[ind]->name, name))
         {
@@ -1413,19 +1429,25 @@ int getPoolIdFromName(const char* name)
             break; // we found the pool return the id
         }
     }
-    if (ind == objectPools.length()) ind = -1;
+    if (ind == objectPools.size()) ind = -1;
     return ind;
 }
 
 const char* getPoolNameFromId(int ind)
 {
-    if (ind < 0 || ind >=objectPools.length() ) return "null";
+    if (ind < 0 || ind >=objectPools.size() ) return "null";
     return objectPools[ind]->name;
+}
+
+const int getPoolCategoryFromId(int ind)
+{
+    if (ind < 0 || ind >=objectPools.size() ) return -1;
+    return objectPools[ind]->category;
 }
 
 int getPoolsSize()
 {
-    return objectPools.length();
+    return (int)objectPools.size();
 }
 
 int getItinerIdFromName(const char* name)
@@ -1452,7 +1474,7 @@ const char* getItinerNameFromId(int ind)
 
 int getItinerTypesSize()
 {
-    return itinerTypes.size();
+    return (int)itinerTypes.size();
 }
 
 video::ITexture* getItinerTextureFromId(int ind)

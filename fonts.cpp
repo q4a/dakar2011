@@ -50,6 +50,10 @@ void setupFonts(gui::IGUIEnvironment* env)
     fonts[FONT_SPECIALLARGEBOLD] = env->getFont("data/fonts/comic_12px_b.xml");
     fonts[FONT_SPECIALEXTRALARGEBOLD] = env->getFont("data/fonts/comic_14px_b.xml");
 
+    fonts[FONT_SPECIAL14] = env->getFont("data/fonts/verdana_14px_b_a.xml");
+    fonts[FONT_SPECIAL16] = env->getFont("data/fonts/verdana_16px_b_a.xml");
+    fonts[FONT_SPECIAL18] = env->getFont("data/fonts/verdana_18px_b_a.xml");
+
     assert(fonts[FONT_NORMAL]);
 }
 

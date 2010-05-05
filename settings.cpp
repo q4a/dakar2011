@@ -36,6 +36,7 @@ bool shadows = true;
 int shadow_map_size = 2048;
 bool useShaders = true;
 bool useCgShaders = true;
+bool useAdvCgShaders = true;
 bool use_detailed_terrain = true;
 bool use_highres_textures = true;
 video::E_DRIVER_TYPE driverType = video::EDT_DIRECT3D9;
@@ -123,6 +124,10 @@ float obj_wire_size = 128.f;
 float obj_wire_mult = 4.f;
 
 bool show_names = true;
+
+bool editorMode = false;
+bool followCarlos = false;
+unsigned int terrain_tesselation = 1;
 
 void readSettings(const char* fileName)
 {
@@ -215,6 +220,13 @@ void readSettings(const char* fileName)
         {
             ret = fscanf(f, "%d\n", &LOD_distance);
             if ( ret <=0 ) break;
+        } else
+        if (strcmp(key,"terrain_tesselation")==0)
+        {
+            ret = fscanf(f, "%u\n", &terrain_tesselation);
+            if ( ret <=0 ) break;
+            if (terrain_tesselation == 0) terrain_tesselation = 1;
+            if (terrain_tesselation > 16) terrain_tesselation = 16;
         } else
         if (strcmp(key,"density_objects")==0)
         {
@@ -608,6 +620,15 @@ void readSettings(const char* fileName)
             else
                 useCgShaders = false;
         } else
+        if (strcmp(key,"adv_cg_shaders")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                useAdvCgShaders = true;
+            else
+                useAdvCgShaders = false;
+        } else
         if (strcmp(key,"use_detailed_terrain")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -724,6 +745,24 @@ void readSettings(const char* fileName)
                 show_names = true;
             else
                 show_names = false;
+        } else
+        if (strcmp(key,"editor_mode")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                editorMode = true;
+            else
+                editorMode = false;
+        } else
+        if (strcmp(key,"follow_carlos")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                followCarlos = true;
+            else
+                followCarlos = false;
         } else
         if (strcmp(key,"trace_net")==0)
         {
@@ -849,6 +888,8 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "LOD_distance: %d\n", LOD_distance);
     if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "terrain_tesselation: %u\n", terrain_tesselation);
+    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "density_objects: %d\n", density_objects);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "density_grasses: %d\n", density_grasses);
@@ -961,6 +1002,8 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "cg_shaders: %s\n", useCgShaders?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "adv_cg_shaders: %s\n", useAdvCgShaders?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_detailed_terrain: %s\n", use_detailed_terrain?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_highres_textures: %s\n", use_highres_textures?"yes":"no");
@@ -986,6 +1029,10 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "draw_hud: %s\n", draw_hud?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "show_names: %s\n", show_names?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "editor_mode: %s\n", editorMode?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "follow_carlos: %s\n", followCarlos?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "trace_net: %s\n", trace_net?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}

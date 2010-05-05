@@ -23,6 +23,7 @@
 #include "competitors.h"
 #include "MyRoad.h"
 #include "itiner_hud.h"
+#include "error.h"
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -44,7 +45,8 @@ extern core::vector3df terrainScale;//(30.0f, 1.0f, 30.0f);	// scale
 BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p_smgr,
                        IVideoDriver* p_driver, NewtonWorld* p_nWorld,
                        u32 pstageTime, u32 pgtime, scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap,
-                       int p_stageNum)
+                       int p_stageNum,
+                       TerrainPool* p_terrainPool)
            : nWorld(p_nWorld), map(0), max_x(0), max_y(0), last_x(-1), last_y(-1),
              ov_last_x(-1), ov_last_y(-1),
              stHeightmapSize(0), tScale(0.f), /*roadMeshes(0),*/ roadWrappers_old(), /*numOfRoads(0),*/
@@ -55,12 +57,13 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              //startTime(0), endTime(0),
              timeStarted(false), timeEnded(false), lastTick(0), currentTime(0),
              cps(0), penality(0),
-             stageTime(pstageTime), gtime(pgtime),
+             stageTime(pstageTime), stageLength(0.f), gtime(pgtime),
              densityMap(0), objectWire(0),
              heightMap(0), textureMap(0), shadowMap(p_shadowMap),
              cpPos(), cpTime(), cpTimed(), cpGate(),
              objectReps(), stageNum(p_stageNum), smallTerrainsForUpdate(), smallTerrainsForUpdateLock(),
-             roadList(), activeItinerPoints(), aiPoints(), speed(60.0f), skydome(p_skydome)
+             roadList(), activeItinerPoints(), aiPoints(), speed(60.0f), skydome(p_skydome),
+             m_terrainPool(p_terrainPool)
              /*,
              bodyl(0), collisionl(0),
              bodyr(0), collisionr(0),
@@ -109,6 +112,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         return;
     }
     dprintf(printf("Small terrain size: %u, Terrain scale: %f\n", stHeightmapSize, tScale);)
+    assert(fabsf(tScale-TERRAIN_SCALE)<0.01f && stHeightmapSize == SMALLTERRAIN_HEIGHTMAP_SIZE);
 
     // read heightmap, densitymap and texturemap
     ret = fscanf(f, "%s\n%s\n%s\n", heightMapName, densityMapName, textureMapName);
@@ -371,7 +375,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     loadObjects(objectfileName, smgr, driver);
     if (!use_mipmaps)
     	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
-    
+
+    calculateAIPointTimes();    
 
     str = L"Loading: 48%";
     MessageText::addText(str.c_str(), 1, true);
@@ -521,6 +526,43 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
 */   
     
     NewtonSetWorldSize (nWorld, (float*)boxP0, (float*)boxP1);
+
+// MEMORY TEST
+//#define MEMORY_TEST
+#ifdef MEMORY_TEST
+    const int smallMapsCnt = 10;
+    SmallTerrain** smallTerrains = new SmallTerrain*[smallMapsCnt];
+    u32 tm = 0;
+    u32 fm = 0;
+    
+    myMessage(0, "Begin memory test, watch memory usage. Start create %d small terrains\nMemory: %u", smallMapsCnt, getUsedMemory()/(1024));
+    
+    for (int i = 0; i < smallMapsCnt; i++)
+    {
+        smallTerrains[i] = new SmallTerrain(
+           heightMap, densityMap, textureMap, textures, this->shadowMap,
+           smgr, driver, nWorld,
+           this->skydome,
+           i, 2, max_x, max_y,
+           stHeightmapSize, tScale,                           
+           this->stageNum,
+           this,
+           objectReps, 0, roadList, m_terrainPool);
+    }
+    
+    myMessage(1, "%d small terrains are created. Now free them.\nMemory: %u", smallMapsCnt, getUsedMemory()/(1024));
+    
+    for (int i = 0; i < smallMapsCnt; i++)
+    {
+        delete smallTerrains[i];
+    }
+
+    myMessage(1, "Test end.\nMemory: %u", getUsedMemory()/(1024));
+
+    delete [] smallTerrains;
+
+#endif // MEMORY_TEST
+// END MEMORY TEST
 }
 
 BigTerrain::~BigTerrain()
@@ -1002,7 +1044,7 @@ float BigTerrain::getHeight(float x, float y) const
     return map[_x + (max_x*_y)]->terrain->getHeight(x, y);
 }
 
-float BigTerrain::getDensity(float x, float y) const
+float BigTerrain::getDensity(float x, float y, int category) const
 {
     int _x = (int)(x / TERRAIN_SCALE);
     int _y = (int)(y / TERRAIN_SCALE);
@@ -1010,9 +1052,26 @@ float BigTerrain::getDensity(float x, float y) const
                        _y < 0 || _y >= densityMap->getDimension().Height)
        return 0;
 
-    pdprintf(printf("%d %d aver: %d\n", _x, _y, densityMap->getPixel(_x, _y).getAverage()));
+    u32 ret = 0;
+    switch (category)
+    {
+        case 0:
+            ret = densityMap->getPixel(_x, _y).getRed();
+            break;
+        case 1:
+            ret = densityMap->getPixel(_x, _y).getGreen();
+            break;
+        case 2:
+            ret = densityMap->getPixel(_x, _y).getBlue();
+            break;
+        default:
+            ret = densityMap->getPixel(_x, _y).getAverage();
+            break;
+    }
+    
+    pdprintf(printf("%d %d ret: %d (cat: %d)\n", _x, _y, ret, category));
 
-    return (float)(densityMap->getPixel(_x, _y).getAverage())/255.f;
+    return ((float)(ret))/255.f;
 }
 
 scene::ISceneNode* BigTerrain::getTerrain(float x, float y) const
@@ -1415,6 +1474,9 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
     int percentage = 50;
     core::stringw str;
     
+    int added = 0;
+    int removed = 0;
+    
     dprintf(printf("-----------\nupdate maps begin\n------------\n");)
     
     smallTerrainsForUpdateLock.lock();
@@ -1430,6 +1492,7 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
             {
                 if (map[x + (max_x*y)] == 0)
                 {
+                    added++;
                     map[x + (max_x*y)] = 
                        new SmallTerrain(
                            heightMap, densityMap, textureMap, textures, this->shadowMap,
@@ -1439,7 +1502,7 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
                            stHeightmapSize, tScale,                           
                            this->stageNum,
                            this,
-                           objectReps, obj_density, roadList);
+                           objectReps, obj_density, roadList, m_terrainPool);
                 }
                 smallTerrainsForUpdateLock.lock();
                 smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
@@ -1457,13 +1520,15 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
             {
                 if (map[x + (max_x*y)])
                 {
+                    removed++;
                     delete map[x + (max_x*y)];
                     map[x + (max_x*y)] = 0;
                 }
             }
         }
     }
-    dprintf(printf("-----------\nupdate maps end\n------------\n");)
+    //myMessage(3, "Added maps: %d, removed maps: %d", added, removed);
+    dprintf(printf("-----------\nupdate maps end added: %d, removed: %d\n------------\n", added, removed);)
 }
 
 void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
@@ -1495,6 +1560,20 @@ void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
                     smallTerrainsForUpdateLock.lock();
                     smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
                     smallTerrainsForUpdateLock.unlock();
+                    //for (int i = 0; i < mapsQueue.size();i++)
+                    for (CMyList<SMapsQueueElement*>::element* iter = mapsQueue.getIterator();
+                          iter != mapsQueue.getEnd();
+                          iter = iter->next)
+                    {
+                        if (iter->data->x == x && iter->data->y == y)
+                        {
+                            assert(iter->data->visible==false);
+                            delete iter->data;
+                            iter->data = 0;
+                            mapsQueue.del(iter);
+                            break;
+                        }
+                    }
                 }
             }
             else
@@ -1538,7 +1617,7 @@ void BigTerrain::checkMapsQueue()
                        stHeightmapSize, tScale,                           
                        this->stageNum,
                        this,
-                       objectReps, obj_density, roadList);
+                       objectReps, obj_density, roadList, m_terrainPool);
                 dprintf(printf("new map(%d, %d): %p\n", x, y, map[x + (max_x*y)]);)
                 smallTerrainsForUpdateLock.lock();
                 smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
@@ -1625,7 +1704,7 @@ void BigTerrain::saveObjects(const c8* name)
         return;       
     }
 
-
+    // write only itiner points
     for (int i = 0; i < objectWrappers.size(); i++)
     {
         if (objectWrappers[i]->getPool()>=ITINER_POOLID_OFFSET)
@@ -1636,17 +1715,27 @@ void BigTerrain::saveObjects(const c8* name)
                 // no more object
                 break;
             }
-        }
-        else
-        {
-            ret = fprintf(f, "fix: %s", getPoolNameFromId(objectWrappers[i]->getPool()));
-            if (ret < 1)
+            ret = fprintf(f, " %f %f\n", objectWrappers[i]->getPosition().X, objectWrappers[i]->getPosition().Z);
+            if (ret < 2)
             {
                 // no more object
+                printf("objects file unexpectedly ended at write: %s\n", name);
                 break;
             }
         }
-        ret = fprintf(f, " %f %f\n", objectWrappers[i]->getPosition().X, objectWrappers[i]->getPosition().Z);
+    }
+
+    // write ai points
+    for (int i = 0; i < aiPoints.size(); i++)
+    {
+        ret = fprintf(f, "fix: %s", getPoolNameFromId(aiPoints[i]->getPool()));
+        if (ret < 1)
+        {
+            // no more object
+            break;
+        }
+
+        ret = fprintf(f, " %f %f\n", aiPoints[i]->getPosition().X, aiPoints[i]->getPosition().Z);
         if (ret < 2)
         {
             // no more object
@@ -1655,6 +1744,49 @@ void BigTerrain::saveObjects(const c8* name)
         }
     }
 
+    // write only ai points inside object wrappers
+    for (int i = 0; i < objectWrappers.size(); i++)
+    {
+        if (objectWrappers[i]->getPool() == 0)
+        {
+            ret = fprintf(f, "fix: %s", getPoolNameFromId(objectWrappers[i]->getPool()));
+            if (ret < 1)
+            {
+                // no more object
+                break;
+            }
+            ret = fprintf(f, " %f %f\n", objectWrappers[i]->getPosition().X, objectWrappers[i]->getPosition().Z);
+            if (ret < 2)
+            {
+                // no more object
+                printf("objects file unexpectedly ended at write: %s\n", name);
+                break;
+            }
+        }
+    }
+
+    // write only non-itiner and non-ai points
+    for (int i = 0; i < objectWrappers.size(); i++)
+    {
+        if (objectWrappers[i]->getPool() < ITINER_POOLID_OFFSET && objectWrappers[i]->getPool() != 0)
+        {
+            ret = fprintf(f, "fix: %s", getPoolNameFromId(objectWrappers[i]->getPool()));
+            if (ret < 1)
+            {
+                // no more object
+                break;
+            }
+            ret = fprintf(f, " %f %f\n", objectWrappers[i]->getPosition().X, objectWrappers[i]->getPosition().Z);
+            if (ret < 2)
+            {
+                // no more object
+                printf("objects file unexpectedly ended at write: %s\n", name);
+                break;
+            }
+        }
+    }
+
+    // write random objects
     for (int i = 0; i < objectReps.size(); i++)
     {
         // fix positioned objects
@@ -1977,7 +2109,7 @@ void BigTerrain::doCache()
                        stHeightmapSize, tScale,                           
                        this->stageNum,
                        this,
-                       objectReps, 0, roadList);
+                       objectReps, 0, roadList, m_terrainPool);
             delete st;
 
             str = L"Do caching: x: ";
@@ -1992,4 +2124,23 @@ void BigTerrain::doCache()
         }
     }
     dprintf(printf("-----------\ndo cache end\n------------\n");)
+}
+
+void BigTerrain::calculateAIPointTimes()
+{
+    float distance = 0.f;
+    for (int i = 1; i < aiPoints.size(); i++)
+    {
+        vector2df pcp(aiPoints[i-1]->getPosition().X,aiPoints[i-1]->getPosition().Z);
+        vector2df cp(aiPoints[i]->getPosition().X,aiPoints[i]->getPosition().Z);
+        float diff = pcp.getDistanceFrom(cp);
+        
+        distance += diff;
+        aiPoints[i]->setDistance(distance);
+    }
+    for (int i = 1; i < aiPoints.size(); i++)
+    {
+        aiPoints[i]->setTime((u32)((float)stageTime*(aiPoints[i]->getDistance()/distance)));
+    }
+    stageLength = distance;
 }

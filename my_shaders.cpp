@@ -154,8 +154,7 @@ void setupShaders (IrrlichtDevice* device,
     const c8* smoke_psFileName; // filename for the pixel shader
 #define NULLSTRING 0    
 #else
-#ifdef __linux__
-//_if_old_irrlicht_svn_
+#ifdef __linux___if_old_irrlicht_svn_
 	core::string<c16> light_tex_vsFileName; // filename for the vertex shader
 	core::string<c16> light_tex_psFileName; // filename for the pixel shader
 
