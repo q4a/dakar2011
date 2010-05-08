@@ -26,7 +26,7 @@ CG_DEF =
 
 # general compiler settings
 CPPFLAGS = -I. -I$(IRRLICHT_DIR)/include -I$(IRRLICHT_DIR)/source/Irrlicht -I/usr/X11R6/include -I$(IRRKALNG_DIR)/include -I$(NEWTON_DIR) -I$(CG_DIR)/include
-CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DMY_DEBUG -DUSE_EDITOR -DIRR_CG_7
+CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DMY_DEBUG -DUSE_EDITOR -DIRR_CG_8
 #CXXFLAGS = -g -Wall
 
 #default target is Linux
@@ -51,7 +51,7 @@ SUFFIXES : .o .cpp
 
 all_linux all_win32: $(OBJS)
 	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
-#	$(CXX) -D__my_server__ -o own_server_udp own_server_udp.cpp
+	$(CXX) -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
 #$(warning Building...)
 #$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(srcs) -o $(DESTNAME) $(LDFLAGS)
 
@@ -61,5 +61,6 @@ clean: clean_linux clean_win32
 clean_linux clean_win32:
 	@$(RM) $(OBJS)
 	@$(RM) $(DESTNAME)
+	@$(RM) server/own_server_udp
 
 .PHONY: all all_win32 clean clean_linux clean_win32

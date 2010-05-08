@@ -22,9 +22,9 @@
 #include <arpa/inet.h>
 #include <sys/wait.h>
 #include <signal.h>
-#include "multiplayer.h"
+#include "../multiplayer.h"
 
-#define STAGE_NUM 30
+#define STAGE_NUM 14
 
 struct SCarDataWrapper* carDataWrappers[STAGE_NUM][CAR_NUM] = {0};
 int sockfd = 0;

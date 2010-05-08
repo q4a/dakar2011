@@ -2,8 +2,6 @@
 // This file is part of the "irrCg".
 // For conditions of distribution and use, see copyright notice in License.txt
 
-#ifndef DISABLE_CG_SHADERS
-
 #include "irrlicht.h"
 
 #include <Cg/cg.h>
@@ -429,7 +427,7 @@ namespace IrrCg
         if(mRenderer)
         mRenderer->drop();
 
-        mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(BaseMaterial),mCallback);
+        mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(BaseMaterial),mCallback, false);
 
         CGerror Error;
 
@@ -861,4 +859,3 @@ namespace IrrCg
         return true;
     }
 }
-#endif /* DISABLE_CG_SHADERS */

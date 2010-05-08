@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "IrrCgMaterial.h"
+#include "IrrCgSceneNode.h"
 
 /*! \mainpage irrCg 0.7 documentation
  *
@@ -62,6 +63,9 @@ namespace IrrCg
 
         //! Disable shader.
         virtual void DisableShader( CGprofile profile ) = 0;
+
+        //! Disable effect.
+        virtual void DisableEffect() = 0;
 
         //! Enable texture for shader.
         virtual void EnableTexture( CGparameter param,irr::video::ITexture* Tex2D ) = 0;
@@ -153,6 +157,7 @@ namespace IrrCg
         void LoadProgram( CGprogram program,bool paramShadowing = 0 );
         void EnableShader( CGprogram program,CGprofile profile );
         void DisableShader( CGprofile profile );
+        void DisableEffect();
 
         // Textures Functions.
         void EnableTexture( CGparameter param,irr::video::ITexture* Tex2D );
@@ -210,6 +215,7 @@ namespace IrrCg
         void LoadProgram( CGprogram program,bool paramShadowing = 0 );
         void EnableShader( CGprogram program,CGprofile profile );
         void DisableShader( CGprofile profile );
+        void DisableEffect();
 
         // Textures Functions.
         void EnableTexture( CGparameter param,irr::video::ITexture* Tex2D );
@@ -261,7 +267,7 @@ namespace IrrCg
         virtual void OnSetMaterial( const irr::video::SMaterial& material ) {};
 
         //! Like irr::video::IShaderConstantSetCallBack::OnSetConstants(), but for a Cg shaders.
-        virtual void OnSetConstants( ICgServices* services,CGprogram Vertex,CGprogram Fragment,const irr::video::SMaterial& Material ) = 0;
+        virtual void OnSetConstants( ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Fragment,const irr::video::SMaterial& Material ) = 0;
     };
 
     //! Like ICgShaderConstantSetCallBack, but with special OnSetConstants function for a Cg shaders created from material file.
@@ -281,7 +287,7 @@ namespace IrrCg
         std::vector<ICgMaterialTexture*> Texture;
 
         //! Like irr::video::IShaderConstantSetCallBack::OnSetConstants(), but for a Cg shaders created from material file.
-        virtual void OnSetConstants( ICgServices* services,CGprogram Vertex,CGprogram Fragment,const irr::video::SMaterial& Material );
+        virtual void OnSetConstants( ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Fragment,const irr::video::SMaterial& Material );
 
     private:
         //! This store pointer to ICgShaderConstantSetCallBack.
@@ -343,10 +349,18 @@ namespace IrrCg
         //! \param args: List with special parameters for compiler.
         irr::s32 addCgShaderMaterialFromMaterialFile( const irr::c8* Material,ICgMaterialConstantSetCallBack* &mCallback,ICgShaderConstantSetCallBack* Callback = 0,const char ** args = 0 );
 
+        irr::s32 addCgEffectFromFiles( const irr::c8* EffectProgram, ICgShaderConstantSetCallBack* callback = 0, irr::video::E_MATERIAL_TYPE baseMaterial = irr::video::EMT_SOLID, const char ** args = 0 );
+
         //! Return pointer to ICgServices.
         ICgServices* getCgServices();
 
     private:
+        //! List with Cg programs.
+        std::vector<CGprogram*> ProgramsList;
+
+        //! List with Cg effects.
+        std::vector<CGeffect*> EffectsList;
+
         //! This store pointer to ICgServices.
         ICgServices* CgServices;
     };
@@ -356,10 +370,10 @@ namespace IrrCg
     {
     public:
         //! Constructor.
-        ICgMaterialRenderer(ICgServices* services,irr::video::IMaterialRenderer* baseMaterial,ICgShaderConstantSetCallBack* callback);
+        ICgMaterialRenderer(ICgServices* vCgServices, irr::video::IMaterialRenderer* vBaseMaterial, ICgShaderConstantSetCallBack* vCallback, bool vIsEffect);
 
         //! Destructor.
-        ~ICgMaterialRenderer();// {};
+        ~ICgMaterialRenderer();
 
         //! This store a Cg Vertex Program.
         CGprogram VertexProgram;
@@ -372,6 +386,15 @@ namespace IrrCg
 
         //! This store a Cg Pixel Profile.
         CGprofile PixelProfile;
+
+        //! This store an Effect Program.
+        CGeffect Effect;
+
+        //! This store a Technique.
+        CGtechnique Technique;
+
+        //! This store a current Pass.
+        CGpass Pass;
 
         //! Like IMaterialRenderer::OnSetMaterial(), but for a Cg shaders.
         virtual void OnSetMaterial(const irr::video::SMaterial& material, const irr::video::SMaterial& lastMaterial,bool resetAllRenderstates, irr::video::IMaterialRendererServices* services);
@@ -386,17 +409,23 @@ namespace IrrCg
         virtual bool isTransparent() const;
 
     protected:
-        //! This store pointer to Type of standard Irrlicht Material Renderer eg. Solid.
+        //! This store a pointer to Type of standard Irrlicht Material Renderer eg. Solid.
         irr::video::IMaterialRenderer* BaseMaterial;
 
-        //! This store pointer to ICgShaderConstantSetCallBack.
-        ICgShaderConstantSetCallBack* CallBack;
+        //! This store a pointer to MaterialRenderer services.
+        irr::video::IMaterialRendererServices* RendererServices;
+
+        //! This store a pointer to ICgShaderConstantSetCallBack.
+        ICgShaderConstantSetCallBack* Callback;
 
         //! This store a Material.
         irr::video::SMaterial Material;
 
-        //! This store pointer to ICgServices.
+        //! This store a pointer to ICgServices.
         ICgServices* CgServices;
+
+        //! True, if we use CgFX in this renderer.
+        bool IsEffect;
     };
 }
 

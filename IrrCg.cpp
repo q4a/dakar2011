@@ -2,11 +2,16 @@
 // This file is part of the "irrCg".
 // For conditions of distribution and use, see copyright notice in License.txt
 
+// You have to define IrrCgWindows, if You compile on Windows. Require Windows PlatformSDK.
+// You have to define IrrCgLinux, if You compile on Linux.
+
+// You have to define IrrCgD3D9, if You need Cg support for Direct3D program. Require DirectX SDK.
+// You have to define IrrCgOGL, if You need Cg support for OpenGL program.
+
 // You have to define it, if You compile on Windows. Require Windows PlatformSDK.
-#ifndef DISABLE_CG_SHADERS
 #ifndef __linux__
 #define _IRR_COMPILE_WITH_DIRECT3D_9_
-#define IrrCgWin32
+#define IrrCgWindows
 
 // You have to define it, if You compile on Linux.
 // #define IrrCgLinux
@@ -26,13 +31,15 @@
 // Irrlicht Header
 #include "irrlicht.h"
 
-#ifdef IrrCgWin32
+#ifdef IrrCgWindows
 #include <windows.h>
 #endif
 
 #include <Cg/cg.h>
 
 #ifdef IrrCgOGL
+#define GL_GLEXT_LEGACY 1
+#include <GL/gl.h>
 #include <Cg/cgGL.h>
 #endif
 
@@ -46,11 +53,11 @@
 #include "CD3D9Texture.h"
 #endif
 #ifdef IrrCgOGL
-#ifdef __linux__
-typedef void (APIENTRYP PFNGLPROVOKINGVERTEXPROC) (GLenum mode);
-typedef void (APIENTRYP PFNGLPROVOKINGVERTEXEXTPROC) (GLenum mode);
-#endif
+#if IRRLICHT_VERSION_MINOR < 7
 #include "COpenGLDriver.h"
+#else
+#include "glext.h"
+#endif
 #include "COpenGLTexture.h"
 #endif
 
@@ -71,16 +78,16 @@ using namespace video;
 using namespace std;
 using namespace IrrCg;
 
-#ifndef IrrCgSharedLib
+#ifdef IrrCgWindows
 
 // Get OpenGL Texture Name. Like standard Irrlicht getOpenGLTextureName().
-#ifndef __linux__
-#ifdef IrrCgOGL // duplicate
+#ifdef IrrCgOGL
 GLuint irr::video::COpenGLTexture::getOpenGLTextureName() const
 {
     return TextureName;
 }
-#if IRRLICHT_VERSION_MINOR > 5
+
+#if IRRLICHT_VERSION_MINOR < 7
 // Set OpenGL Active Texture. Like standard Irrlicht OpenGL setActiveTexture().
 bool irr::video::COpenGLDriver::setActiveTexture(u32 stage, const video::ITexture* texture)
 {
@@ -115,46 +122,9 @@ bool irr::video::COpenGLDriver::setActiveTexture(u32 stage, const video::ITextur
 	}
 	return true;
 }
-#else
-// Set OpenGL Texture. Like standard Irrlicht OpenGL setTexture().
-bool irr::video::COpenGLDriver::setTexture(u32 stage, const video::ITexture* texture)
-{
-	if (stage >= MaxTextureUnits)
-		return false;
+#endif
 
-	if (CurrentTexture[stage]==texture)
-		return true;
-
-	if (MultiTextureExtension)
-		extGlActiveTexture(GL_TEXTURE0_ARB + stage);
-
-	CurrentTexture[stage]=texture;
-
-	if (!texture)
-	{
-		glDisable(GL_TEXTURE_2D);
-		return true;
-	}
-	else
-	{
-		if (texture->getDriverType() != EDT_OPENGL)
-		{
-			glDisable(GL_TEXTURE_2D);
-			printf("Fatal Error: Tried to set a texture not owned by this driver.");
-			return false;
-		}
-
-		glEnable(GL_TEXTURE_2D);
-		glBindTexture(GL_TEXTURE_2D,
-			static_cast<const COpenGLTexture*>(texture)->getOpenGLTextureName());
-	}
-	return true;
-}
-#endif // version
-
-#endif // ogl
-
-#endif // ! linux
+#endif // IrrCgOGL
 
 // Get Direct3D Texture Name. Like standard Irrlicht getDX9Texture().
 #ifdef IrrCgD3D9
@@ -162,9 +132,9 @@ IDirect3DBaseTexture9* irr::video::CD3D9Texture::getDX9Texture() const
 {
     return Texture;
 }
-#endif
+#endif // IrrCgD3D9
 
-#endif
+#endif // IrrCgWindows
 
 namespace IrrCg
 {
@@ -228,6 +198,9 @@ namespace IrrCg
     {
         cgGLDisableProfile( profile );
     }
+    void ICgOGLServices::DisableEffect()
+    {
+    }
     // Textures Functions.
     void ICgOGLServices::EnableTexture( CGparameter param,irr::video::ITexture* Tex2D )
     {
@@ -253,12 +226,10 @@ namespace IrrCg
             ExtensionHandler->extGlActiveTexture(GL_TEXTURE0_ARB + Stage);
             glBindTexture(GL_TEXTURE_2D, Texture);
 
+            #if IRRLICHT_VERSION_MINOR < 7
+
             GLint mode = GL_REPEAT;
-#ifdef IRRLICHT_SDK_17
-            switch (TextureLayer.TextureWrapU)
-#else
             switch (TextureLayer.TextureWrap)
-#endif
             {
                 case irr::video::ETC_REPEAT:
                     mode=GL_REPEAT;
@@ -279,6 +250,54 @@ namespace IrrCg
 
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
             glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+
+            #else
+
+            GLint mode = GL_REPEAT;
+            switch (TextureLayer.TextureWrapU)
+            {
+                case irr::video::ETC_REPEAT:
+                    mode=GL_REPEAT;
+                    break;
+                case irr::video::ETC_CLAMP:
+                    mode=GL_CLAMP;
+                    break;
+                case irr::video::ETC_CLAMP_TO_EDGE:
+                    mode=GL_CLAMP_TO_EDGE;
+                    break;
+                case irr::video::ETC_CLAMP_TO_BORDER:
+                    mode=GL_CLAMP_TO_BORDER_ARB;
+                    break;
+                case irr::video::ETC_MIRROR:
+                    mode=GL_MIRRORED_REPEAT_ARB;
+                    break;
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, mode);
+
+            mode = GL_REPEAT;
+            switch (TextureLayer.TextureWrapV)
+            {
+                case irr::video::ETC_REPEAT:
+                    mode=GL_REPEAT;
+                    break;
+                case irr::video::ETC_CLAMP:
+                    mode=GL_CLAMP;
+                    break;
+                case irr::video::ETC_CLAMP_TO_EDGE:
+                    mode=GL_CLAMP_TO_EDGE;
+                    break;
+                case irr::video::ETC_CLAMP_TO_BORDER:
+                    mode=GL_CLAMP_TO_BORDER_ARB;
+                    break;
+                case irr::video::ETC_MIRROR:
+                    mode=GL_MIRRORED_REPEAT_ARB;
+                    break;
+            }
+
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, mode);
+
+            #endif
 
             glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, (TextureLayer.BilinearFilter || TextureLayer.TrilinearFilter) ? GL_LINEAR : GL_NEAREST);
 
@@ -477,8 +496,7 @@ namespace IrrCg
     {
         Context = cgCreateContext();
         Type = ICGT_DIRECT3D9;
-        IDirect3DDevice9* d = Device->getVideoDriver()->getExposedVideoData().D3D9.D3DDev9;
-        cgD3D9SetDevice(d);
+        cgD3D9SetDevice(Device->getVideoDriver()->getExposedVideoData().D3D9.D3DDev9);
     }
     ICgD3D9Services::~ICgD3D9Services()
     {
@@ -533,6 +551,13 @@ namespace IrrCg
         VideoData.D3D9.D3DDev9->SetVertexShader(NULL);
         VideoData.D3D9.D3DDev9->SetPixelShader(NULL);
     }
+    void ICgD3D9Services::DisableEffect()
+    {
+        irr::video::SExposedVideoData VideoData = Device->getVideoDriver()->getExposedVideoData();
+
+        VideoData.D3D9.D3DDev9->SetVertexShader(NULL);
+        VideoData.D3D9.D3DDev9->SetPixelShader(NULL);
+    }
     // Textures Functions.
     void ICgD3D9Services::EnableTexture( CGparameter param,irr::video::ITexture* Tex2D )
     {
@@ -541,8 +566,6 @@ namespace IrrCg
             IDirect3DBaseTexture9* Texture = ((const irr::video::CD3D9Texture*)Tex2D)->getDX9Texture();
 
             cgD3D9SetTextureParameter( param,Texture );
-            //cgD3D9SetTexture( param,Texture ); // MY_MOD
-            //cgD3D9EnableTextureParameter( param );
         }
     }
     // MY_MOD
@@ -567,12 +590,10 @@ namespace IrrCg
 
             VideoData.D3D9.D3DDev9->SetTexture(Stage, Texture);
 
+            #if IRRLICHT_VERSION_MINOR < 7
+
             irr::u32 mode = D3DTADDRESS_WRAP;
-#ifdef IRRLICHT_SDK_17
-            switch (TextureLayer.TextureWrapU)
-#else
             switch (TextureLayer.TextureWrap)
-#endif
             {
                 case irr::video::ETC_REPEAT:
                     mode=D3DTADDRESS_WRAP;
@@ -591,6 +612,50 @@ namespace IrrCg
 
             VideoData.D3D9.D3DDev9->SetSamplerState(Stage, D3DSAMP_ADDRESSU, mode );
             VideoData.D3D9.D3DDev9->SetSamplerState(Stage, D3DSAMP_ADDRESSV, mode );
+
+            #else
+
+            irr::u32 mode = D3DTADDRESS_WRAP;
+            switch (TextureLayer.TextureWrapU)
+            {
+                case irr::video::ETC_REPEAT:
+                    mode=D3DTADDRESS_WRAP;
+                    break;
+                case irr::video::ETC_CLAMP:
+                case irr::video::ETC_CLAMP_TO_EDGE:
+                    mode=D3DTADDRESS_CLAMP;
+                    break;
+                case irr::video::ETC_MIRROR:
+                    mode=D3DTADDRESS_MIRROR;
+                    break;
+                case irr::video::ETC_CLAMP_TO_BORDER:
+                    mode=D3DTADDRESS_BORDER;
+                    break;
+            }
+
+            VideoData.D3D9.D3DDev9->SetSamplerState(Stage, D3DSAMP_ADDRESSU, mode );
+
+            mode = D3DTADDRESS_WRAP;
+            switch (TextureLayer.TextureWrapV)
+            {
+                case irr::video::ETC_REPEAT:
+                    mode=D3DTADDRESS_WRAP;
+                    break;
+                case irr::video::ETC_CLAMP:
+                case irr::video::ETC_CLAMP_TO_EDGE:
+                    mode=D3DTADDRESS_CLAMP;
+                    break;
+                case irr::video::ETC_MIRROR:
+                    mode=D3DTADDRESS_MIRROR;
+                    break;
+                case irr::video::ETC_CLAMP_TO_BORDER:
+                    mode=D3DTADDRESS_BORDER;
+                    break;
+            }
+
+            VideoData.D3D9.D3DDev9->SetSamplerState(Stage, D3DSAMP_ADDRESSV, mode );
+
+            #endif
 
             if (TextureLayer.BilinearFilter || TextureLayer.TrilinearFilter || TextureLayer.AnisotropicFilter)
             {
@@ -613,8 +678,6 @@ namespace IrrCg
             }
 
             cgD3D9SetTextureParameter( param,Texture );
-            //cgD3D9SetTexture( param,Texture ); // MY_MOD
-            //cgD3D9EnableTextureParameter( param );
         }
     }
     // setParameter Functions.
@@ -819,7 +882,7 @@ namespace IrrCg
             delete Texture[current];
         }
     }
-    void ICgMaterialConstantSetCallBack::OnSetConstants( ICgServices* services,CGprogram Vertex,CGprogram Fragment,const irr::video::SMaterial& Material )
+    void ICgMaterialConstantSetCallBack::OnSetConstants( ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Fragment,const irr::video::SMaterial& Material )
     {
         for(int current = 0; current < Parameter.size(); current++)
         {
@@ -832,7 +895,7 @@ namespace IrrCg
         }
 
         if(CgCallback)
-        CgCallback->OnSetConstants( services,Vertex,Fragment,Material );
+        CgCallback->OnSetConstants( services,Effect,Pass,Vertex,Fragment,Material );
     }
     // End of class ICgMaterialConstantSetCallBack
 
@@ -882,6 +945,21 @@ namespace IrrCg
     // Destructor.
     ICgProgrammingServices::~ICgProgrammingServices()
     {
+        for(int c = 0; c < ProgramsList.size(); ++c)
+        {
+            if(ProgramsList[c])
+            cgDestroyProgram(*ProgramsList[c]);
+        }
+
+        for(int c = 0; c < EffectsList.size(); ++c)
+        {
+            if(EffectsList[c])
+            cgDestroyEffect(*EffectsList[c]);
+        }
+
+        ProgramsList.clear();
+        EffectsList.clear();
+
         if(CgServices)
         delete CgServices;
     }
@@ -899,7 +977,7 @@ namespace IrrCg
         }
 
         CGerror Error;
-        ICgMaterialRenderer* mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(baseMaterial),callback);
+        ICgMaterialRenderer* mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(baseMaterial),callback, false);
         irr::s32 ICgMaterialType = CgServices->getDevice()->getVideoDriver()->addMaterialRenderer(mRenderer);
 
         if(VSProgram)
@@ -934,7 +1012,10 @@ namespace IrrCg
                 return irr::video::EMT_SOLID;
             }
             else
-            CgServices->LoadProgram(mRenderer->VertexProgram);
+            {
+                CgServices->LoadProgram(mRenderer->VertexProgram);
+                ProgramsList.push_back(&mRenderer->VertexProgram);
+            }
         }
 
         if(PSProgram)
@@ -969,7 +1050,10 @@ namespace IrrCg
                 return irr::video::EMT_SOLID;
             }
             else
-            CgServices->LoadProgram(mRenderer->PixelProgram);
+            {
+                CgServices->LoadProgram(mRenderer->PixelProgram);
+                ProgramsList.push_back(&mRenderer->PixelProgram);
+            }
         }
 
         mRenderer->drop();
@@ -990,7 +1074,7 @@ namespace IrrCg
         }
 
         CGerror Error;
-        ICgMaterialRenderer* mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(baseMaterial),callback);
+        ICgMaterialRenderer* mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(baseMaterial),callback, false);
         irr::s32 ICgMaterialType = CgServices->getDevice()->getVideoDriver()->addMaterialRenderer(mRenderer);
 
         if(VSProgram)
@@ -1025,7 +1109,10 @@ namespace IrrCg
                 return irr::video::EMT_SOLID;
             }
             else
-            CgServices->LoadProgram(mRenderer->VertexProgram);
+            {
+                CgServices->LoadProgram(mRenderer->VertexProgram);
+                ProgramsList.push_back(&mRenderer->VertexProgram);
+            }
         }
 
         if(PSProgram)
@@ -1060,7 +1147,10 @@ namespace IrrCg
                 return irr::video::EMT_SOLID;
             }
             else
-            CgServices->LoadProgram(mRenderer->PixelProgram);
+            {
+                CgServices->LoadProgram(mRenderer->PixelProgram);
+                ProgramsList.push_back(&mRenderer->PixelProgram);
+            }
         }
 
         mRenderer->drop();
@@ -1087,8 +1177,80 @@ namespace IrrCg
 
         if(!MaterialLoader.loadMaterial(Material, mCallback, mRenderer, args))
         return irr::video::EMT_SOLID;
+        else
+        {
+            ProgramsList.push_back(&mRenderer->VertexProgram);
+            ProgramsList.push_back(&mRenderer->PixelProgram);
+        }
 
         s32 ICgMaterialType = CgServices->getDevice()->getVideoDriver()->addMaterialRenderer(mRenderer);
+        mRenderer->drop();
+
+        return ICgMaterialType;
+    }
+
+    // Function useful for add CgFX effect from file to Your program.
+    irr::s32 ICgProgrammingServices::addCgEffectFromFiles( const irr::c8* EffectProgram,
+    ICgShaderConstantSetCallBack* callback,irr::video::E_MATERIAL_TYPE baseMaterial, const char ** args )
+    {
+        if(!CgServices)
+        {
+            printf("IrrCg Error! Services not found!\n");
+            return irr::video::EMT_SOLID;
+        }
+
+        CGerror Error;
+        ICgMaterialRenderer* mRenderer = new ICgMaterialRenderer(CgServices,CgServices->getDevice()->getVideoDriver()->getMaterialRenderer(baseMaterial),callback, true);
+        irr::s32 ICgMaterialType = CgServices->getDevice()->getVideoDriver()->addMaterialRenderer(mRenderer);
+
+        if(EffectProgram)
+        {
+            FILE* file = fopen(EffectProgram, "rt");
+
+            if(file)
+            fclose(file);
+            else
+            {
+                printf("IrrCg Error! Effect:\nFile \"%s\" not found.\n", EffectProgram);
+
+                mRenderer->drop();
+
+                return irr::video::EMT_SOLID;
+            }
+
+            mRenderer->Effect = cgCreateEffectFromFile(CgServices->getContext(), EffectProgram, args);
+
+            if (mRenderer->Effect == NULL)
+            {
+                printf("IrrCg Error! Effect:\n");
+                Error = cgGetError();
+                std::cout << cgGetErrorString(Error) << std::endl;
+                std::cout << cgGetLastListing(CgServices->getContext()) << std::endl;
+
+                mRenderer->drop();
+
+                return irr::video::EMT_SOLID;
+            }
+            else
+            {
+                EffectsList.push_back(&mRenderer->Effect);
+
+                mRenderer->Technique = cgGetFirstTechnique(mRenderer->Effect);
+
+                while (mRenderer->Technique && cgValidateTechnique(mRenderer->Technique) == CG_FALSE)
+                mRenderer->Technique = cgGetNextTechnique(mRenderer->Technique);
+
+                if(!mRenderer->Technique)
+                {
+                    printf("IrrCg Error! No valid technique in effect: \"%s\"\n", EffectProgram);
+
+                    mRenderer->drop();
+
+                    return irr::video::EMT_SOLID;
+                }
+            }
+        }
+
         mRenderer->drop();
 
         return ICgMaterialType;
@@ -1102,64 +1264,44 @@ namespace IrrCg
     // End of class ICgProgrammingServices
 
     // class ICgMaterialRenderer
-    ICgMaterialRenderer::ICgMaterialRenderer(ICgServices* services,irr::video::IMaterialRenderer* baseMaterial,ICgShaderConstantSetCallBack* callback)
+    ICgMaterialRenderer::ICgMaterialRenderer(ICgServices* vCgServices, irr::video::IMaterialRenderer* vBaseMaterial, ICgShaderConstantSetCallBack* vCallback, bool vIsEffect) :
+                        CgServices(vCgServices), BaseMaterial(vBaseMaterial), Callback(vCallback), IsEffect(vIsEffect), RendererServices(0),
+                         VertexProgram(0), PixelProgram(0), Effect(0), Technique(0), Pass(0)
     {
-        CgServices = services;
-        BaseMaterial = baseMaterial;
-        CallBack = callback;
     }
 
     ICgMaterialRenderer::~ICgMaterialRenderer()
     {
-        if (VertexProgram)
-        {
-            cgDestroyProgram(VertexProgram);
-            CGerror error;
-            const char *string = cgGetLastErrorString(&error);
-            if (error != CG_NO_ERROR)
-                printf("%s\n", string);
-            //assert(error == CG_NO_ERROR);
-        }
-        
-        if (PixelProgram)
-        {
-            cgDestroyProgram(PixelProgram);
-            CGerror error;
-            const char *string = cgGetLastErrorString(&error);
-            if (error != CG_NO_ERROR)
-                printf("%s\n", string);
-            //assert(error == CG_NO_ERROR);
-        }
     }
 
     void ICgMaterialRenderer::OnSetMaterial(const irr::video::SMaterial& material, const irr::video::SMaterial& lastMaterial,bool resetAllRenderstates, irr::video::IMaterialRendererServices* services)
     {
         Material = material;
+        RendererServices = services;
 
         if (material.MaterialType != lastMaterial.MaterialType || resetAllRenderstates)
         {
-            if(VertexProgram)
-            CgServices->EnableShader(VertexProgram,VertexProfile);
-            if(PixelProgram)
-            CgServices->EnableShader(PixelProgram,PixelProfile);
+            if(!IsEffect)
+            {
+                if(VertexProgram)
+                CgServices->EnableShader(VertexProgram,VertexProfile);
+                if(PixelProgram)
+                CgServices->EnableShader(PixelProgram,PixelProfile);
+            }
 
             if (BaseMaterial)
 			BaseMaterial->OnSetMaterial(material, material, true, services);
         }
 
-        if(CallBack)
-		CallBack->OnSetMaterial(material);
+        if(Callback)
+		Callback->OnSetMaterial(material);
 
-        #ifdef IrrCgOGL
+        #if defined (IrrCgOGL) && (IRRLICHT_VERSION_MINOR < 7)
         if(CgServices->getType() == ICGT_OPENGL)
         for (u32 i=0; i<MATERIAL_MAX_TEXTURES; ++i)
         {
             COpenGLDriver* VideoDriver = (COpenGLDriver*)CgServices->getDevice()->getVideoDriver();
-            #if IRRLICHT_VERSION_MINOR > 5
             VideoDriver->setActiveTexture(i, material.getTexture(i));
-            #else
-            VideoDriver->setTexture(i, material.getTexture(i));
-            #endif
         }
 		#endif
 
@@ -1168,18 +1310,32 @@ namespace IrrCg
 
     bool ICgMaterialRenderer::OnRender(irr::video::IMaterialRendererServices* service, irr::video::E_VERTEX_TYPE vtxtype)
     {
-        if(CallBack)
-        CallBack->OnSetConstants(CgServices,VertexProgram,PixelProgram,Material);
+        if(Callback)
+        Callback->OnSetConstants(CgServices,Effect,Pass,VertexProgram,PixelProgram,Material);
+
+        if(Effect)
+        cgSetPassState(Pass);
 
         return true;
     };
 
     void ICgMaterialRenderer::OnUnsetMaterial()
     {
-        if(VertexProgram)
-        CgServices->DisableShader(VertexProfile);
-        if(PixelProgram)
-        CgServices->DisableShader(PixelProfile);
+        if(!IsEffect)
+        {
+            if(VertexProgram)
+            CgServices->DisableShader(VertexProfile);
+            if(PixelProgram)
+            CgServices->DisableShader(PixelProfile);
+        }
+        else
+        {
+            if(Effect)
+            {
+                RendererServices->setBasicRenderStates(Material, Material, true);
+                CgServices->DisableEffect();
+            }
+        }
 
         if(BaseMaterial)
         BaseMaterial->OnUnsetMaterial();
@@ -1192,4 +1348,3 @@ namespace IrrCg
 
     // End of class ICgMaterialRenderer
 }
-#endif /* DISABLE_CG_SHADERS */

@@ -7,17 +7,6 @@
 
 #ifdef IrrCgOGL
 
-#include <GL/gl.h>
-
-#ifdef IrrCgWin32
-#include <windows.h>
-#include <glext.h>
-#endif
-
-#ifdef IrrCgLinux
-#include <GL/glx.h>
-#endif
-
 namespace IrrCg
 {
     class IrrCgExtensionHandler
@@ -25,7 +14,7 @@ namespace IrrCg
     public:
         IrrCgExtensionHandler() : pGlActiveTextureARB(0)
         {
-            #ifdef IrrCgWin32
+            #ifdef IrrCgWindows
             pGlActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC) wglGetProcAddress("glActiveTextureARB");
             #endif
 
