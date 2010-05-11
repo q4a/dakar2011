@@ -1,5 +1,5 @@
 data/bigterrains/bigterrain1.txt
-680
+730
 1
 0
 Buenos Aires -> Victoria
@@ -9,7 +9,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain2.txt
-1090
+1060
 1
 0
 Victoria -> Cordoba
@@ -19,7 +19,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain3.txt
-1760
+2240
 1
 0
 Cordoba -> San Miguel de Tucuman
