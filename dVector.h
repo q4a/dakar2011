@@ -10,7 +10,7 @@
 #ifndef __dVector__
 #define __dVector__
 
-#define dFloat float
+//#define dFloat float
 //#include <stdafx.h>
 #include <Newton.h>
 

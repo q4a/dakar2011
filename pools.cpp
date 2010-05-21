@@ -737,6 +737,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectWrapper->farObjectNode = farObjectNode;
             objectNode->setMaterialFlag(video::EMF_LIGHTING, false);
             leaf->setMaterialFlag(video::EMF_LIGHTING, false);
+            leaf->setMaterialFlag(video::EMF_TEXTURE_WRAP, true);
 
 //            objectNodes[numOfObjects]->setMaterialFlag(video::EMF_LIGHTING, true);
             if (globalLight)

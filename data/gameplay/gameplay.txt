@@ -28,6 +28,16 @@ Difficulty: easy
 NL
 Type: grass / sand
 EOM
+data/bigterrains/bigterrain4.txt
+5240
+1
+0
+San Miguel de Tucuman -> San Salvador de Jujuy
+NL
+Difficulty: easy
+NL
+Type: grass / sand
+EOM
 data/bigterrains/bigterrain9.txt
 4800
 9

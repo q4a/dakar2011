@@ -51,6 +51,8 @@ public:
     
     ISceneNode* generateRoadNode();
     
+    float getFrictionMulti() {return friction_multi;}
+    
 private:
     core::array<core::vector3df> basePoints;
 
@@ -69,6 +71,8 @@ private:
     
     video::ITexture* texture;
     char textureName[256];
+    
+    float friction_multi;
 };
 
 #endif // __MYROAD_H__

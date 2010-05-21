@@ -25,6 +25,8 @@
 #include "itiner_hud.h"
 #include "error.h"
 
+#include "CHeightmap.h"
+
 #ifdef __linux__
 #include "linux_includes.h"
 #endif
@@ -136,6 +138,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     int sizeX = 0;
     int sizeY = 0;
     video::IImage* partImage = 0;
+#ifdef USE_IMAGE_HM
     
 	heightMap = driver->createImageFromFile(heightMapName);
 	partImage = heightMap;
@@ -148,7 +151,23 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
-        
+#else
+	heightMap = smgr->addHeightmap();
+    heightMap->read(heightMapName);
+    sizeX = heightMap->getXSize();
+    sizeY = heightMap->getYSize();
+    for (int i = 0; i < sizeX; i++)
+        for (int j = 0; j<sizeY/2; j++)
+        {
+            unsigned short tmp_height = heightMap->get(i, j);
+            bool tmp_road = heightMap->getRoad(i, j);
+            heightMap->set(i, j, heightMap->get(i, sizeY-1-j));
+            heightMap->setRoad(i, j, heightMap->getRoad(i, sizeY-1-j));
+            heightMap->set(i, sizeY-1-j, tmp_height);
+            heightMap->setRoad(i, sizeY-1-j, tmp_road);
+        }
+#endif
+
 	densityMap = driver->createImageFromFile(densityMapName);
 	partImage = densityMap;
     sizeX = partImage->getDimension().Width;
@@ -175,9 +194,14 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         
 	applyRoadOnHeightMap();
 	
+#ifdef USE_IMAGE_HM
 	max_x = heightMap->getDimension().Width / SMALLTERRAIN_HEIGHTMAP_SIZE;
 	max_y = heightMap->getDimension().Height / SMALLTERRAIN_HEIGHTMAP_SIZE;
-    
+#else
+	max_x = heightMap->getXSize() / SMALLTERRAIN_HEIGHTMAP_SIZE;
+	max_y = heightMap->getYSize() / SMALLTERRAIN_HEIGHTMAP_SIZE;
+#endif    
+
     if (ov_limit > SMALLTERRAIN_SIZE)
     {
         ov_limit = objectVisibilityLimit = SMALLTERRAIN_SIZE - 1;
@@ -602,7 +626,11 @@ BigTerrain::~BigTerrain()
     }
     if (heightMap)
     {
+#ifdef USE_IMAGE_HM
 	   heightMap->drop();
+#else
+	   delete heightMap;
+#endif
 	   heightMap = 0;
     }
 	if (textureMap)
@@ -907,7 +935,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
                 str += L", but you missed ";
                 str += cps;
                 str += L" checkpoint(s)\n\n";
-                addPenality(cps*120);
+                addPenality(cps*300);
             } else {
                 str += L"!\n\n"; //  Congratulation!!!
             }
@@ -1823,8 +1851,13 @@ void BigTerrain::removeActiveItinerPoint(SItinerPoint* itinerPoint)
 
 void BigTerrain::applyRoadOnHeightMap()
 {
+#ifdef USE_IMAGE_HM
     int sizeX = heightMap->getDimension().Width;
     int sizeY = heightMap->getDimension().Height;
+#else
+    int sizeX = heightMap->getXSize();
+    int sizeY = heightMap->getYSize();
+#endif
     int avgCol = 0;
     int percentage = 0;
     core::stringw str = L"";
@@ -1924,8 +1957,12 @@ void BigTerrain::applyRoadOnHeightMap()
 
 bool BigTerrain::isRoad(int x, int y)
 {
+#ifdef USE_IMAGE_HM
     SColor c = heightMap->getPixel(x, y);
     return c.getRed()-5 > c.getGreen();
+#else
+    return heightMap->getRoad(x, y);
+#endif
 }
 
 bool BigTerrain::isNextToRoad(int px, int py)
@@ -1934,7 +1971,11 @@ bool BigTerrain::isNextToRoad(int px, int py)
     {
         for (int y = py-1; y <= py+1; y++)
         {
+#ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
                 && isRoad(x, y))
             {
                 return true;
@@ -1955,11 +1996,19 @@ int BigTerrain::getAverage(int px, int py)
     {
         for (int y = py-dist; y <= py+dist; y++)
         {
+#ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
                 && !isRoad(x, y))
             {
                 avgCnt++;
+#ifdef USE_IMAGE_HM
                 avgCol += heightMap->getPixel(x, y).getRed();
+#else
+                avgCol += heightMap->get(x, y);
+#endif
                 //int i = 0;
                 //while (i < heights.size() && heightMap->getPixel(x, y).getRed() < heights[i]) i++;
                 //heights.insert(heightMap->getPixel(x, y).getRed(), i);
@@ -1973,9 +2022,12 @@ int BigTerrain::getAverage(int px, int py)
 
 void BigTerrain::applyAverage(int px, int py, int avgCol)
 {
+#ifdef USE_IMAGE_HM
     SColor col(0, avgCol, 0, 0);
-    
     heightMap->setPixel(px, py, col);
+#else
+    heightMap->set(px, py, avgCol);
+#endif
 /*    
     for (int x = px-1; x <= px+1; x++)
     {
@@ -2002,11 +2054,19 @@ int BigTerrain::getAverage2(int px, int py)
     {
         for (int y = py-dist; y <= py+dist; y++)
         {
+#ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
                 && isRoad(x, y))
             {
                 avgCnt++;
+#ifdef USE_IMAGE_HM
                 avgCol += heightMap->getPixel(x, y).getRed();
+#else
+                avgCol += heightMap->get(x, y);
+#endif
                 //int i = 0;
                 //while (i < heights.size() && heightMap->getPixel(x, y).getRed() < heights[i]) i++;
                 //heights.insert(heightMap->getPixel(x, y).getRed(), i);
@@ -2020,9 +2080,12 @@ int BigTerrain::getAverage2(int px, int py)
 
 void BigTerrain::applyAverage2(int px, int py, int avgCol)
 {
+#ifdef USE_IMAGE_HM
     SColor col(0, avgCol, 0, 0);
-    
     heightMap->setPixel(px, py, col);
+#else
+    heightMap->set(px, py, avgCol);
+#endif
 /*
     const int dist = 1;
     for (int x = px-dist; x <= px+dist; x++)
@@ -2041,7 +2104,11 @@ void BigTerrain::applyAverage2(int px, int py, int avgCol)
 
 int BigTerrain::getAverage3(int px, int py)
 {
+#ifdef USE_IMAGE_HM
     return heightMap->getPixel(px, py).getRed();
+#else
+    return heightMap->get(px, py);
+#endif
 /*
     int avgCol = 0;
     int avgCnt = 0;
@@ -2072,19 +2139,31 @@ int BigTerrain::getAverage3(int px, int py)
 
 void BigTerrain::applyAverage3(int px, int py, int avgCol)
 {
+#ifdef USE_IMAGE_HM
     SColor col(0, avgCol, avgCol, avgCol);
-    
     heightMap->setPixel(px, py, col);
+#else
+    heightMap->set(px, py, avgCol);
+    heightMap->setRoad(px, py, false);
+#endif
 
     const int dist = 1;
     for (int x = px-dist; x <= px+dist; x++)
     {
         for (int y = py-dist; y <= py+dist; y++)
         {
+#ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
                 && !isRoad(x, y) && !isNextToRoad(x, y))
             {
+#ifdef USE_IMAGE_HM
                 heightMap->setPixel(x, y, col);
+#else
+                heightMap->set(x, y, avgCol);
+#endif
             }
         }
     }

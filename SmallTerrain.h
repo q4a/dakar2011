@@ -46,7 +46,12 @@ struct SObjectPoolIdRepPair
 class SmallTerrain
 {
 public:
-       SmallTerrain(video::IImage* heightMap,
+       SmallTerrain(
+#ifdef USE_IMAGE_HM
+                    video::IImage* heightMap,
+#else
+                    CHeightmap* heightMap,
+#endif
                     video::IImage* densityMap,
                     video::IImage* textureMap,
                     video::ITexture** textures,
@@ -75,7 +80,11 @@ public:
        /*static */IAnimatedMeshSceneNode* loadMySimpleObject(const char* name);
 
 //private:
+#ifdef USE_IMAGE_HM
        void activate(video::IImage* heightMap);
+#else
+       void activate(CHeightmap* heightMap);
+#endif
        void deactivate();
 
 public:

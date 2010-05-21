@@ -43,6 +43,8 @@
 #include "error.h"
 #include "fonts.h"
 
+#include <CHeightmap.h>
+
 #ifdef __linux__
 #include "linux_includes.h"
 #endif
@@ -345,7 +347,7 @@ int main()
     hudInfo->setVisible(false);
 
     demageText = env->addStaticText(L"Demage: ",
-                        core::rect<int>(10,screenSize.Height-(fontO+fontH*3),350,screenSize.Height-(fontO+fontH*2)),
+                        core::rect<int>(10,screenSize.Height-(fontO+fontH*3),1350,screenSize.Height-(fontO+fontH*2)),
                         false, true, 0, -1, false);
     demageText->setVisible(false);
     speedText = env->addStaticText(L"Speed: ",
@@ -703,6 +705,7 @@ this value is not used, it only specifies the amount of default colors available
     sunSphere->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_depthSun);
     
     smokeTexture = driver->getTexture("data/bigterrains/smoke/dirt.png");    
+    smokeWaterTexture = driver->getTexture("data/bigterrains/smoke/dirt_water.png");    
 
     MessageText::addText(L"Please wait [ *          ]", 1, true);
 
@@ -1420,7 +1423,11 @@ this value is not used, it only specifies the amount of default colors available
                         str += " (";
                         str += (int)(camera->getPosition().X/20.f);
                         str += ", ";
-                        str += (int)(1024.f - (camera->getPosition().Z/20.f));
+#ifdef USE_IMAGE_HM
+                        str += (int)(bigTerrain->getHeightMap()->getDimension().Height - 1 - (camera->getPosition().Z/20.f));
+#else
+                        str += (int)(bigTerrain->getHeightMap()->getYSize() - 1 - (camera->getPosition().Z/20.f));
+#endif
                         str += ")";
                         posText->setText(str.c_str());
                         
@@ -1479,6 +1486,34 @@ this value is not used, it only specifies the amount of default colors available
                 str = L"Demage: ";
                 str += (int)(car->getDemagePer());
                 str += "%";
+                    /*
+                if (car)
+                {
+                    str += (int)(car->getFriction(0)*100.f);
+                    str += ", ";
+                    str += (int)(car->getFriction(1)*100.f);
+                    str += ", ";
+                    str += (int)(car->getFriction(2)*100.f);
+                    str += ", ";
+                    str += (int)(car->getFriction(3)*100.f);
+
+                    str += car->getHitBody(0);
+                    str += ", ";
+                    str += car->getHitBody(1);
+                    str += ", ";
+                    str += car->getHitBody(2);
+                    str += ", ";
+                    str += car->getHitBody(3);
+
+                    str += car->getHitBodyID(0);
+                    str += ", ";
+                    str += car->getHitBodyID(1);
+                    str += ", ";
+                    str += car->getHitBodyID(2);
+                    str += ", ";
+                    str += car->getHitBodyID(3);
+                }
+                    */
                 demageText->setText(str.c_str());
         
                 str = L"Speed: ";
@@ -1510,7 +1545,7 @@ this value is not used, it only specifies the amount of default colors available
                 str += L")";
                 timeText->setText(str.c_str());
           }
-          if (editorMode)
+          if (editorMode && car && bigTerrain && inGame == 0)
           {
                 pdprintf(printf("14e\n"));
                 updateEditor(); // TODO: put back into the one sec. update

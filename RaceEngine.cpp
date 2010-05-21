@@ -132,6 +132,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             {
                 dprintf(printf("-------------\nreset AI car %d\n------------\n", competitor->num);)
                 competitor->lastPenalityTime += RESET_PENALITY;
+                cp += vector3df(3.f, 3.f, 3.f); // we don't know why stop: tree or felt over
                 vehicle->reset(cp);
                 forResetCnt=0;
             }
@@ -313,7 +314,7 @@ void SStarter::switchToVisible()
     if (vehicle)
     {
         visible = true;
-        vector3df pos(currentPos.X, m_bigTerrain->getHeight(currentPos.X, currentPos.Y)+1.5f, currentPos.Y);
+        vector3df pos(currentPos.X, m_bigTerrain->getHeight(currentPos.X, currentPos.Y)+1.2f, currentPos.Y);
 #ifdef SPEED_BASE_AI
         vector3df rot(0.f, (float)dir.getAngle(/*With(vector2df(-1.0f, 0.0f)*/)/*-180.f*/, 0.f);
 #else

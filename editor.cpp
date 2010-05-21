@@ -218,7 +218,7 @@ void actionEditor(int key)
             }
 		case irr::KEY_INSERT:
             {
-                if (currentItiner <= 0)
+                if (currentItiner <= ITINER_POOLID_OFFSET)
                 {
                     currentItiner = ITINER_POOLID_OFFSET + getItinerTypesSize() - 1;
                 }

@@ -281,7 +281,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                     //mat.setTranslation(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+5.f,camera->getPosition().Z));
                     //mat.setRotationDegrees(vector3df(0.f, rot.Y, 0.f));
                     //car->setMatrixWithNB(mat);
-                    car->reset(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+5.f,camera->getPosition().Z));
+                    car->reset(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+3.f,camera->getPosition().Z));
                     dynCamReset = true;
                     if (bigTerrain->addPenality(RESET_PENALITY)!=(u32)-1)
                     {

@@ -71,7 +71,7 @@ const float time = tick * 0.0005;
 	for(int i = 0; i<NWAVES; ++i)
 	{
 		angle = dot(wave[i].dir, P.xz) * wave[i].freq + time * wave[i].phase;
-		P.y += wave[i].amp * sin( angle );
+//		P.y += wave[i].amp * sin( angle );
 		// calculate derivate of wave function
 		deriv = wave[i].freq * wave[i].amp * cos(angle);
 		ddx -= deriv * wave[i].dir.x;

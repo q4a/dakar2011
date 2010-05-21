@@ -1,5 +1,5 @@
 128 x 20.000000
-data/bigterrains/heightmaps/stage2_hm.png
+data/bigterrains/heightmaps/stage2_hm.hm
 data/bigterrains/densitymaps/stage2_dm.png
 data/bigterrains/texturemaps/stage2_tm.png
 data/bigterrains/textures/dirt_09.jpg

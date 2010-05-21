@@ -3,7 +3,17 @@
 // For conditions of distribution and use, see copyright notice in License.txt
 
 #ifndef IRR_CG_7
+
 #include "irrlicht.h"
+
+#if IRRLICHT_VERSION_MINOR < 7
+namespace irr { namespace scene {
+//! Typedef for list of scene nodes
+typedef irr::core::list<irr::scene::ISceneNode*> ISceneNodeList;
+//! Typedef for list of scene node animators
+typedef irr::core::list<irr::scene::ISceneNodeAnimator*> ISceneNodeAnimatorList;
+} }
+#endif // IRRLICHT_VERSION_MINOR < 7
 
 #include <Cg/cg.h>
 

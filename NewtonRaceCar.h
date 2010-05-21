@@ -90,12 +90,13 @@ class NewtonRaceCar
         float friction;
         float suspension_spring;
         float suspension_damper;
+        bool hitRoad;
 	};
 
     struct Smoke
     {
-        Smoke(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, video::ITexture* psmokeTexture);
-        void renew(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos);
+        Smoke(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset);
+        void renew(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset);
         
         scene::IBillboardSceneNode* node;
         float speed;
@@ -218,6 +219,34 @@ public:
     void setAutoGear(bool p_autoGear) {autoGear = p_autoGear;}
     
     void setNameText(ITextSceneNode* p_nameText) {nameText = p_nameText;}
+    
+    float getFriction(int num)
+    {
+        if (num >= 0 && num < 4)
+        {
+            return m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_groundFriction;
+        }
+        return 0.f;
+    }
+
+    unsigned int getHitBody(int num)
+    {
+        if (num >= 0 && num < 4)
+        {
+            return (unsigned int)m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
+        }
+        return (unsigned int)0;
+    }
+
+    unsigned int getHitBodyID(int num)
+    {
+        if (num >= 0 && num < 4)
+        {
+            NewtonBody* hb = m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
+            return hb?NewtonBodyGetMaterialGroupID(hb):(unsigned int)-1;
+        }
+        return (unsigned int)0;
+    }
 
 private:
 	//void Render() const;
@@ -232,7 +261,7 @@ private:
 #endif
 	void setMatrix(matrix4& newMatrix);
 	
-	void addSmoke(const float speed, const vector3df &pos);
+	void addSmoke(const float speed, const vector3df &pos, float offset);
 	void updateSmoke();
 	
 	IrrlichtDevice* device;

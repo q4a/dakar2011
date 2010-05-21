@@ -94,7 +94,7 @@ public:
        u32 addPenality(u32 ap);
        static void addTimeToStr(core::stringw& str, u32 diffTime);
        
-       vector3df getStartPos() {return vector3df(startPos.X+startOffset.X, getHeight(startPos.X+startOffset.X,startPos.Z+startOffset.Z)+3.f, startPos.Z+startOffset.Z);}
+       vector3df getStartPos() {return vector3df(startPos.X+startOffset.X, getHeight(startPos.X+startOffset.X,startPos.Z+startOffset.Z)+1.2f, startPos.Z+startOffset.Z);}
        vector3df getStartRot() {return startRot;}
 
        c8* getGroundSoundName() {return groundSoundName;}
@@ -113,6 +113,12 @@ public:
        
        u32 getStageTime() {return stageTime;}
        float getStageLength() {return stageLength;}
+
+#ifdef USE_IMAGE_HM
+       video::IImage* getHeightMap() {return heightMap;}
+#else
+       CHeightmap* getHeightMap() {return heightMap;}
+#endif
 
 private:
        void applyRoadOnHeightMap();
@@ -192,7 +198,11 @@ public:
        
        float friction_multi;
        video::IImage* densityMap;
+#ifdef USE_IMAGE_HM
        video::IImage* heightMap;
+#else
+       CHeightmap* heightMap;
+#endif
        video::IImage* textureMap;
        video::ITexture* textures[TERRAIN_TEXTURE_NUM];
        video::ITexture* shadowMap;

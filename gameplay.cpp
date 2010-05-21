@@ -68,6 +68,7 @@ scene::IAnimatedMeshSceneNode* compassArrow = 0;
 scene::ISceneNode* skydome = 0;
 scene::IBillboardSceneNode* sunSphere = 0;
 video::ITexture* smokeTexture = 0;
+video::ITexture* smokeWaterTexture = 0;
 bool fpsCam = false;
 bool quitGame = false;
 int inGame = 0;

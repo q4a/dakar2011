@@ -39,7 +39,8 @@ CMyRoad::CMyRoad(ISceneManager* p_smgr, IVideoDriver* p_driver, NewtonWorld *p_n
     smgr(p_smgr),
     driver(p_driver),
     nWorld(p_nWorld),
-    texture(0)
+    texture(0),
+    friction_multi(0.9f)
 {
     memset(textureName, 0, sizeof(textureName));
 }

@@ -28,8 +28,10 @@ void main_v( float4 vPosition 	: POSITION,
 {
   //coll_effect(coll_tick, vPosition);
   oPosition = mul(mWorldViewProj, vPosition);
-  oUv1 = Uv1;
   oUv0 = Uv0;
+  oUv1 = Uv1;
+//  oUv1.x = Uv1.x/128.0;
+//  oUv1.y = Uv1.y/128.0;
   oNormal = vNormal;
   //objPos = vPosition;
   objPos = mul(mWorld, vPosition).xyz;
@@ -89,12 +91,13 @@ void main_f( float4 position 	: POSITION,
              out float4 oColor	: COLOR)
 {
   float4 col0 = tex2D(tex0, Uv0);  // sample color map
-  float4 col1 = tex2D(tex1, Uv1);  // tex0
-  float4 col2 = tex2D(tex2, Uv1);  // tex1
-  float4 col3 = tex2D(tex3, Uv1);  // tex2
-  float4 col4 = tex2D(tex4, Uv1);  // tex3
-  float4 col5 = tex2D(tex5, Uv1);  // tex4
-  float4 col6 = tex2D(tex6, Uv1);  // tex5
+  float2 Uv1_ = frac(Uv0*128.0);
+  float4 col1 = tex2D(tex1, Uv1_);  // tex0
+  float4 col2 = tex2D(tex2, Uv1_);  // tex1
+  float4 col3 = tex2D(tex3, Uv1_);  // tex2
+  float4 col4 = tex2D(tex4, Uv1_);  // tex3
+  float4 col5 = tex2D(tex5, Uv1_);  // tex4
+  float4 col6 = tex2D(tex6, Uv1_);  // tex5
   float4 shadowCoeff = calculate_shadow_ter(texCoordProj, shadowMap, shadowParam, shadowRes, day_multi);
 //  float4 shadowCoeff2 = calculate_shadow_ter(texCoordProj2, shadowMapCar, shadowParam, shadowRes/2);
   float3 diffuseLight = float3(0.0, 0.0, 0.0);

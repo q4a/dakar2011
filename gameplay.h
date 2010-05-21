@@ -59,6 +59,7 @@ using namespace gui;
 #define view_multi 4
 
 #define RESET_PENALITY 120
+#define WATER_HEIGHT 30.3f
 
 #define MAX_STAGES 27
 class Stages
@@ -100,6 +101,7 @@ extern scene::IAnimatedMeshSceneNode* compassArrow;
 extern scene::ISceneNode* skydome;
 extern scene::IBillboardSceneNode* sunSphere;
 extern video::ITexture* smokeTexture;
+extern video::ITexture* smokeWaterTexture;
 extern bool fpsCam;
 extern bool quitGame;
 extern int inGame;

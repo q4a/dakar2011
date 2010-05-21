@@ -39,6 +39,7 @@ s32 myMaterialType_light_notex_car = video::EMT_SOLID;
 s32 myMaterialType_light_2tex = video::EMT_SOLID;
 s32 myMaterialType_light_2tex_2 = video::EMT_SOLID;
 s32 myMaterialType_ocean = video::EMT_SOLID;
+s32 myMaterialType_ocean_fix = video::EMT_SOLID;
 s32 myMaterialType_smoke = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 s32 myMaterialType_light_tex_s = video::EMT_SOLID;
 s32 myMaterialType_light_tex_s_car = video::EMT_SOLID;
@@ -1182,6 +1183,8 @@ void setupShaders2 (IrrlichtDevice* device,
 
 	const c8* ocean_vsFileName; // filename for the vertex shader
 	const c8* ocean_psFileName; // filename for the pixel shader
+	const c8* ocean_fix_vsFileName; // filename for the vertex shader
+	const c8* ocean_fix_psFileName; // filename for the pixel shader
 
     const c8* smoke_fileName; // filename for the pixel shader
     const c8* transp_fileName;
@@ -1263,6 +1266,8 @@ void setupShaders2 (IrrlichtDevice* device,
 	light_2tex_2_vsFileName = light_2tex_2_psFileName;
 	ocean_psFileName = "data/shaders/cg/ocean.cg";
 	ocean_vsFileName = ocean_psFileName;
+	ocean_fix_psFileName = "data/shaders/cg/ocean_fix.cg";
+	ocean_fix_vsFileName = ocean_fix_psFileName;
 	transp_fileName = "data/shaders/cg/transp_obj.cg";
 	transp_road_fileName = "data/shaders/cg/transp_road.cg";
 	transp_stat_fileName = "data/shaders/cg/transp_stat.cg";
@@ -1433,6 +1438,11 @@ void setupShaders2 (IrrlichtDevice* device,
 		myMaterialType_ocean = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			ocean_vsFileName, "main_v", "arbvp1", vs_version,
 			ocean_psFileName, "main_f", "arbfp1", ps_version,
+			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+
+		myMaterialType_ocean_fix = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+			ocean_fix_vsFileName, "main_v", "arbvp1", vs_version,
+			ocean_fix_psFileName, "main_f", "arbfp1", ps_version,
 			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
 		myMaterialType_smoke = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,

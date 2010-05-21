@@ -25,6 +25,7 @@
 #include "gameplay.h"
 #include "effects.h"
 #include <assert.h>
+#include "MyRoad.h"
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -1118,7 +1119,7 @@ void NewtonRaceCar::ApplyGravityForce (const NewtonBody* body, float timestep, i
     	mass *= (1.0f + speed / 20.0f);
     */
     //mass = 0.0f;
-        if (vehicle->m_node->getPosition().Y > 30.f)
+        if (vehicle->m_node->getPosition().Y > WATER_HEIGHT)
         {
             dVector force (0.0f, mass * GRAVITY, 0.0f);
             NewtonBodySetForce (body, &force.m_x);
@@ -1284,8 +1285,26 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
 #endif
             vehicle->m_tires[i]->connected) // it is on the ground
         {
+#ifdef OLD_CDGRCC
+            CustomDGRayCastCar::Tire* tire = &vehicle->m_vehicleJoint->GetTire(vehicle->m_tires[i]->tire_num);
+            NewtonBody* hitBody = tire->m_HitBody;
+            float newFriction = 0.f;
+            if (hitBody && NewtonBodyGetMaterialGroupID(hitBody) == roadID)
+            {
+                // here
+                CMyRoad* road = (CMyRoad*)NewtonBodyGetUserData(hitBody);
+                newFriction = vehicle->m_tires[i]->friction * road->getFrictionMulti();
+                vehicle->m_tires[i]->hitRoad = true;
+            }
+            else
+            {
+                newFriction = vehicle->m_tires[i]->friction * vehicle->friction_multi;
+                vehicle->m_tires[i]->hitRoad = false;
+            }
+            tire->m_groundFriction = newFriction;
+#endif
             onGround = true;
-            break;
+            //break;
         }
     }
 
@@ -1376,7 +1395,7 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
         {
 #ifdef OLD_CDGRCC
             if (!vehicle->m_vehicleJoint->GetTireOnAir(vehicle->smoke_tires[i]->tire_num) &&
-                vehicle->smoke_tires[i]->connected) // it is on the ground
+                vehicle->smoke_tires[i]->connected && !vehicle->smoke_tires[i]->hitRoad) // it is on the ground
 #else
 #ifdef USE_BASICRC
             if (!vehicle->m_vehicleJoint->GetTire(vehicle->smoke_tires[i]->tire_num)->m_tireIsOnAir &&
@@ -1388,7 +1407,11 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
 #endif
             {
                 if (useSmokes)
-                    vehicle->addSmoke(vehicle->getSpeed(), vehicle->smoke_tires[i]->m_matrix.getTranslation());
+                {
+                    //vector3df tpos(vehicle->smoke_tires[i]->m_matrix.getTranslation());
+                    //tpos.Y -= vehicle->smoke_tires[i]->m_radius;
+                    vehicle->addSmoke(vehicle->getSpeed(), vehicle->smoke_tires[i]->m_matrix.getTranslation(), vehicle->smoke_tires[i]->m_radius);
+                }
             }
         }
     }
@@ -1672,7 +1695,8 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
       connected(false),
       connectionStrength(0.f),
       m_newtonBody(0),
-      root(p_root)
+      root(p_root),
+      hitRoad(false)
 {
 	int i;
 	int ret;
@@ -2060,7 +2084,7 @@ void NewtonRaceCar::setControl()
 //	NewtonBodySetTransformCallback (m_vehicleBody, SetTransform);
 }
 
-void NewtonRaceCar::addSmoke(const float speed, const vector3df &pos)
+void NewtonRaceCar::addSmoke(const float speed, const vector3df &pos, float offset)
 {
     int ind = 0;
     
@@ -2076,9 +2100,9 @@ void NewtonRaceCar::addSmoke(const float speed, const vector3df &pos)
     }
     
     if (smokes[ind]==0)
-        smokes[ind] = new Smoke(smgr, driver, speed, pos, smokeTexture);
+        smokes[ind] = new Smoke(smgr, driver, speed, pos, offset);
     else
-        smokes[ind]->renew(smgr, driver, speed, pos);
+        smokes[ind]->renew(smgr, driver, speed, pos, offset);
     //printf("add smoke end 2\n");
 }
 
@@ -2117,7 +2141,7 @@ void NewtonRaceCar::updateSmoke()
 }
 
 NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
-                     const float pspeed, const vector3df &pos, video::ITexture* psmokeTexture) :
+                     const float pspeed, const vector3df &pos, float offset) :
     speed(fabsf(pspeed)), animePhase(0)
 {
     //printf("add smoke\n");
@@ -2143,11 +2167,18 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
     //}
     //node->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
     //node->getMaterial(0).MaterialTypeParam = 0.9f;
-	node->setMaterialTexture(0, psmokeTexture);
+    if (pos.Y - offset > WATER_HEIGHT)
+    {
+	   node->setMaterialTexture(0, smokeTexture);
+    }
+    else
+    {
+	   node->setMaterialTexture(0, smokeWaterTexture);
+    }
 }
 
 void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
-                     const float pspeed, const vector3df &pos)
+                     const float pspeed, const vector3df &pos, float offset)
 {
     //printf("add smoke\n");
     float addrX = (float)((rand()%20) - 10) / 20.0f;
@@ -2159,6 +2190,14 @@ void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
     node->setSize(core::dimension2d<f32>(0.2, 0.2));
     node->setPosition(vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
     node->setVisible(true);
+    if (pos.Y - offset > WATER_HEIGHT)
+    {
+	   node->setMaterialTexture(0, smokeTexture);
+    }
+    else
+    {
+	   node->setMaterialTexture(0, smokeWaterTexture);
+    }
 //	node->setMaterialFlag(video::EMF_LIGHTING, false);
 //	node->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_smoke/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 //	node->setMaterialTexture(0, driver->getTexture("data/terrain-textures/dirt.png"));

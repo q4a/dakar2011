@@ -44,6 +44,7 @@ extern s32 myMaterialType_depthSun;
 extern s32 myMaterialType_screenRTT;
 extern s32 myMaterialType_light_2tex_2;
 extern s32 myMaterialType_ocean;
+extern s32 myMaterialType_ocean_fix;
 
 extern video::ITexture* shadowMap;
 extern video::ITexture* shadowMapGame;

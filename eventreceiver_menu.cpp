@@ -2360,7 +2360,7 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		gameTab, GUI_ID_GEAR_TYPE_AUTO, L"Hello12");
 
-    line += 20;
+/*    line += 20;
 	env->addStaticText(L"Show compass arrow",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
@@ -2374,7 +2374,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		gameTab);
-
+*/
     line += 20;
 	env->addStaticText(L"Show names",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2500,6 +2500,12 @@ void eventreceiver_menu::openOptionsWindow()
 		graphicTab);
 
 	line += 40;
+	env->addStaticText(L"Object settings (restart require)",
+		rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		graphicTab);
+    line += 25;
 	env->addStaticText(L"Object density",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
@@ -2520,7 +2526,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		graphicTab);
-		
+/*		
 	line += 20;
 	env->addStaticText(L"Grass density",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2542,7 +2548,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		graphicTab);
-
+*/
     if (line>maxLine) maxLine = line;
 
 // ------------------------
@@ -2704,7 +2710,7 @@ void eventreceiver_menu::openOptionsWindow()
 	env->addCheckBox(shadows,
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		graphic2Tab, GUI_ID_SHADOWS, L"Hello8");
-	env->addStaticText(L"(Only works with high effects detail)",
+/*	env->addStaticText(L"(Only works with high effects detail)",
 		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
 		false, // border?
 		false, // wordwrap?
@@ -2724,7 +2730,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		graphic2Tab);
-
+*/
 /*
     line += 20;
 	env->addStaticText(L"High precision fpu",
@@ -2783,7 +2789,7 @@ void eventreceiver_menu::openOptionsWindow()
     if (shadow_map_size==2048) shadow_map_size_cbox->setSelected(3);
     shadow_map_size_cbox->addItem(L"Very high (4096 - require strong hardware)");
     if (shadow_map_size==4096) shadow_map_size_cbox->setSelected(4);
-
+/*
     line += 20;
 	env->addStaticText(L"Effects detail",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2806,7 +2812,7 @@ void eventreceiver_menu::openOptionsWindow()
     effects_cbox->addItem(L"High - Night, car light, car dirt, car reflection and shadow effects");
     if (globalLight == true && useShaders == true && useCgShaders == true)
         effects_cbox->setSelected(3);
-
+*/
     line += 20;
 	env->addStaticText(L"Texture detail",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2985,7 +2991,7 @@ void eventreceiver_menu::openOptionsWindow()
 	str += send_server_delay;
 	server_delay_text = env->addEditBox(str.c_str(),
 		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*4+outdist*2+valuelen+portW), line+16),
-		false, // border?
+		true, // border?
 		networkTab,
         GUI_ID_SERVER_DELAY_EBOX);
 
@@ -3291,7 +3297,6 @@ void eventreceiver_menu::openHelpWindow()
         L"O, L   - Shift gear up, down\n" \
         L"Space  - Handbrake\n" \
         L"G      - Change automatic/manual gear\n" \
-        L"Tab    - Show/hide compass (While using the compass the time elapses twice faster!)\n" \
         L"\n" \
         L"Arrows  - Move camera in free (FPS) mode\n" \
         L"\n" \
