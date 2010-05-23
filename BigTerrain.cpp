@@ -65,7 +65,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              cpPos(), cpTime(), cpTimed(), cpGate(),
              objectReps(), stageNum(p_stageNum), smallTerrainsForUpdate(), smallTerrainsForUpdateLock(),
              roadList(), activeItinerPoints(), aiPoints(), speed(60.0f), skydome(p_skydome),
-             m_terrainPool(p_terrainPool)
+             m_terrainPool(p_terrainPool), vscale(VSCALE), waterHeight(WATER_HEIGHT)
              /*,
              bodyl(0), collisionl(0),
              bodyr(0), collisionr(0),
@@ -153,7 +153,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         }
 #else
 	heightMap = smgr->addHeightmap();
-    heightMap->read(heightMapName);
+    heightMap->read(heightMapName, device);
     sizeX = heightMap->getXSize();
     sizeY = heightMap->getYSize();
     for (int i = 0; i < sizeX; i++)
@@ -167,7 +167,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             heightMap->setRoad(i, sizeY-1-j, tmp_road);
         }
 #endif
-
+    MessageText::refresh();
+    
 	densityMap = driver->createImageFromFile(densityMapName);
 	partImage = densityMap;
     sizeX = partImage->getDimension().Width;
@@ -179,6 +180,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
+    MessageText::refresh();
+    
 	
 	textureMap = driver->createImageFromFile(textureMapName);
 	partImage = textureMap;
@@ -191,6 +194,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
+    MessageText::refresh();
+    
         
 	applyRoadOnHeightMap();
 	
@@ -290,6 +295,26 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         return;
     }
     dprintf(printf("friction_multi: %f\n", friction_multi);)
+
+    // read the vertical scale of the terrain
+    ret = fscanf(f, "vscale: %f\n", &vscale);
+    if (ret < 1)
+    {
+        printf("error reading %s ret %d errno %d\n", name, ret, errno);
+        fclose(f);
+        return;
+    }
+    dprintf(printf("vscale: %f\n", vscale);)
+
+    // read the water height
+    ret = fscanf(f, "water_height: %f\n", &waterHeight);
+    if (ret < 1)
+    {
+        printf("error reading %s ret %d errno %d\n", name, ret, errno);
+        fclose(f);
+        return;
+    }
+    dprintf(printf("water_height: %f\n", waterHeight);)
 
     // read the checkpoints
     ret = fscanf(f, "start_pos: %f %f\n", &startPos.X, &startPos.Z);
@@ -1081,22 +1106,21 @@ float BigTerrain::getDensity(float x, float y, int category) const
        return 0;
 
     u32 ret = 0;
-    switch (category)
+    if (category == 0 || category & 1 == 1)
     {
-        case 0:
-            ret = densityMap->getPixel(_x, _y).getRed();
-            break;
-        case 1:
-            ret = densityMap->getPixel(_x, _y).getGreen();
-            break;
-        case 2:
-            ret = densityMap->getPixel(_x, _y).getBlue();
-            break;
-        default:
-            ret = densityMap->getPixel(_x, _y).getAverage();
-            break;
+        ret += densityMap->getPixel(_x, _y).getRed();
     }
-    
+    if (category == 0 || category & 2 == 2)
+    {
+        ret += densityMap->getPixel(_x, _y).getGreen();
+    }
+    if (category == 0 || category & 4 == 4)
+    {
+        ret += densityMap->getPixel(_x, _y).getBlue();
+    }
+
+    if (ret > 255) ret = 255;
+
     pdprintf(printf("%d %d ret: %d (cat: %d)\n", _x, _y, ret, category));
 
     return ((float)(ret))/255.f;
@@ -1530,7 +1554,8 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
                            stHeightmapSize, tScale,                           
                            this->stageNum,
                            this,
-                           objectReps, obj_density, roadList, m_terrainPool);
+                           objectReps, obj_density, roadList, m_terrainPool,
+                           vscale, waterHeight);
                 }
                 smallTerrainsForUpdateLock.lock();
                 smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
@@ -1645,7 +1670,8 @@ void BigTerrain::checkMapsQueue()
                        stHeightmapSize, tScale,                           
                        this->stageNum,
                        this,
-                       objectReps, obj_density, roadList, m_terrainPool);
+                       objectReps, obj_density, roadList, m_terrainPool,
+                       vscale, waterHeight);
                 dprintf(printf("new map(%d, %d): %p\n", x, y, map[x + (max_x*y)]);)
                 smallTerrainsForUpdateLock.lock();
                 smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
@@ -1946,13 +1972,14 @@ void BigTerrain::applyRoadOnHeightMap()
         }
         for (int y = 0; y < sizeY; y++)
         {
-            if (isRoad(x, y))
+            if (!isRoad(x, y) && isNextToRoad(x, y)) // change  -> !
             {
-                avgCol = getAverage3(x, y);
+                avgCol = getAverage3(x, y); // change 2 -> 3
                 applyAverage3(x, y, avgCol);
             }
         }
     }
+
 }
 
 bool BigTerrain::isRoad(int x, int y)
@@ -1965,11 +1992,11 @@ bool BigTerrain::isRoad(int x, int y)
 #endif
 }
 
-bool BigTerrain::isNextToRoad(int px, int py)
+bool BigTerrain::isNextToRoad(int px, int py, int dist)
 {
-    for (int x = px-1; x <= px+1; x++)
+    for (int x = px-dist; x <= px+dist; x++)
     {
-        for (int y = py-1; y <= py+1; y++)
+        for (int y = py-dist; y <= py+dist; y++)
         {
 #ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
@@ -1998,16 +2025,26 @@ int BigTerrain::getAverage(int px, int py)
         {
 #ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+                && !isRoad(x, y)
 #else
             if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
 #endif
-                && !isRoad(x, y))
+                )
             {
-                avgCnt++;
 #ifdef USE_IMAGE_HM
+                avgCnt++;
                 avgCol += heightMap->getPixel(x, y).getRed();
 #else
-                avgCol += heightMap->get(x, y);
+                if (isRoad(x, y))
+                {
+                    avgCnt+=3;
+                    avgCol += heightMap->get(x, y)*3;
+                }
+                else
+                {
+                    avgCnt++;
+                    avgCol += heightMap->get(x, y);
+                }
 #endif
                 //int i = 0;
                 //while (i < heights.size() && heightMap->getPixel(x, y).getRed() < heights[i]) i++;
@@ -2102,29 +2139,36 @@ void BigTerrain::applyAverage2(int px, int py, int avgCol)
 */
 }
 
-int BigTerrain::getAverage3(int px, int py)
+int BigTerrain::getAverage3(int px, int py, int dist)
 {
 #ifdef USE_IMAGE_HM
-    return heightMap->getPixel(px, py).getRed();
+//    return heightMap->getPixel(px, py).getRed();
 #else
-    return heightMap->get(px, py);
+//    return heightMap->get(px, py);
 #endif
-/*
+
     int avgCol = 0;
     int avgCnt = 0;
   
-    const int dist = 2;
     //core::array<int> heights;
     
     for (int x = px-dist; x <= px+dist; x++)
     {
         for (int y = py-dist; y <= py+dist; y++)
         {
+#ifdef USE_IMAGE_HM
             if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
                 && isRoad(x, y))
             {
                 avgCnt++;
+#ifdef USE_IMAGE_HM
                 avgCol += heightMap->getPixel(x, y).getRed();
+#else
+                avgCol += heightMap->get(x, y);
+#endif
                 //int i = 0;
                 //while (i < heights.size() && heightMap->getPixel(x, y).getRed() < heights[i]) i++;
                 //heights.insert(heightMap->getPixel(x, y).getRed(), i);
@@ -2134,9 +2178,9 @@ int BigTerrain::getAverage3(int px, int py)
     //return heights.size()>0 ? heights[0] : 0;
     //return heights.size()>0 ? heights[heights.size()/2] : 0;
     return avgCnt ? (avgCol/avgCnt) : 0;
-*/
-}
 
+}
+/*
 void BigTerrain::applyAverage3(int px, int py, int avgCol)
 {
 #ifdef USE_IMAGE_HM
@@ -2168,6 +2212,42 @@ void BigTerrain::applyAverage3(int px, int py, int avgCol)
         }
     }
 }
+*/
+void BigTerrain::applyAverage3(int px, int py, int avgCol)
+{
+#ifdef USE_IMAGE_HM
+    SColor col(0, avgCol, avgCol, avgCol);
+    heightMap->setPixel(px, py, col);
+#else
+    heightMap->set(px, py, avgCol);
+//    return;
+//    heightMap->setRoad(px, py, false);
+#endif
+
+
+/*
+    const int dist = 1;
+    for (int x = px-dist; x <= px+dist; x++)
+    {
+        for (int y = py-dist; y <= py+dist; y++)
+        {
+#ifdef USE_IMAGE_HM
+            if (x >= 0 && y >= 0 && x < heightMap->getDimension().Width && y < heightMap->getDimension().Height
+#else
+            if (x >= 0 && y >= 0 && x < heightMap->getXSize() && y < heightMap->getYSize()
+#endif
+                && !isRoad(x, y) && !isNextToRoad(x, y))
+            {
+#ifdef USE_IMAGE_HM
+                heightMap->setPixel(x, y, col);
+#else
+                heightMap->set(x, y, 300+avgCol);
+#endif
+            }
+        }
+    }
+*/
+}
 
 void BigTerrain::doCache()
 {
@@ -2188,7 +2268,8 @@ void BigTerrain::doCache()
                        stHeightmapSize, tScale,                           
                        this->stageNum,
                        this,
-                       objectReps, 0, roadList, m_terrainPool);
+                       objectReps, 0, roadList, m_terrainPool,
+                       vscale, waterHeight);
             delete st;
 
             str = L"Do caching: x: ";

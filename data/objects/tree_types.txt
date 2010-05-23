@@ -6,7 +6,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 1
 data/objects/trees/Aspen.xml
 data/objects/treetextures/AspenBark.png
 data/objects/treetextures/AspenLeaf.png
@@ -15,7 +15,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 1
 data/objects/trees/Pine_rep.xml
 data/objects/treetextures/PineBark.png
 data/objects/treetextures/PineLeaf.png
@@ -24,7 +24,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 1
 data/objects/trees/Willow.xml
 data/objects/treetextures/WillowBark.png
 data/objects/treetextures/WillowLeaf.png
@@ -33,7 +33,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 3
 data/objects/trees/branch1.xml
 data/objects/treetextures/branch1.png
 data/objects/treetextures/WillowLeaf.png
@@ -42,7 +42,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 6
 data/objects/trees/branch2.xml
 data/objects/treetextures/branch1.png
 data/objects/treetextures/WillowLeaf.png
@@ -51,7 +51,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 6
 data/objects/trees/branch3.xml
 data/objects/treetextures/branch1.png
 data/objects/treetextures/WillowLeaf.png
@@ -60,7 +60,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 6
 data/objects/trees/branch4.xml
 data/objects/treetextures/branch2.png
 data/objects/treetextures/WillowLeaf.png
@@ -69,7 +69,7 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 6
 data/objects/trees/branch5.xml
 data/objects/treetextures/branch2.png
 data/objects/treetextures/WillowLeaf.png
@@ -78,4 +78,4 @@ rot: 0.0, 0.0, 0.0
 sca: 1.0, 1.0, 1.0
 box: 0.8, 4.0, 0.8
 ofs: 0.0, 0.0, 0.0
-cat: 0
+cat: 6

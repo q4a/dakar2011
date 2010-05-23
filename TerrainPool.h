@@ -26,7 +26,7 @@ using namespace gui;
 
 #define MAX_LOD 5
 
-#define VSCALE 1.5f
+#define VSCALE 0.3f
 
 #define TERRAIN_SCALE 20.f // tScale
 #define SMALLTERRAIN_HEIGHTMAP_SIZE 128 //stHeightmapSize

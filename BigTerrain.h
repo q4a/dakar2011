@@ -119,16 +119,18 @@ public:
 #else
        CHeightmap* getHeightMap() {return heightMap;}
 #endif
+       float getVScale() {return vscale;}
+       float getWaterHeight() {return waterHeight;}
 
 private:
        void applyRoadOnHeightMap();
        bool isRoad(int x, int y);
-       bool isNextToRoad(int px, int py);
+       bool isNextToRoad(int px, int py, int dist = 1);
        int getAverage(int px, int py);
        void applyAverage(int px, int py, int avgCol);
        int getAverage2(int px, int py);
        void applyAverage2(int px, int py, int avgCol);
-       int getAverage3(int px, int py);
+       int getAverage3(int px, int py, int dist = 1);
        void applyAverage3(int px, int py, int avgCol);
        
        void doCache();
@@ -233,6 +235,8 @@ public:
        NewtonBody* bodyd;
        NewtonCollision* collisiond;
 */
+       float vscale;
+       float waterHeight;
 };
 
 #endif // __BIGTERRAIN_H__

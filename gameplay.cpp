@@ -353,6 +353,7 @@ void startGame(int stageNum, SState* state)
                   bigTerrain->getFrictionMulti(),
                   skydome,
                   shadowMap,
+                  bigTerrain->getWaterHeight(),
                   savedCarDirt);
     car->setAutoGear(gear_type=='a');
 

@@ -65,7 +65,9 @@ public:
                     BigTerrain* p_bigTerrain,
                     core::array<SObjectPoolIdRepPair> &objectReps, int obj_density,
                     core::array<CMyRoad*> &bigRoadList,
-                    TerrainPool* p_terrainPool);
+                    TerrainPool* p_terrainPool,
+                    float p_vscale,
+                    float p_waterHeight);
        ~SmallTerrain();
        
        void setActive(bool pvisible);
@@ -143,6 +145,7 @@ private:
        ITexture* partTexture;
        //scene::ITerrainSceneNode* lterrain;
        TerrainPool* m_terrainPool;
+       float vscale;
 };
 
 #endif // __SMALLTERRAIN_H__

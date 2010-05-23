@@ -863,7 +863,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                                   "", "", "",
                                                   0.5,
                                                   skydome,
-                                                  shadowMap);
+                                                  shadowMap,
+                                                  WATER_HEIGHT);
                             //NewtonUpdate(nWorld, 0.015f);
                             car_to_draw->pause();
                             return true;
@@ -891,7 +892,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                                   "", "", "",
                                                   0.5,
                                                   skydome,
-                                                  shadowMap);
+                                                  shadowMap,
+                                                  WATER_HEIGHT);
                             //NewtonUpdate(nWorld, 0.015f);
                             car_to_draw->pause();
                             return true;
@@ -1077,7 +1079,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                  bigTerrain->getSkidSoundName(),
                                  bigTerrain->getFrictionMulti(),
                                  skydome,
-                                 shadowMap);
+                                 shadowMap,
+                                 bigTerrain->getWaterHeight());
                             car->pause();
                             dynCamReset = true;
                         }
@@ -2242,7 +2245,8 @@ void eventreceiver_menu::openSelectionWindow()
                           "", "", "",
                           0.5,
                           skydome,
-                          shadowMap);
+                          shadowMap,
+                          WATER_HEIGHT);
     printf("create car end\n");
     //NewtonUpdate(nWorld, 0.015f);
     //printf("update car end\n");

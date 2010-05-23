@@ -261,7 +261,7 @@ NewtonRaceCar::NewtonRaceCar(
      hb_tires(),
      mass(0.f), engine_center_of_mass(0.f), center_of_mass(0.f),
      chassis_rotation_limit(0.f), chassis_rotation_rate(0.f), max_brake_force(0.f), max_steer_angle(0.f),
-     max_steer_rate(0.f), engine_steer_div(0.f), nameText(0)
+     max_steer_rate(0.f), engine_steer_div(0.f), nameText(0), waterHeight(WATER_HEIGHT)
 {
     FILE* f;
     int ret;
@@ -654,10 +654,12 @@ void NewtonRaceCar::activate(
                         const float pfriction_multi,
                         scene::ISceneNode* skydome,
                         video::ITexture* shadowMap,
+                        const float p_waterHeight,
                         const int savedCarDirt
                         )
 {
     friction_multi = pfriction_multi;
+    waterHeight = p_waterHeight;
 // set the dirt level of the car
     current_car_dirt = savedCarDirt;
     if (current_car_dirt >= MAX_CAR_DIRT ) current_car_dirt = MAX_CAR_DIRT - 1;
@@ -1119,7 +1121,7 @@ void NewtonRaceCar::ApplyGravityForce (const NewtonBody* body, float timestep, i
     	mass *= (1.0f + speed / 20.0f);
     */
     //mass = 0.0f;
-        if (vehicle->m_node->getPosition().Y > WATER_HEIGHT)
+        if (vehicle->m_node->getPosition().Y > vehicle->waterHeight)
         {
             dVector force (0.0f, mass * GRAVITY, 0.0f);
             NewtonBodySetForce (body, &force.m_x);
@@ -2100,9 +2102,9 @@ void NewtonRaceCar::addSmoke(const float speed, const vector3df &pos, float offs
     }
     
     if (smokes[ind]==0)
-        smokes[ind] = new Smoke(smgr, driver, speed, pos, offset);
+        smokes[ind] = new Smoke(smgr, driver, speed, pos, offset, waterHeight);
     else
-        smokes[ind]->renew(smgr, driver, speed, pos, offset);
+        smokes[ind]->renew(smgr, driver, speed, pos, offset, waterHeight);
     //printf("add smoke end 2\n");
 }
 
@@ -2141,7 +2143,7 @@ void NewtonRaceCar::updateSmoke()
 }
 
 NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
-                     const float pspeed, const vector3df &pos, float offset) :
+                     const float pspeed, const vector3df &pos, float offset, float p_waterHeight) :
     speed(fabsf(pspeed)), animePhase(0)
 {
     //printf("add smoke\n");
@@ -2167,7 +2169,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
     //}
     //node->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
     //node->getMaterial(0).MaterialTypeParam = 0.9f;
-    if (pos.Y - offset > WATER_HEIGHT)
+    if (pos.Y - offset > p_waterHeight)
     {
 	   node->setMaterialTexture(0, smokeTexture);
     }
@@ -2178,7 +2180,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
 }
 
 void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
-                     const float pspeed, const vector3df &pos, float offset)
+                     const float pspeed, const vector3df &pos, float offset, float p_waterHeight)
 {
     //printf("add smoke\n");
     float addrX = (float)((rand()%20) - 10) / 20.0f;
@@ -2190,7 +2192,7 @@ void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
     node->setSize(core::dimension2d<f32>(0.2, 0.2));
     node->setPosition(vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
     node->setVisible(true);
-    if (pos.Y - offset > WATER_HEIGHT)
+    if (pos.Y - offset > p_waterHeight)
     {
 	   node->setMaterialTexture(0, smokeTexture);
     }

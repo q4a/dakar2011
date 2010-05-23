@@ -80,7 +80,9 @@ SmallTerrain::SmallTerrain(
                            int stageNum, BigTerrain* p_bigTerrain,
                            core::array<SObjectPoolIdRepPair> &objectReps, int obj_density,
                            core::array<CMyRoad*> &bigRoadList,
-                           TerrainPool* p_terrainPool)
+                           TerrainPool* p_terrainPool,
+                           float p_vscale,
+                           float p_waterHeight)
            : nWorld(pnWorld), terrain(0), body(0),
              visible(false), collision(0), stHeightmapSize(pstHeightmapSize), tScale(ptScale),
              /*roadMeshes(0),*/ roadWrappers_old(),/* numOfRoads(0),*/
@@ -88,10 +90,10 @@ SmallTerrain::SmallTerrain(
              /*grassWrappers(0), numOfGrasses(0),*/ wasCalculated(true),
              smgr(psmgr), driver(pdriver), x(px), y(py), max_x(pmax_x), max_y(pmax_y),
              m_bigTerrain(p_bigTerrain), objectWire(0), roadList(), oceanNode(0), partTexture(0),
-             m_terrainPool(p_terrainPool)
+             m_terrainPool(p_terrainPool), vscale(p_vscale)
 {
     core::vector3df loc((float)x*SMALLTERRAIN_SIZE, 0.f, (float)y*SMALLTERRAIN_SIZE);
-    core::vector3df terrainScale_t(TERRAIN_SCALE_T, VSCALE, TERRAIN_SCALE_T);	// scale
+    core::vector3df terrainScale_t(TERRAIN_SCALE_T, vscale, TERRAIN_SCALE_T);	// scale
 #ifdef USE_IMAGE_HM
     video::IImage* lheightMap = 0;
     video::IImage* lheightMap_ns = 0;
@@ -300,10 +302,10 @@ SmallTerrain::SmallTerrain(
 #ifdef USE_IMAGE_HM
     if (TESSELATION > 1)
     {
-        if ((float)lheightMap->getPixel(0, 0).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)lheightMap->getPixel(0, SMALLTERRAIN_HEIGHTMAP_SIZE_T).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)lheightMap->getPixel(SMALLTERRAIN_HEIGHTMAP_SIZE_T, 0).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)lheightMap->getPixel(SMALLTERRAIN_HEIGHTMAP_SIZE_T, SMALLTERRAIN_HEIGHTMAP_SIZE_T).getAverage()*VSCALE > WATER_HEIGHT
+        if ((float)lheightMap->getPixel(0, 0).getAverage()*vscale > p_waterHeight &&
+            (float)lheightMap->getPixel(0, SMALLTERRAIN_HEIGHTMAP_SIZE_T).getAverage()*vscale > p_waterHeight &&
+            (float)lheightMap->getPixel(SMALLTERRAIN_HEIGHTMAP_SIZE_T, 0).getAverage()*vscale > p_waterHeight &&
+            (float)lheightMap->getPixel(SMALLTERRAIN_HEIGHTMAP_SIZE_T, SMALLTERRAIN_HEIGHTMAP_SIZE_T).getAverage()*vscale > p_waterHeight
            )
         {
             fixOcean = true;
@@ -314,15 +316,15 @@ SmallTerrain::SmallTerrain(
     }
     else
     {
-        if ((float)heightMap->getPixel(x*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->getPixel(x*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->getPixel((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->getPixel((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*VSCALE > WATER_HEIGHT
+        if ((float)heightMap->getPixel(x*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*vscale > p_waterHeight &&
+            (float)heightMap->getPixel(x*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*vscale > p_waterHeight &&
+            (float)heightMap->getPixel((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*vscale > p_waterHeight &&
+            (float)heightMap->getPixel((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE).getAverage()*vscale > p_waterHeight
 #else // USE_IMAGE_HM
-        if ((float)heightMap->get(x*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE)*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->get(x*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE)*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->get((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE)*VSCALE > WATER_HEIGHT &&
-            (float)heightMap->get((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE)*VSCALE > WATER_HEIGHT
+        if ((float)heightMap->get(x*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE)*vscale > p_waterHeight &&
+            (float)heightMap->get(x*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE)*vscale > p_waterHeight &&
+            (float)heightMap->get((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, y*SMALLTERRAIN_HEIGHTMAP_SIZE)*vscale > p_waterHeight &&
+            (float)heightMap->get((x+1)*SMALLTERRAIN_HEIGHTMAP_SIZE, (y+1)*SMALLTERRAIN_HEIGHTMAP_SIZE)*vscale > p_waterHeight
 #endif // USE_IMAGE_HM
            )
         {
@@ -347,7 +349,7 @@ SmallTerrain::SmallTerrain(
 */
     if (oceanNode)
     {
-        oceanNode->setPosition(vector3df(-0.25f, WATER_HEIGHT, -0.25f) + terrain->getPosition());
+        oceanNode->setPosition(vector3df(-0.25f, p_waterHeight, -0.25f) + terrain->getPosition());
         oceanNode->setScale(vector3df(SMALLTERRAIN_SIZE+0.5f, 1.0f, SMALLTERRAIN_SIZE+0.5f));
         //oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/noise.png"));
         oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/normal2.png"));
@@ -525,13 +527,13 @@ void SmallTerrain::activate(CHeightmap* heightMap)
     if (TESSELATION > 1)
     {
         collision = NewtonCreateHeightFieldCollision(nWorld, SMALLTERRAIN_HEIGHTMAP_SIZE_T+1, SMALLTERRAIN_HEIGHTMAP_SIZE_T+1,
-                        0, elevationMap, attributeMap, TERRAIN_SCALE_T, VSCALE/257.f, levelID);
+                        0, elevationMap, attributeMap, TERRAIN_SCALE_T, vscale/257.f, levelID);
     }
     else
     {
 #endif // USE_IMAGE_HM
         collision = NewtonCreateHeightFieldCollision(nWorld, SMALLTERRAIN_HEIGHTMAP_SIZE+1, SMALLTERRAIN_HEIGHTMAP_SIZE+1,
-                        0, elevationMap, attributeMap, TERRAIN_SCALE, VSCALE, levelID);
+                        0, elevationMap, attributeMap, TERRAIN_SCALE, vscale, levelID);
 #ifdef USE_IMAGE_HM
     }
 #endif
@@ -552,7 +554,7 @@ void SmallTerrain::activate(CHeightmap* heightMap)
         }
 
     collision = NewtonCreateHeightFieldCollision(nWorld, SMALLTERRAIN_HEIGHTMAP_SIZE+1, SMALLTERRAIN_HEIGHTMAP_SIZE+1,
-                    0, elevationMap, attributeMap, TERRAIN_SCALE, VSCALE, levelID);
+                    0, elevationMap, attributeMap, TERRAIN_SCALE, vscale, levelID);
 
     delete [] elevationMap;
     delete [] attributeMap;
@@ -606,7 +608,7 @@ void SmallTerrain::activate(CHeightmap* heightMap)
     }
     
     core::vector3df loc((float)x*SMALLTERRAIN_SIZE, 0.f, (float)y*SMALLTERRAIN_SIZE);
-    core::vector3df terrainScale(TERRAIN_SCALE, VSCALE, TERRAIN_SCALE);	// scale
+    core::vector3df terrainScale(TERRAIN_SCALE, vscale, TERRAIN_SCALE);	// scale
 
     float maxes[3] = {0.f,0.f,0.f};
     float mines[3] = {100000.f,100000.f,100000.f};

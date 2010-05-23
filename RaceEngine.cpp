@@ -336,6 +336,7 @@ void SStarter::switchToVisible()
                       m_bigTerrain->getFrictionMulti(),
                       skydome,
                       shadowMap,
+                      m_bigTerrain->getWaterHeight(),
                       0);
         vehicle->setNameText(nameText);
         m_raceEngine->addUpdater(this);

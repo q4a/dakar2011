@@ -242,7 +242,8 @@ int recvOtherDatas()
                  bigTerrain->getSkidSoundName(),
                  bigTerrain->getFrictionMulti(),
                  skydome,
-                 shadowMap);
+                 shadowMap,
+                 bigTerrain->getWaterHeight());
             printf("add new car %d type %d\n", carData->num, carData->type);
             
             if (trace_net)

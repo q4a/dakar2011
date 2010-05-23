@@ -95,8 +95,8 @@ class NewtonRaceCar
 
     struct Smoke
     {
-        Smoke(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset);
-        void renew(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset);
+        Smoke(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset, float p_waterHeight);
+        void renew(ISceneManager* smgr, IVideoDriver* driver, const float pspeed, const vector3df &pos, float offset, float p_waterHeight);
         
         scene::IBillboardSceneNode* node;
         float speed;
@@ -125,6 +125,7 @@ public:
             const float pfriction_multi,
             scene::ISceneNode* skydome,
             video::ITexture* shadowMap,
+            const float p_waterHeight,
             const int savedCarDirt = 0
             );
     void deactivate();
@@ -363,6 +364,7 @@ private:
 	float engine_steer_div;
 	
 	ITextSceneNode* nameText; // the name of the competitor
+	float waterHeight;
 };
 
 #endif // !defined(AFX_NEWTONRACECAR_H__96CF72A9_A2BD_4A11_9F6D_40DD9A3CCC12__INCLUDED_)

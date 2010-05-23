@@ -291,7 +291,7 @@ int createObjectPool(const c8* name,
         nameNum* newElement = new nameNum;
         strcpy(newElement->name, name);
         newElement->objectMesh = newElement->farObjectMesh = 0;
-        if (category > 2) category = 2;
+        //if (category > 3) category = 3;
         if (category < 0) category = 0;
         newElement->category = category;
         objectPools.push_back(newElement);
