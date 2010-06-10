@@ -1,5 +1,5 @@
 128 x 20.000000
-data/bigterrains/heightmaps/stage9_hm.hm
+data/bigterrains/heightmaps/stage9_hm.hmbin
 data/bigterrains/densitymaps/stage9_dm.png
 data/bigterrains/texturemaps/stage9_tm.png
 data/bigterrains/textures/dirt_06.jpg
@@ -16,7 +16,7 @@ data/vehicles/sound/skids/mud.wav
 speed: 150.0
 friction_multi: 0.5
 vscale: 0.3
-water_height: 30.0
+water_height: 30.5
 start_pos: 4427.0 5489.0
 start_offset: -20.0 0.0
 start_rot: 0.0 0.0 0.0

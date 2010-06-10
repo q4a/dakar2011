@@ -1,7 +1,7 @@
 camera_speed: 0.140000
 joy_dead_zone: 0.010000
 object_visibility_limit: 512.000000
-far_value: 1900.000000
+far_value: 2400.000000
 near_value: 0.500000
 min_fps: 60.000000
 gravity: -30.000000
@@ -89,3 +89,4 @@ editor_mode: yes
 adv_cg_shaders: yes
 follow_carlos: yes
 terrain_tesselation: 1
+use_threads: yes

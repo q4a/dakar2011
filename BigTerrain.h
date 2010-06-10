@@ -44,6 +44,7 @@ struct SMapsQueueElement
     int y;
     int obj_density;
     bool visible;
+    unsigned int version;
 };
 
 class BigTerrain
@@ -59,6 +60,7 @@ public:
        void updateMaps(int new_x, int new_y, int obj_density, bool showPerc = false);
        void updateMapsAddToQueue(int new_x, int new_y, int obj_density);
        void checkMapsQueue();
+       void checkMapsQueueThread(SMapsQueueElement* mQE);
        void updateRoads();
        void addNewRoad();
        void loadRoads(const char* roadsName);
@@ -177,8 +179,11 @@ public:
        core::array<vector3df> cpPos;
        vector3df endPos;
        scene::IVolumeLightSceneNode* startGate;
+       OffsetObject* startOffsetObject;
        core::array<scene::IVolumeLightSceneNode*> cpGate;
+       core::array<OffsetObject*> cpOffsetObject;
        scene::IVolumeLightSceneNode* endGate;
+       OffsetObject* endOffsetObject;
        
        bool timeStarted;
        bool timeEnded;
@@ -217,6 +222,7 @@ public:
 
        core::array<SmallTerrain*> smallTerrainsForUpdate;
        CMyLock smallTerrainsForUpdateLock;
+       CMyLock mapLock;
        
        core::array<CMyRoad*> roadList;
        core::array<SItinerPoint*> activeItinerPoints;
@@ -237,6 +243,8 @@ public:
 */
        float vscale;
        float waterHeight;
+       unsigned int lastMapsQueueUpdate;
+       unsigned int mapsQueueVersion;
 };
 
 #endif // __BIGTERRAIN_H__

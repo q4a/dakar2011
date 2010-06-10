@@ -121,6 +121,7 @@ int disconnect()
     connected = 0;
     sock = 0;
     initial_message_sent = 0;
+    return 1;
 }
 
 int sendMyData()
@@ -207,7 +208,7 @@ int recvOtherDatas()
         SCarData* carData = (SCarData*)(data + 1);
         if (carData->num < 0 || carData->num >= CAR_NUM || carData->type < 0)
         {
-            printf("+++ recv other datas size okay num, or type is not okay", carData->num, carData->type);
+            printf("+++ recv other datas size okay num %d, or type %d is not okay", carData->num, carData->type);
             //sent = recv(sock,data,DATA_LENGTH,NOWAIT);
             continue;
         }

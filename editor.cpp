@@ -82,9 +82,9 @@ void actionEditor(int key)
                 if (currentRoad >= 0 && currentRoad <= (int)bigTerrain->getRoadList().size() - 1)
                 {
                     bigTerrain->getRoadList()[currentRoad]->addBasePoint(vector3df(
-                                                                        camera->getPosition().X,
+                                                                        offsetManager->getOffset().X+camera->getPosition().X,
                                                                         0.f,
-                                                                        camera->getPosition().Z
+                                                                        offsetManager->getOffset().Z+camera->getPosition().Z
                                                                         ));
                     bigTerrain->updateRoads();
                 }
@@ -149,7 +149,7 @@ void actionEditor(int key)
                 if (currentObj >= 0 && currentObj < getPoolsSize())
                 {
                     SObjectWrapper* objectWrapper = new SObjectWrapper(bigTerrain);
-                    objectWrapper->setPosition(camera->getPosition());
+                    objectWrapper->setPosition(offsetManager->getOffset()+camera->getPosition());
                     objectWrapper->setPool(currentObj);
                     bigTerrain->getObjectWrappers().push_back(objectWrapper);
                     objectWrapper->setVisible(true);
@@ -209,7 +209,7 @@ void actionEditor(int key)
                 if (currentItiner >= ITINER_POOLID_OFFSET && currentItiner < ITINER_POOLID_OFFSET + getItinerTypesSize())
                 {
                     SItinerPoint* objectWrapper = new SItinerPoint(bigTerrain);
-                    objectWrapper->setPosition(camera->getPosition());
+                    objectWrapper->setPosition(offsetManager->getOffset()+camera->getPosition());
                     objectWrapper->setPool(currentItiner);
                     bigTerrain->getObjectWrappers().push_back(objectWrapper);
                     objectWrapper->setVisible(true);
@@ -249,7 +249,7 @@ void actionEditor(int key)
                     int nearestInd = bigTerrain->getObjectWrappers().size();
                     for (int i = 0; i < bigTerrain->getObjectWrappers().size(); i++)
                     {
-                        float len = camera->getPosition().getDistanceFrom(bigTerrain->getObjectWrappers()[i]->getPosition());
+                        float len = (offsetManager->getOffset()+camera->getPosition()).getDistanceFrom(bigTerrain->getObjectWrappers()[i]->getPosition());
                         if (len < nearestDist)
                         {
                             nearestInd = i;

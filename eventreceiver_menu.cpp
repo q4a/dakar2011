@@ -534,12 +534,16 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         case EGUIET_COMBO_BOX:
                         case EGUIET_SCROLL_BAR:
                         return true;
+                        default:
+                            break;
                     }
                 }
                 break;
             case irr::KEY_TAB:
                 if (event.KeyInput.Control)
                     return true;
+                break;
+            default:
                 break;
         }
         return false;
@@ -1074,7 +1078,9 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             
                             car = vehiclePool->getVehicle(carType);
                             car->activate(
-                                 core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+5.f,camera->getPosition().Z),
+                                 core::vector3df(offsetManager->getOffset().X+camera->getPosition().X,
+                                                 bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+5.f,
+                                                 offsetManager->getOffset().Z+camera->getPosition().Z),
                                  rot, bigTerrain->getGroundSoundName(), bigTerrain->getPuffSoundName(),
                                  bigTerrain->getSkidSoundName(),
                                  bigTerrain->getFrictionMulti(),
@@ -1676,6 +1682,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         env->setFocus(stateGlobalScroll);
                 }
                 */
+                break;
+            default:
                 break;
         }
     }

@@ -24,19 +24,29 @@ data/bigterrains/bigterrain3.txt
 0
 Cordoba -> San Miguel de Tucuman
 NL
-Difficulty: easy
+Difficulty: medium
 NL
-Type: grass / sand
+Type: grass
 EOM
 data/bigterrains/bigterrain4.txt
-5240
+2360
 1
 0
 San Miguel de Tucuman -> San Salvador de Jujuy
 NL
-Difficulty: easy
+Difficulty: long and medium
 NL
-Type: grass / sand
+Type: grass / mud
+EOM
+data/bigterrains/bigterrain5.txt
+4050
+1
+0
+San Salvador de Jujuy -> Calama
+NL
+Difficulty: medium
+NL
+Type: grass / mud / sand
 EOM
 data/bigterrains/bigterrain9.txt
 4800

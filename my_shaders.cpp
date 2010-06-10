@@ -12,6 +12,7 @@
 #include "my_shaders.h"
 #include "settings.h"
 #include "gameplay.h"
+#include "error.h"
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -264,6 +265,8 @@ void setupShaders (IrrlichtDevice* device,
 			light_2tex_2_vsFileName = "data/shaders/light_2tex_gl.vert";
 			smoke_psFileName = "data/shaders/smoke_gl.frag";
 		break;
+	default:
+		myError(12, "non-reachable code reached");
 	}
 
 	if (!driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) &&

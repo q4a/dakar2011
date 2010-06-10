@@ -281,7 +281,9 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                     //mat.setTranslation(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+5.f,camera->getPosition().Z));
                     //mat.setRotationDegrees(vector3df(0.f, rot.Y, 0.f));
                     //car->setMatrixWithNB(mat);
-                    car->reset(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+3.f,camera->getPosition().Z));
+                    car->reset(core::vector3df(/*offsetManager->getOffset().X+*/camera->getPosition().X,
+                                               bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+3.f,
+                                               /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
                     if (bigTerrain->addPenality(RESET_PENALITY)!=(u32)-1)
                     {
@@ -775,7 +777,9 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 joy_reset_car_p = 1;
                 if (car && bigTerrain && inGame == 0)
                 {
-                    car->reset(core::vector3df(camera->getPosition().X,bigTerrain->getHeight(camera->getPosition().X,camera->getPosition().Z)+5.f,camera->getPosition().Z));
+                    car->reset(core::vector3df(/*offsetManager->getOffset().X+*/camera->getPosition().X,
+                                               bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+5.f,
+                                               /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
                     if (bigTerrain->addPenality(RESET_PENALITY)!=(u32)-1)
                     {

@@ -54,6 +54,8 @@ using namespace gui;
 #define GRAVITY    gravity
 //-40.0f
 
+class OffsetObject;
+
 class NewtonRaceCar
 {
 	struct RaceCarTire
@@ -91,6 +93,7 @@ class NewtonRaceCar
         float suspension_spring;
         float suspension_damper;
         bool hitRoad;
+        OffsetObject* offsetObject;
 	};
 
     struct Smoke
@@ -101,7 +104,8 @@ class NewtonRaceCar
         scene::IBillboardSceneNode* node;
         float speed;
         int animePhase;
-    };
+        OffsetObject* offsetObject;
+   };
 
 public:
 	NewtonRaceCar(IrrlichtDevice* pdevice, 
@@ -254,6 +258,7 @@ private:
 	static void DestroyVehicle (const NewtonBody* body);
 	static void ApplyGravityForce (const NewtonBody* body, float timestep, int threadIndex);
 	static void SetTransform (const NewtonBody* body, const float* matrixPtr, int threadIndex);
+	static void offsetObjectCallback(void* userData, const irr::core::vector3df& newPos);
 
 #ifdef USE_BASICRC
 	CustomMultiBodyVehicle* GetJoint() const;
@@ -365,6 +370,7 @@ private:
 	
 	ITextSceneNode* nameText; // the name of the competitor
 	float waterHeight;
+    OffsetObject* offsetObject;
 };
 
 #endif // !defined(AFX_NEWTONRACECAR_H__96CF72A9_A2BD_4A11_9F6D_40DD9A3CCC12__INCLUDED_)

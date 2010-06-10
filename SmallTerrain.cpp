@@ -90,7 +90,7 @@ SmallTerrain::SmallTerrain(
              /*grassWrappers(0), numOfGrasses(0),*/ wasCalculated(true),
              smgr(psmgr), driver(pdriver), x(px), y(py), max_x(pmax_x), max_y(pmax_y),
              m_bigTerrain(p_bigTerrain), objectWire(0), roadList(), oceanNode(0), partTexture(0),
-             m_terrainPool(p_terrainPool), vscale(p_vscale)
+             m_terrainPool(p_terrainPool), vscale(p_vscale), offsetObject(0), offsetObjectOcean(0)
 {
     core::vector3df loc((float)x*SMALLTERRAIN_SIZE, 0.f, (float)y*SMALLTERRAIN_SIZE);
     core::vector3df terrainScale_t(TERRAIN_SCALE_T, vscale, TERRAIN_SCALE_T);	// scale
@@ -178,6 +178,9 @@ SmallTerrain::SmallTerrain(
 #ifdef USE_IMAGE_HM
     }    
 #endif
+
+    offsetObject = new OffsetObject(terrain);
+
     if (useShaders)
         terrain->setMaterialFlag(video::EMF_LIGHTING, false);
     else    
@@ -334,8 +337,7 @@ SmallTerrain::SmallTerrain(
 #ifdef USE_IMAGE_HM
     }
 #endif
-    updateRoads(bigRoadList);
-    setActive(true);
+    updateRoads(bigRoadList, 0);
 
     // ocean
     oceanNode = loadMySimpleObject("data/bigterrains/ocean/ocean_surface.mso");
@@ -375,11 +377,13 @@ SmallTerrain::SmallTerrain(
         }
         //oceanNode->scaleTexture(1.0f, (float)SMALLTERRAIN_HEIGHTMAP_SIZE /* 3.0f*/);
         //oceanNode->setMaterialFlag(video::EMF_WIREFRAME, true);
+        offsetObjectOcean = new OffsetObject(oceanNode);
     }
     else
     {
         //assert(0 && "No ocean node");
     }
+    setActive(true);
 }
 
 SmallTerrain::~SmallTerrain()
@@ -407,6 +411,18 @@ SmallTerrain::~SmallTerrain()
     {
 	   NewtonReleaseCollision(nWorld, collision);
 	   collision = 0;
+    }
+    if (offsetObject)
+    {
+        offsetManager->removeObject(offsetObject);
+        delete offsetObject;
+        offsetObject = 0;
+    }
+    if (offsetObjectOcean)
+    {
+        offsetManager->removeObject(offsetObjectOcean);
+        delete offsetObjectOcean;
+        offsetObjectOcean = 0;
     }
 /*    if (roadWrappers)
     {
@@ -913,6 +929,16 @@ void SmallTerrain::setActive(bool pvisible)
         body = NewtonCreateBody(nWorld, collision);
         NewtonBodySetMaterialGroupID(body, levelID);
         NewtonBodySetMatrix(body, matrix.pointer());
+        
+        if (offsetObject)
+        {
+            offsetObject->setBody(body);
+            offsetManager->addObject(offsetObject);
+        }
+        if (offsetObjectOcean)
+        {
+            offsetManager->addObject(offsetObjectOcean);
+        }
 
         // set the newton world size based on the bsp size
         ///float boxP0[3]; 
@@ -951,6 +977,15 @@ void SmallTerrain::setActive(bool pvisible)
         {
             NewtonDestroyBody(nWorld, body);
             body = 0;
+        }
+        if (offsetObject)
+        {
+            offsetObject->setBody(0);
+            offsetManager->removeObject(offsetObject);
+        }
+        if (offsetObjectOcean)
+        {
+            offsetManager->removeObject(offsetObjectOcean);
         }
     }
     if (terrain)
@@ -1000,7 +1035,7 @@ void SmallTerrain::addRoad_old(SRoadWrapper_old* roadWrapper_old)
     roadWrappers_old.push_back(roadWrapper_old);
 }
 
-void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList)
+void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate)
 {
     dprintf(printf("ST::updateRoads() old size %d\n", roadList.size());)
     for (int i = 0; i < roadList.size(); i++)
@@ -1038,6 +1073,7 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList)
                         if (j > 0)
                         {
                             float height = 0.0f;
+                            /*
                             float cheight = terrain->getHeight(basePoints[j].X, basePoints[j].Z);
                             if (j < basePoints.size()-1 && down.X < basePoints[j+1].X && down.Y < basePoints[j+1].Z &&
                                 basePoints[j+1].X < up.X && basePoints[j+1].Z < up.Y)
@@ -1048,19 +1084,22 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList)
                             {
                                 height = cheight;
                             }
+                            */
                             //printf("height: %f\n", height);
-                            road->addBasePoint(vector3df(basePoints[j-1].X,height,basePoints[j-1].Z));
+                            //road->addBasePoint(vector3df(basePoints[j-1].X,height,basePoints[j-1].Z));
                             //printf("add bp 1, new size: %d\n", road->getBasePoints().size());
                         }
                     }
                     if (j==0 || j==basePoints.size()-1)
                     {
-                        road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j].X, basePoints[j].Z)-0.6f,basePoints[j].Z));
+                        //road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j].X, basePoints[j].Z)-0.6f,basePoints[j].Z));
+                        road->addBasePoint(vector3df(basePoints[j].X, -0.6f,basePoints[j].Z));
                         //printf("add bp 2, new size: %d\n", road->getBasePoints().size());
                     }
                     else
                     {
-                        road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j].X, basePoints[j].Z),basePoints[j].Z));
+                        //road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j].X, basePoints[j].Z),basePoints[j].Z));
+                        road->addBasePoint(vector3df(basePoints[j].X, 0.f,basePoints[j].Z));
                         //printf("add bp 3, new size: %d\n", road->getBasePoints().size());
                     }
                 }
@@ -1068,9 +1107,13 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList)
                 {
                     if (road)
                     {
+                        if (j < basePoints.size() - 1)
+                        {
+                            road->addBasePoint(vector3df(basePoints[j+1].X,0.f,basePoints[j+1].Z));
+                        }
                         dprintf(printf("ST::updateRoads() end road found BT road num %d basePoint %d, new road size %d\n", i, j, road->getBasePoints().size());)
                         //road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j-1].X, basePoints[j-1].Z),basePoints[j].Z));
-                        road->generateRoadNode();
+                        road->generateRoadNode(this, regenerate);
                         roadList.push_back(road);
                         road = 0;
                     }
@@ -1079,7 +1122,7 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList)
             if (road)
             {
                 dprintf(printf("ST::updateRoads() end road found BT 2 road num %d, new road size %d\n", i, road->getBasePoints().size());)
-                road->generateRoadNode();
+                road->generateRoadNode(this, regenerate);
                 roadList.push_back(road);
                 road = 0;
             }

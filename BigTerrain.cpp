@@ -54,7 +54,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              stHeightmapSize(0), tScale(0.f), /*roadMeshes(0),*/ roadWrappers_old(), /*numOfRoads(0),*/
              /*objectMeshes(0),*/ objectWrappers(),/* numOfObjects(0),*/
              ov_limit(objectVisibilityLimit),
-             /*numOfGrasses(0), grassWrappers(),*/ startGate(0), endGate(0),
+             /*numOfGrasses(0), grassWrappers(),*/
+             startGate(0), startOffsetObject(0), endGate(0), endOffsetObject(0),
              device(p_device), smgr(p_smgr), driver(p_driver),
              //startTime(0), endTime(0),
              timeStarted(false), timeEnded(false), lastTick(0), currentTime(0),
@@ -62,10 +63,11 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              stageTime(pstageTime), stageLength(0.f), gtime(pgtime),
              densityMap(0), objectWire(0),
              heightMap(0), textureMap(0), shadowMap(p_shadowMap),
-             cpPos(), cpTime(), cpTimed(), cpGate(),
-             objectReps(), stageNum(p_stageNum), smallTerrainsForUpdate(), smallTerrainsForUpdateLock(),
+             cpPos(), cpTime(), cpTimed(), cpGate(), cpOffsetObject(),
+             objectReps(), stageNum(p_stageNum), smallTerrainsForUpdate(), smallTerrainsForUpdateLock(), mapLock(),
              roadList(), activeItinerPoints(), aiPoints(), speed(60.0f), skydome(p_skydome),
-             m_terrainPool(p_terrainPool), vscale(VSCALE), waterHeight(WATER_HEIGHT)
+             m_terrainPool(p_terrainPool), vscale(VSCALE), waterHeight(WATER_HEIGHT),
+             lastMapsQueueUpdate(0), mapsQueueVersion(0)
              /*,
              bodyl(0), collisionl(0),
              bodyr(0), collisionr(0),
@@ -142,21 +144,46 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     
 	heightMap = driver->createImageFromFile(heightMapName);
 	partImage = heightMap;
+    str = L"Loading: 10%";
+    MessageText::addText(str.c_str(), 1, true);
     sizeX = partImage->getDimension().Width;
     sizeY = partImage->getDimension().Height;
     for (int i = 0; i < sizeX; i++)
+    {
         for (int j = 0; j<sizeY/2; j++)
         {
             SColor tmp_col = partImage->getPixel(i, j);
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
+    }
 #else
 	heightMap = smgr->addHeightmap();
-    heightMap->read(heightMapName, device);
+	if (heightMapName[strlen(heightMapName)-3]=='.')
+	{
+        dprintf(printf("read heightmap as text\n");)
+        bool ret = heightMap->read(heightMapName, device);
+        if (!ret)
+        {
+            myError(4, "unable to read text heightmap: %s", heightMapName);
+        }
+    }
+    else
+    {
+        dprintf(printf("read heightmap as bin\n");)
+        bool ret = heightMap->readBin(heightMapName, device);
+        if (!ret)
+        {
+            myError(4, "unable to read binary heightmap: %s", heightMapName);
+        }
+        //assert(0);
+    }
+    str = L"Loading: 10%";
+    MessageText::addText(str.c_str(), 1, true);
     sizeX = heightMap->getXSize();
     sizeY = heightMap->getYSize();
     for (int i = 0; i < sizeX; i++)
+    {
         for (int j = 0; j<sizeY/2; j++)
         {
             unsigned short tmp_height = heightMap->get(i, j);
@@ -166,21 +193,34 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             heightMap->set(i, sizeY-1-j, tmp_height);
             heightMap->setRoad(i, sizeY-1-j, tmp_road);
         }
+        if (i%100==0)
+        {
+            MessageText::refresh();
+        }
+    }
 #endif
-    MessageText::refresh();
+    str = L"Loading: 13%";
+    MessageText::addText(str.c_str(), 1, true);
     
 	densityMap = driver->createImageFromFile(densityMapName);
 	partImage = densityMap;
     sizeX = partImage->getDimension().Width;
     sizeY = partImage->getDimension().Height;
     for (int i = 0; i < sizeX; i++)
+    {
         for (int j = 0; j<sizeY/2; j++)
         {
             SColor tmp_col = partImage->getPixel(i, j);
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
-    MessageText::refresh();
+        if (i%100==0)
+        {
+            MessageText::refresh();
+        }
+    }
+    str = L"Loading: 16%";
+    MessageText::addText(str.c_str(), 1, true);
     
 	
 	textureMap = driver->createImageFromFile(textureMapName);
@@ -188,13 +228,20 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     sizeX = partImage->getDimension().Width;
     sizeY = partImage->getDimension().Height;
     for (int i = 0; i < sizeX; i++)
+    {
         for (int j = 0; j<sizeY/2; j++)
         {
             SColor tmp_col = partImage->getPixel(i, j);
             partImage->setPixel(i, j, partImage->getPixel(i, sizeY-1-j));
             partImage->setPixel(i, sizeY-1-j, tmp_col);
         }
-    MessageText::refresh();
+        if (i%100==0)
+        {
+            MessageText::refresh();
+        }
+    }
+    str = L"Loading: 20%";
+    MessageText::addText(str.c_str(), 1, true);
     
         
 	applyRoadOnHeightMap();
@@ -487,7 +534,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
 				video::SColor(0, 255, 255, 255), // foot color
 				video::SColor(0, 0, 0, 0));      // tail color
 
-    float cpDist[cpPos.size()];
+    float* cpDist = new float[cpPos.size()];
     float sumDist = 0;
 
 	if (startGate && endGate)
@@ -495,20 +542,24 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
 		startGate->setScale(core::vector3df(GATE_LIMIT, GATE_LIMIT, GATE_LIMIT));
 		startGate->setPosition(core::vector3df(startPos.X,0.f/*getHeight(startPos.X, startPos.Z)*/,startPos.Z));
 		startGate->setVisible(false);
+		startOffsetObject = new OffsetObject(startGate);
+		offsetManager->addObject(startOffsetObject);
         for(int i = 0; i<cpGate.size(); i++)
         {
             cpGate[i]->setScale(core::vector3df(GATE_LIMIT, GATE_LIMIT, GATE_LIMIT));
             cpGate[i]->setPosition(core::vector3df(cpPos[i].X,0.f/*getHeight(cpPos[i].X, cpPos[i].Z)*/,cpPos[i].Z));
     		cpGate[i]->setVisible(false);
+    		cpOffsetObject.push_back(new OffsetObject(cpGate[i]));
+    		offsetManager->addObject(cpOffsetObject[i]);
             if (i == 0)
             {
-                float dist = cpGate[i]->getPosition().getDistanceFrom(startGate->getPosition());
+                float dist = cpPos[i].getDistanceFrom(startPos);
                 sumDist = dist;
                 cpDist[i] = dist;
             }
             else
             {
-                float dist = cpGate[i]->getPosition().getDistanceFrom(cpGate[i-1]->getPosition());
+                float dist = cpPos[i].getDistanceFrom(cpPos[i-1]);
                 sumDist += dist;
                 cpDist[i] = sumDist;
             }
@@ -517,12 +568,14 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
 		endGate->setScale(core::vector3df(GATE_LIMIT, GATE_LIMIT, GATE_LIMIT));
 		endGate->setPosition(core::vector3df(endPos.X,0.f/*getHeight(endPos.X, endPos.Z)*/,endPos.Z));
 		endGate->setVisible(false);
+		endOffsetObject = new OffsetObject(endGate);
+		offsetManager->addObject(endOffsetObject);
 
         float dist = 0;
-        if (cpGate.size() > 0)
-            endGate->getPosition().getDistanceFrom(cpGate[cpGate.size()-1]->getPosition());
+        if (cpPos.size() > 0)
+            endPos.getDistanceFrom(cpPos[cpPos.size()-1]);
         else
-            endGate->getPosition().getDistanceFrom(startGate->getPosition());
+            endPos.getDistanceFrom(startPos);
         sumDist += dist;
 		// load textures for animation
 		core::array<video::ITexture*> ltextures;
@@ -551,16 +604,24 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         }
 	}
 	cps = cpPos.size();
+	delete [] cpDist;
     
     float boxP0[3];
     float boxP1[3];
-    
+    /*
     boxP0[0] = 0.f;
     boxP0[1] = -100.f;
     boxP0[2] = 0.f;
     boxP1[0] = (float)max_x*SMALLTERRAIN_SIZE;
     boxP1[1] = 5000.f;
     boxP1[2] = (float)max_y*SMALLTERRAIN_SIZE;
+    */
+    boxP0[0] = -1.1f*SMALLTERRAIN_SIZE;
+    boxP0[1] = -100.f;
+    boxP0[2] = -1.1f*SMALLTERRAIN_SIZE;
+    boxP1[0] = 2.1f*SMALLTERRAIN_SIZE;
+    boxP1[1] = 7000.f;
+    boxP1[2] = 2.1f*SMALLTERRAIN_SIZE;
     dprintf(printf("nWorld bbox: %f %f %f\n", boxP1[0], boxP1[1], boxP1[2]);)
     //*(int*)1 = 1;
 /*
@@ -642,8 +703,34 @@ BigTerrain::~BigTerrain()
     }
     
     if (startGate) startGate->remove();
+    if (startOffsetObject)
+    {
+        startOffsetObject->setNode(0);
+        offsetManager->removeObject(startOffsetObject);
+        delete startOffsetObject;
+        startOffsetObject = 0;
+    }
     //for(int i = 0; i<CP_NUM; i++) {if (cpGate[i]) cpGate[i]->remove();}
+    for (unsigned int i = 0; i < cpGate.size(); i++) {if (cpGate[i]) cpGate[i]->remove();}
+    for (unsigned int i = 0; i < cpOffsetObject.size(); i++)
+    {
+        if (cpOffsetObject[i])
+        {
+            cpOffsetObject[i]->setNode(0);
+            offsetManager->removeObject(cpOffsetObject[i]);
+            delete cpOffsetObject[i];
+            cpOffsetObject[i] = 0;
+        }
+    }
+    cpOffsetObject.clear();
     if (endGate) endGate->remove();
+    if (endOffsetObject)
+    {
+        endOffsetObject->setNode(0);
+        offsetManager->removeObject(endOffsetObject);
+        delete endOffsetObject;
+        endOffsetObject = 0;
+    }
     if (densityMap)
     {
         densityMap->drop();
@@ -763,7 +850,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             //updateMaps(new_x, new_y, obj_density, true);
             // non-threaded way, but in queue
             updateMapsAddToQueue(new_x, new_y, obj_density);
-            // threaded way
+            // threaded way - not working!
             //mapReader->updateMap(this, new_x, new_y, obj_density);
         }
         last_x = new_x;
@@ -804,7 +891,8 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             if (fabsf(newX-startPos.X)<OV_LIMIT && fabsf(newY-startPos.Z)<OV_LIMIT)
             {
                 vector3df pos = startGate->getPosition();
-                pos.Y = getHeight(pos.X, pos.Z);
+                pos.Y = getHeight(startPos.X, startPos.Z);
+                dprintf(printf("STARTGATE: Y %f\n", pos.Y);)
                 startGate->setPosition(pos);
                 startGate->setVisible(true);
             }
@@ -819,7 +907,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
                 if (fabsf(newX-cpPos[i].X)<OV_LIMIT && fabsf(newY-cpPos[i].Z)<OV_LIMIT)
                 {
                     vector3df pos = cpGate[i]->getPosition();
-                    pos.Y = getHeight(pos.X, pos.Z);
+                    pos.Y = getHeight(cpPos[i].X, cpPos[i].Z);
                     cpGate[i]->setPosition(pos);
                     cpGate[i]->setVisible(true);
                 }
@@ -834,7 +922,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             if (fabsf(newX-endPos.X)<OV_LIMIT && fabsf(newY-endPos.Z)<OV_LIMIT)
             {
                 vector3df pos = endGate->getPosition();
-                pos.Y = getHeight(pos.X, pos.Z);
+                pos.Y = getHeight(endPos.X, endPos.Z);
                 endGate->setPosition(pos);
                 endGate->setVisible(true);
             }
@@ -867,6 +955,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             timeStarted = true;
             lastTick = device->getTimer()->getTime();
             startGate->setVisible(false);
+            offsetManager->removeObject(startOffsetObject);
         }
         else
         {
@@ -925,6 +1014,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
                     MessageText::addText(str.c_str(), 5);
                     dprintf(printf("cppos[%d], remaining cps: %d\n", i, cps));
                     cpGate[i]->setVisible(false);
+                    offsetManager->removeObject(cpOffsetObject[i]);
                 }
                 else
                 {
@@ -985,6 +1075,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             compassArrow->setVisible(false);
             u32 diffTime = currentTime; //endTime - startTime;
             endGate->setVisible(false);
+            offsetManager->removeObject(endOffsetObject);
 
             str += L"Your time is ";
             addTimeToStr(str, diffTime);
@@ -1090,11 +1181,11 @@ float BigTerrain::getHeight(float x, float y) const
     int _x = (int)(x / SMALLTERRAIN_SIZE);
     int _y = (int)(y / SMALLTERRAIN_SIZE);
     if (_x > max_x || _y > max_y || !map[_x + (max_x*_y)])
-       return -1.f;
+       return 0.f;
 
     //if (!map[_x + (max_x*_y)]->terrain) map[_x + (max_x*_y)]->activate();
 
-    return map[_x + (max_x*_y)]->terrain->getHeight(x, y);
+    return map[_x + (max_x*_y)]->terrain->getHeight(x - offsetManager->getOffset().X, y - offsetManager->getOffset().Z);
 }
 
 float BigTerrain::getDensity(float x, float y, int category) const
@@ -1106,22 +1197,23 @@ float BigTerrain::getDensity(float x, float y, int category) const
        return 0;
 
     u32 ret = 0;
-    if (category == 0 || category & 1 == 1)
+    if (category == 0 || ((category & 1) == 1))
     {
         ret += densityMap->getPixel(_x, _y).getRed();
     }
-    if (category == 0 || category & 2 == 2)
+    if (category == 0 || ((category & 2) == 2))
     {
         ret += densityMap->getPixel(_x, _y).getGreen();
     }
-    if (category == 0 || category & 4 == 4)
+    if (category == 0 || ((category & 4) == 4))
     {
         ret += densityMap->getPixel(_x, _y).getBlue();
     }
 
     if (ret > 255) ret = 255;
 
-    pdprintf(printf("%d %d ret: %d (cat: %d)\n", _x, _y, ret, category));
+    pdprintf(printf("%d %d ret: %d (cat: %d) (r: %u, g: %u, b: %u)\n", _x, _y, ret, category,
+        densityMap->getPixel(_x, _y).getRed(), densityMap->getPixel(_x, _y).getGreen(), densityMap->getPixel(_x, _y).getBlue());)
 
     return ((float)(ret))/255.f;
 }
@@ -1588,9 +1680,16 @@ void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
 {
     dprintf(printf("-----------\nupdate maps to queue begin\n------------\n");)
     
+    mapLock.lock();
     smallTerrainsForUpdateLock.lock();
     smallTerrainsForUpdate.clear();
     smallTerrainsForUpdateLock.unlock();
+
+    mapsQueueVersion++;
+    while (mapsQueue.size())
+    {
+        delete mapsQueue.removeFirst();
+    }
 
     //printf("update small maps\n");
     for (int x = 0; x < max_x;x++)
@@ -1606,6 +1705,7 @@ void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
                     sQE->y = y;
                     sQE->obj_density = obj_density;
                     sQE->visible = true;
+                    sQE->version = mapsQueueVersion;
                     mapsQueue.push_back(sQE);
                 }
                 else
@@ -1614,6 +1714,7 @@ void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
                     smallTerrainsForUpdate.push_back(map[x + (max_x*y)]);
                     smallTerrainsForUpdateLock.unlock();
                     //for (int i = 0; i < mapsQueue.size();i++)
+                    /*
                     for (CMyList<SMapsQueueElement*>::element* iter = mapsQueue.getIterator();
                           iter != mapsQueue.getEnd();
                           iter = iter->next)
@@ -1627,22 +1728,44 @@ void BigTerrain::updateMapsAddToQueue(int new_x, int new_y, int obj_density)
                             break;
                         }
                     }
+                    */
                 }
             }
             else
             {
                 if (map[x + (max_x*y)])
                 {
+                    /*
+                    for (CMyList<SMapsQueueElement*>::element* iter = mapsQueue.getIterator();
+                          iter != mapsQueue.getEnd();
+                          iter = iter->next)
+                    {
+                        if (iter->data->x == x && iter->data->y == y)
+                        {
+                            assert(iter->data->visible);
+                            delete iter->data;
+                            iter->data = 0;
+                            mapsQueue.del(iter);
+                            break;
+                        }
+                    }
+                    */
+                    delete map[x + (max_x*y)];
+                    map[x + (max_x*y)] = 0;
+                    /*
                     SMapsQueueElement* sQE = new SMapsQueueElement;
                     sQE->x = x;
                     sQE->y = y;
                     sQE->obj_density = obj_density;
                     sQE->visible = false;
                     mapsQueue.push_back(sQE);
+                    */
                 }
             }
         }
     }
+    mapLock.unlock();
+
     dprintf(printf("-----------\nupdate maps to queue end\n------------\n");)
 }
 
@@ -1651,8 +1774,28 @@ void BigTerrain::checkMapsQueue()
 
     if (mapsQueue.size() > 0)
     {
-        dprintf(printf("-----------\ncheck maps queue begin\n------------\n");)
+        lastMapsQueueUpdate++;
+        if (lastMapsQueueUpdate%100) return;
         SMapsQueueElement* mQE = mapsQueue.removeFirst();
+        if (use_threads)
+        {
+            // threaded version
+            mapReader->updatePieceOfMap(this, mQE);
+        }
+        else
+        {
+            // non-threaded version
+            checkMapsQueueThread(mQE);
+        }
+    }
+}
+
+void BigTerrain::checkMapsQueueThread(SMapsQueueElement* mQE)
+{
+    mapLock.lock();
+    if (mapsQueueVersion == mQE->version)
+    {
+        dprintf(printf("-----------\ncheck maps queue begin\n------------\n");)
         const int x = mQE->x;
         const int y = mQE->y;
         const int obj_density = mQE->obj_density;
@@ -1667,7 +1810,7 @@ void BigTerrain::checkMapsQueue()
                        smgr, driver, nWorld,
                        this->skydome,
                        x, y, max_x, max_y,
-                       stHeightmapSize, tScale,                           
+                       stHeightmapSize, tScale,
                        this->stageNum,
                        this,
                        objectReps, obj_density, roadList, m_terrainPool,
@@ -1680,6 +1823,7 @@ void BigTerrain::checkMapsQueue()
         }
         else
         {
+            assert(0 && "should not happen");
             //assert(map[x + (max_x*y)] != 0);
             if (map[x + (max_x*y)] != 0)
             {
@@ -1688,9 +1832,10 @@ void BigTerrain::checkMapsQueue()
                 map[x + (max_x*y)] = 0;
             }
         }
-        delete mQE;
-        dprintf(printf("-----------\ncheck maps queue end\n------------\n");)
     }
+    delete mQE;
+    dprintf(printf("-----------\ncheck maps queue end\n------------\n");)
+    mapLock.unlock();
 }
 
 void BigTerrain::updateRoads()
@@ -1702,7 +1847,7 @@ void BigTerrain::updateRoads()
         {
             if (map[x + (max_x*y)] != 0)
             {
-                map[x + (max_x*y)]->updateRoads(roadList);
+                map[x + (max_x*y)]->updateRoads(roadList, 1);
             }
         }
     }
@@ -1894,7 +2039,7 @@ void BigTerrain::applyRoadOnHeightMap()
         if (x%50==0)
         {
             percentage++;
-            int shownum = (10*percentage) / (sizeX / 50);
+            int shownum = 20 + ((5*percentage) / (sizeX / 50));
             str = L"Loading: ";
             str += shownum;
             str += L"%";
@@ -1917,7 +2062,7 @@ void BigTerrain::applyRoadOnHeightMap()
         if (x%50==0)
         {
             percentage++;
-            int shownum = (10*percentage) / (sizeX / 50);
+            int shownum = 20 + ((5*percentage) / (sizeX / 50));
             str = L"Loading: ";
             str += shownum;
             str += L"%";
@@ -1940,7 +2085,7 @@ void BigTerrain::applyRoadOnHeightMap()
         if (x%50==0)
         {
             percentage++;
-            int shownum = (10*percentage) / (sizeX / 50);
+            int shownum = 20 + ((5*percentage) / (sizeX / 50));
             str = L"Loading: ";
             str += shownum;
             str += L"%";
@@ -1963,7 +2108,7 @@ void BigTerrain::applyRoadOnHeightMap()
         if (x%50==0)
         {
             percentage++;
-            int shownum = (10*percentage) / (sizeX / 50);
+            int shownum = 20 + ((5*percentage) / (sizeX / 50));
             str = L"Loading: ";
             str += shownum;
             str += L"%";

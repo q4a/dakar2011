@@ -5,8 +5,8 @@ CPP  = g++.exe
 CC   = gcc.exe
 WINDRES = windres.exe
 RES  = Dakar2011_private.res
-OBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o error.o fonts.o TerrainPool.o IrrCgSceneNode.o $(RES)
-LINKOBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o error.o fonts.o TerrainPool.o IrrCgSceneNode.o $(RES)
+OBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o error.o fonts.o TerrainPool.o IrrCgSceneNode.o OffsetManager.o $(RES)
+LINKOBJ  = Dakar2011.o NewtonRaceCar.o Materials.o BigTerrain.o SmallTerrain.o CustomDGRayCastCar.o dMathDefines.o dMatrix.o dQuaternion.o NewtonCustomJoint.o my_shaders.o settings.o message.o gameplay.o wrappers.o pools.o multiplayer.o CBillboardGroupSceneNode.o CTreeGenerator.o CTreeSceneNode.o CConfigMap.o CConfigReader.o CGUITexturedSkin.o CImageGUISkin.o SkinLoader.o eventreceiver_game.o eventreceiver_menu.o my_shaders2.o IrrCg.o IrrCgMaterial.o effects.o CObjectWire.o mySound.o competitors.o MyThread.o MapReaderThread.o MyRoad.o editor.o itiner_hud.o VehiclePool.o RaceEngine.o CustomMultiBodyVehicle.o error.o fonts.o TerrainPool.o IrrCgSceneNode.o OffsetManager.o $(RES)
 LIBS =  -L"lib" ../irrlicht-1.6.1/bin/Win32-gcc/libIrrlicht.a ../irrKlang-1.2.0/lib/Win32-gcc/libirrKlang.a ../NewtonWin-2.09/sdk/x32/dll_vs7/newton.lib ../Dev-Cpp/lib/libwsock32.a ../Cg/lib/cg.lib ../Cg/lib/cgD3D8.lib ../Cg/lib/cgD3D9.lib ../Cg/lib/cgGL.lib ../Dev-Cpp/lib/libopengl32.a ../freealut-1.1.0-bin/lib/alut.lib ../openal11sdk/libs/Win32/OpenAL32.lib  -s 
 INCS =  -I"include"  -I"../irrlicht-1.6.1/include"  -I"../irrKlang-1.2.0/include"  -I"../NewtonWin-2.09/sdk"  -I"../Cg/include"  -I"../irrlicht-1.6.1/source/Irrlicht"  -I"../freealut-1.1.0-bin/include"  -I"../openal11sdk/include" 
 CXXINCS =  -I"lib/gcc/mingw32/3.4.2/include"  -I"include/c++/3.4.2/backward"  -I"include/c++/3.4.2/mingw32"  -I"include/c++/3.4.2"  -I"include"  -I"../irrlicht-1.6.1/include"  -I"../irrKlang-1.2.0/include"  -I"../NewtonWin-2.09/sdk"  -I"../Cg/include"  -I"../irrlicht-1.6.1/source/Irrlicht"  -I"../freealut-1.1.0-bin/include"  -I"../openal11sdk/include" 
@@ -163,6 +163,9 @@ TerrainPool.o: TerrainPool.cpp
 
 IrrCgSceneNode.o: IrrCgSceneNode.cpp
 	$(CPP) -c IrrCgSceneNode.cpp -o IrrCgSceneNode.o $(CXXFLAGS)
+
+OffsetManager.o: OffsetManager.cpp
+	$(CPP) -c OffsetManager.cpp -o OffsetManager.o $(CXXFLAGS)
 
 Dakar2011_private.res: Dakar2011_private.rc 
 	$(WINDRES) -i Dakar2011_private.rc --input-format=rc -o Dakar2011_private.res -O coff 

@@ -35,6 +35,7 @@ using namespace gui;
 class BigTerrain;
 class CObjectWire;
 class CMyRoad;
+class OffsetObject;
 
 struct SObjectPoolIdRepPair
 {
@@ -77,7 +78,7 @@ public:
        //void addGrass(SObjectWrapper* grassWrapper);
        
        void updatePos(float newX, float newY, float limit, bool force);
-       void updateRoads(core::array<CMyRoad*> &bigRoadList);
+       void updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate);
        
        /*static */IAnimatedMeshSceneNode* loadMySimpleObject(const char* name);
 
@@ -146,6 +147,8 @@ private:
        //scene::ITerrainSceneNode* lterrain;
        TerrainPool* m_terrainPool;
        float vscale;
+       OffsetObject* offsetObject;
+       OffsetObject* offsetObjectOcean;
 };
 
 #endif // __SMALLTERRAIN_H__

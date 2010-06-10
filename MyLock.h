@@ -12,6 +12,7 @@
 #define __MYLOCK_H__
 
 #ifdef __linux__
+# include <pthread.h>
 #else
 # include <windows.h>
 #endif
@@ -22,6 +23,8 @@ public:
     CMyLock()
     {
 #ifdef __linux__
+//        pthread_spin_init(&spinLock, 1);
+        pthread_mutex_init(&mutex, 0);
 #else
         InitializeCriticalSection(&critSection);
 #endif
@@ -29,6 +32,8 @@ public:
     ~CMyLock()
     {
 #ifdef __linux__
+//        pthread_spin_destroy(&spinLock);
+        pthread_mutex_destroy(&mutex);
 #else
         DeleteCriticalSection(&critSection);
 #endif
@@ -37,6 +42,8 @@ public:
     void lock()
     {
 #ifdef __linux__
+//        pthread_spin_lock(&spinLock);
+        pthread_mutex_lock(&mutex);
 #else
         EnterCriticalSection(&critSection);
 #endif
@@ -45,6 +52,8 @@ public:
     void unlock()
     {
 #ifdef __linux__
+//        pthread_spin_unlock(&spinLock);
+        pthread_mutex_unlock(&mutex);
 #else
         LeaveCriticalSection(&critSection);
 #endif
@@ -52,6 +61,8 @@ public:
     
 private:
 #ifdef __linux__
+//    pthread_spinlock_t spinLock;
+    pthread_mutex_t mutex;
 #else
     CRITICAL_SECTION critSection;
 #endif

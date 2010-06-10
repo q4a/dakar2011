@@ -259,7 +259,7 @@ void SetupMaterials (NewtonWorld* nWorld,
 	NewtonMaterialSetDefaultElasticity (nWorld, defaultID, defaultID, 0.4f);
 	NewtonMaterialSetDefaultCollidable (nWorld, defaultID, defaultID, 1);
 	NewtonMaterialSetDefaultFriction (nWorld, defaultID, defaultID, 1.0f, 0.5f);
-	NewtonMaterialSetCollisionCallback (nWorld, defaultID, defaultID, 0, 0, 0 /*GenericContactProcess/*, NULL*/);
+	NewtonMaterialSetCollisionCallback (nWorld, defaultID, defaultID, 0, 0, 0 /*GenericContactProcess*//*, NULL*/);
 	
 #ifdef USE_MY_SOUNDENGINE
     puffVTSound = soundEngine->play3D("data/materials/sound/puffvt.wav", vector3df(0.0f,0.0f,0.0f), false, true, true);

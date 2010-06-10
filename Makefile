@@ -47,11 +47,14 @@ all_win32 clean_win32: SUF=.exe
 
 SUFFIXES : .o .cpp
 .cpp.o :
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
+#	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
+	clang $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
 
 all_linux all_win32: $(OBJS)
-	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+#	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+	clang -o $(DESTNAME) $(OBJS) $(LDFLAGS)
 	$(CXX) -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
+#	clang -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
 #$(warning Building...)
 #$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(srcs) -o $(DESTNAME) $(LDFLAGS)
 

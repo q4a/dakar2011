@@ -26,6 +26,7 @@
 #include "competitors.h"
 #include "RaceEngine.h"
 #include "TerrainPool.h"
+#include "OffsetManager.h"
 
 // Irrlicht Namespaces
 using namespace irr;
@@ -81,7 +82,9 @@ extern BigTerrain* bigTerrain;
 extern int carType;
 extern scene::ICameraSceneNode* camera;
 extern scene::ICameraSceneNode* fix_camera;
+extern OffsetObject* fix_cameraOffsetObject;
 extern scene::ICameraSceneNode* fps_camera;
+extern OffsetObject* fps_cameraOffsetObject;
 extern scene::ICameraSceneNode* car_selector_camera;
 extern gui::IGUIStaticText* fpsText;
 extern gui::IGUIStaticText* polyText;
@@ -176,6 +179,8 @@ extern SCompetitor* playerCompetitor;
 extern CRaceEngine* raceEngine;
 
 extern TerrainPool* terrainPool;
+
+extern OffsetManager* offsetManager;
 
 struct SState
 {

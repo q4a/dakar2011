@@ -94,13 +94,13 @@ int main()
     startNewGame = 1;
     for (int i = 0; i < MAX_BGIMAGE+1; i++) bgImagesTextures[i] = 0;
     for (int i = 0; i < MAX_HUD+2; i++) hudTextures[i] = 0;
-    for (int i = 0; i < MAX_SCREENRTT; i++) screenRTT[i];
+    for (int i = 0; i < MAX_SCREENRTT; i++) screenRTT[i] = 0;
     currentScreenRTT = 0;
     depthRTT = 0;
     bgImageTexture = 0;
     blurmap = 0;
     blurmapSide = 0;
-    for (int i = 0; i < view_multi; i++) motiondir_map[i];
+    for (int i = 0; i < view_multi; i++) motiondir_map[i] = 0;
     for (int i = 0; i < MAX_CAR_DIRT; i++) car_dirttexture_array[i] = 0;
     //////
     
@@ -150,7 +150,7 @@ int main()
         dprintf(printf("Use full screen with auto-detection\n"));
         if (nullDev)
         {
-            dprintf(printf("null device found auto-detection is possible. detected: %dx%d%d\n"));
+            dprintf(printf("null device found auto-detection is possible."));
 #ifdef IRRLICHT_SDK_15
             core::dimension2d<s32> res = nullDev->getVideoModeList()->getDesktopResolution();
 #else
@@ -280,7 +280,7 @@ int main()
     
 	// Newton vars
 	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
-	NewtonSetThreadsCount(nWorld, 2);
+	NewtonSetThreadsCount(nWorld, use_threads?2:1);
 
 	// Set up default material properties for newton
 	SetupMaterials(nWorld, soundEngine);
@@ -312,12 +312,12 @@ int main()
                         info_bg, true, 0, -1, info_bg);
     fpsText->setVisible(false);
     polyText = env->addStaticText(L"POLYS: ",         // 110
-                        core::rect<int>(10,50,350,66),
+                        core::rect<int>(10,50,420,66),
 //                        core::rect<int>(screenSize.Width-150,30,screenSize.Width-10,46),
                         info_bg, true, 0, -1, info_bg);
     polyText->setVisible(false);
     posText = env->addStaticText(L"POS: ",
-                        core::rect<int>(10,70,350,86),
+                        core::rect<int>(10,70,420,86),
                         info_bg, true, 0, -1, info_bg);
     posText->setVisible(false);
     {
@@ -584,22 +584,30 @@ this value is not used, it only specifies the amount of default colors available
     compassArrow->setVisible(false);
 
     MessageText::addText(L"Please wait [*           ]", 1, true);
+    
+    offsetManager = new OffsetManager();
 
 	// add camera
 	fix_camera = smgr->addCameraSceneNode();
 	fix_camera->setFarValue(DEFAULT_FAR_VALUE);
-    fix_camera->setNearValue(nearValue);	
+    fix_camera->setNearValue(nearValue);
+
+    fix_cameraOffsetObject = new OffsetObject(fix_camera, true);
+    //offsetManager->addObject(fix_cameraOffsetObject);
 
 	fps_camera = smgr->addCameraSceneNodeFPS(0, 100.f, CAMERA_SPEED);
 	fps_camera->setFarValue(DEFAULT_FAR_VALUE);
-    fps_camera->setNearValue(nearValue);	
+    fps_camera->setNearValue(nearValue);
+    
+    fps_cameraOffsetObject = new OffsetObject(fps_camera, true);
+    //offsetManager->addObject(fps_cameraOffsetObject);
 
 	lightCam = smgr->addCameraSceneNode();
 	lightCamCar = smgr->addCameraSceneNode(); //lightCamCar->setFOV(0.02f);
 
 	car_selector_camera = smgr->addCameraSceneNode();
 	car_selector_camera->setFarValue(DEFAULT_FAR_VALUE);
-    car_selector_camera->setNearValue(nearValue);	
+    car_selector_camera->setNearValue(nearValue);
 	
 	camera = fix_camera;
 	smgr->setActiveCamera(camera);
@@ -616,7 +624,7 @@ this value is not used, it only specifies the amount of default colors available
 */
     float lightColor = 1.0f;
    	lnode = smgr->addLightSceneNode(0,
-            core::vector3df(5300.f,20000.f,10000.f),
+            core::vector3df(3750.f,20000.f,3750.f),
 		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
     lnode->getLightData().Type=ELT_DIRECTIONAL; 
     lnode->setRotation(core::vector3df(110.f, 0.f, 0.f));
@@ -959,8 +967,8 @@ this value is not used, it only specifies the amount of default colors available
     const float lookFOV = cosf(camera->getFOV());
     //NewtonSetMinimumFrameRate( nWorld, min_fps);
     vector3df dynCamPos;
-    vector3df dynCamRight;
-    vector3df dynCamUp;
+    //vector3df dynCamRight;
+    //vector3df dynCamUp;
     //int dynCamReset = 1;
     float dynCamDist;
     core::vector3df nearestCP;
@@ -979,10 +987,16 @@ this value is not used, it only specifies the amount of default colors available
     MessageText::hide();
     while(device->run())
     { 
-        if (device->isWindowActive())
+        if (device->isWindowActive() || (followCarlos && !editorMode))
         {
             tick = device->getTimer()->getTime();
             pdprintf(printf("1\n"));
+            if (car && bigTerrain && inGame == 0)
+            {
+                pdprintf(printf("1b %f %f\n", camera->getPosition().X, camera->getPosition().Z));
+                offsetManager->update(offsetManager->getOffset()+camera->getPosition());
+                pdprintf(printf("1c\n"));
+            }
             if (!fpsCam && car && inGame == 0)
             {
                 vector3df campos;
@@ -1021,23 +1035,28 @@ this value is not used, it only specifies the amount of default colors available
                 if ((view_num+view_mask)!=0 || !useDynCam || dynCamReset)
                 {
                     //campos = car->getMatrix() * viewpos_cur;
-                    dynCamPos = campos;
-                    camera->setPosition(dynCamPos);
-                    dynCamDist = fabsf((centar - dynCamPos).getLength());
+                    ///dynCamPos = campos;
+                    ///camera->setPosition(dynCamPos);
+                    camera->setPosition(campos);
+                    dynCamDist = fabsf((centar - campos).getLength());
+                    ///dynCamDist = fabsf((centar - dynCamPos).getLength());
                     //dynCamPos = carpos;
                     dynCamReset = false;
                 }
                 else
                 {
-                    vector3df dir = (dynCamPos - centar).normalize();
+                    ///vector3df dir = (dynCamPos - centar).normalize();
+                    vector3df dir = (camera->getPosition() - centar).normalize();
                    
                     float fact = fabsf(car->getSpeed())*0.02f;
                    
                     dir = dir * (dynCamDist + fact * fact) ;
                    
-                    dynCamPos = centar + dir;
-                    camera->setPosition(dynCamPos);
+                    ///dynCamPos = centar + dir;
+                    ///camera->setPosition(dynCamPos);
+                    camera->setPosition(centar + dir);
                 }
+                pdprintf(printf("1d %f %f\n", camera->getPosition().X, camera->getPosition().Z));
             }
             pdprintf(printf("2\n"));
             if (!driver->beginScene(true, true, SColor(0,192,192,192)))
@@ -1303,7 +1322,8 @@ this value is not used, it only specifies the amount of default colors available
            if (bigTerrain)
            {
                 pdprintf(printf("11a\n"));
-                nearestCP = bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, false);
+                nearestCP = bigTerrain->updatePos(offsetManager->getOffset().X+camera->getPosition().X,
+                    offsetManager->getOffset().Z+camera->getPosition().Z, density_objects, false);
                 pdprintf(printf("11b\n"));
                 if (showCompass && inGame == 0)
                 {
@@ -1415,18 +1435,22 @@ this value is not used, it only specifies the amount of default colors available
                         polyText->setText(str.c_str());
         
                         str = L"POS: ";
-                        str += (int)camera->getPosition().X;
-                        str += ", ";
+                        str += (int)(offsetManager->getOffset().X+camera->getPosition().X);
+                        str += " (";
+                        str += (int)(offsetManager->getOffset().X);
+                        str += "), ";
                         str += (int)camera->getPosition().Y;
                         str += ", ";
-                        str += (int)camera->getPosition().Z;
+                        str += (int)(offsetManager->getOffset().Z+camera->getPosition().Z);
                         str += " (";
-                        str += (int)(camera->getPosition().X/20.f);
+                        str += (int)(offsetManager->getOffset().Z);
+                        str += ") (";
+                        str += (int)((offsetManager->getOffset().X+camera->getPosition().X)/20.f);
                         str += ", ";
 #ifdef USE_IMAGE_HM
-                        str += (int)(bigTerrain->getHeightMap()->getDimension().Height - 1 - (camera->getPosition().Z/20.f));
+                        str += (int)(bigTerrain->getHeightMap()->getDimension().Height - 1 - ((offsetManager->getOffset().Z+camera->getPosition().Z)/20.f));
 #else
-                        str += (int)(bigTerrain->getHeightMap()->getYSize() - 1 - (camera->getPosition().Z/20.f));
+                        str += (int)(bigTerrain->getHeightMap()->getYSize() - 1 - ((offsetManager->getOffset().Z+camera->getPosition().Z)/20.f));
 #endif
                         str += ")";
                         posText->setText(str.c_str());
@@ -1446,7 +1470,7 @@ this value is not used, it only specifies the amount of default colors available
                     else
                         str += L"M";
                     str += ": ";
-                    str += (int)(car->getGear()/*1.6); // 3.0f
+                    str += (int)(car->getGear()); // 3.0f
                     str += ")";
                     speedText->setText(str.c_str());
                     
@@ -1524,7 +1548,7 @@ this value is not used, it only specifies the amount of default colors available
                 else
                     str += L"M";
                 str += ": ";
-                str += (int)(car->getGear()/*1.6/*3.0f*/);
+                str += (int)(car->getGear());
                 str += ")";
                 speedText->setText(str.c_str());
                 
@@ -1564,7 +1588,7 @@ this value is not used, it only specifies the amount of default colors available
           //tick = device->getTimer()->getTime();
           if (inGame == 0)
           {
-              if (tick > lasttick + 16/*(1000/min_fps/*(lastFPS+1)) && inGame == 0*/)
+              if (tick > lasttick + 16/*(1000/min_fps*//*(lastFPS+1)) && inGame == 0*/)
               {
                   if (bigTerrain)
                       bigTerrain->checkMapsQueue();
@@ -1572,7 +1596,7 @@ this value is not used, it only specifies the amount of default colors available
                       bigTerrain->updateTime(tick);
                   //#ifndef USE_EDITOR
                       if (raceEngine)
-                          raceEngine->update(tick, camera->getPosition(), playerCompetitor);
+                          raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor);
                   //#endif
                   //for (int i = 0; i<2; i++)
                   while (lasttick+16<tick)
@@ -1711,6 +1735,21 @@ this value is not used, it only specifies the amount of default colors available
         delete mapReader;
         mapReader = 0;
     }
+
+    printf("offsetmanager clean\n");
+    if (fix_cameraOffsetObject)
+    {
+        delete fix_cameraOffsetObject; // do not remove from manager, because endGame will do that
+        fix_cameraOffsetObject = 0;
+    }
+    if (fps_cameraOffsetObject)
+    {
+        delete fps_cameraOffsetObject; // do not remove from manager, because endGame will do that
+        fps_cameraOffsetObject = 0;
+    }
+    assert(offsetManager->empty());
+    delete offsetManager;
+    offsetManager = 0;
     
     printf("scene manager clean\n");
     smgr->clear();
@@ -1750,7 +1789,7 @@ void BodyLeaveWorld (const NewtonBody* body, int threadId)
     dprintf(printf("leave world b %p c->b %p c %p bt %p\n", body, car?car->GetRigidBody():0, car, bigTerrain));
     if (car && bigTerrain && car->GetRigidBody() == body)
     {
-        car->reset(bigTerrain->getStartPos());
+        //car->reset(bigTerrain->getStartPos());
         /*
         matrix4 mat = car->getMatrix();
         core::vector3df rot = mat.getRotationDegrees();

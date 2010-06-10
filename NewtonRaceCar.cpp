@@ -261,7 +261,8 @@ NewtonRaceCar::NewtonRaceCar(
      hb_tires(),
      mass(0.f), engine_center_of_mass(0.f), center_of_mass(0.f),
      chassis_rotation_limit(0.f), chassis_rotation_rate(0.f), max_brake_force(0.f), max_steer_angle(0.f),
-     max_steer_rate(0.f), engine_steer_div(0.f), nameText(0), waterHeight(WATER_HEIGHT)
+     max_steer_rate(0.f), engine_steer_div(0.f), nameText(0), waterHeight(WATER_HEIGHT),
+     offsetObject(0)
 {
     FILE* f;
     int ret;
@@ -415,6 +416,8 @@ NewtonRaceCar::NewtonRaceCar(
     m_trafo.setRotationDegrees(vector3df(d1,d2,d3));
     
 	m_node = bodyPart;
+	offsetObject = new OffsetObject(m_node, true);
+	offsetObject->setUserDataAndCallback((void*)this, offsetObjectCallback);
     if (useCgShaders)
         m_node->getMaterial(0).setFlag(EMF_BILINEAR_FILTER, false);
 
@@ -821,11 +824,17 @@ void NewtonRaceCar::activate(
 
 	m_vehicleJoint->SetVarEngineSteerDiv(engine_steer_div);
 #endif
- 	matrix4 mat;
+	matrix4 mat;
 	mat.setTranslation(loc);
 	mat.setRotationDegrees(rot);
 	setMatrixWithNB(mat);
     dprintf(printf("end phys\n");)
+
+    if (offsetObject)
+    {
+        offsetObject->setBody(m_vehicleBody);
+    	offsetManager->addObject(offsetObject);
+    }
 
 // end phys
     for (int i = 0; i < m_tires.size(); i++)
@@ -862,6 +871,12 @@ void NewtonRaceCar::deactivate()
 	NewtonBodySetUserData (m_vehicleBody, 0);
     NewtonDestroyBody(nWorld, m_vehicleBody);
     m_vehicleBody = 0;
+
+    if (offsetObject)
+    {
+        offsetObject->setBody(m_vehicleBody);
+    	offsetManager->removeObject(offsetObject);
+    }
 
     pause();
     if (groundSound)
@@ -952,6 +967,15 @@ NewtonRaceCar::~NewtonRaceCar()
 	NewtonReleaseCollision (nWorld, vehicleCollisionBox);
 
     pause();
+
+    if (offsetObject)
+    {
+        offsetObject->setBody(0);
+        offsetObject->setNode(0);
+    	offsetManager->removeObject(offsetObject);
+    	delete offsetObject;
+    	offsetObject = 0;
+    }
 
     if (engineSound)
     {
@@ -1057,6 +1081,15 @@ NewtonRaceCar::RaceCarTire::~RaceCarTire()
       m_tireNode->remove();
       m_tireNode = 0;
    }
+    if (offsetObject)
+    {
+        offsetObject->setBody(0);
+        offsetObject->setNode(0);
+    	offsetManager->removeObject(offsetObject);
+    	delete offsetObject;
+    	offsetObject = 0;
+    }
+
    printf("tire drop %d end\n", tire_num);
 }
 
@@ -1698,7 +1731,8 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
       connectionStrength(0.f),
       m_newtonBody(0),
       root(p_root),
-      hitRoad(false)
+      hitRoad(false),
+      offsetObject(0)
 {
 	int i;
 	int ret;
@@ -1742,6 +1776,8 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
         m_tireNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
     }
     m_tireNode->setVisible(false);
+    
+    offsetObject = new OffsetObject(m_tireNode, true);
 
     ret = fscanf(f, "tyre_texture: %s\n", texturefileName);
     if ( ret <=0 )
@@ -1914,6 +1950,10 @@ void NewtonRaceCar::RaceCarTire::activate()
     
     connected = true;
     connectionStrength = 1.f;
+    if (offsetObject)
+    {
+        offsetManager->addObject(offsetObject);
+    }
 }
 
 void NewtonRaceCar::RaceCarTire::deactivate()
@@ -1924,6 +1964,12 @@ void NewtonRaceCar::RaceCarTire::deactivate()
     else
         removeFromShadowNodes(m_tireNode);
     removeFromDepthNodes(m_tireNode); // new depth
+    if (offsetObject)
+    {
+        offsetObject->setBody(0);
+        offsetManager->removeObject(offsetObject);
+    }
+
 }
 
 void NewtonRaceCar::RaceCarTire::setMatrix(matrix4& newMatrix)
@@ -2011,6 +2057,11 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
 //    NewtonBodySetForce (m_newtonBody, &force.X);
     NewtonBodySetVelocity(m_newtonBody, &force.X);
     dprintf(printf("NewtonRaceCar::RaceCarTire::disconnect end\n"));
+
+    if (offsetObject)
+    {
+        offsetObject->setBody(m_newtonBody);
+    }
 }
 
 #ifdef USE_BASICRC
@@ -2074,6 +2125,9 @@ void NewtonRaceCar::setMatrixWithNB2(vector3df& newPos, vector3df& newRot)
 
 matrix4& NewtonRaceCar::getMatrix()
 {
+//    m_matrix
+//    m_matrix.setTranslation(m_node->getPosition());
+//    m_matrix.setRotationDegrees(m_node->getRotation());
     return m_matrix;
 }
 
@@ -2144,7 +2198,7 @@ void NewtonRaceCar::updateSmoke()
 
 NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
                      const float pspeed, const vector3df &pos, float offset, float p_waterHeight) :
-    speed(fabsf(pspeed)), animePhase(0)
+    speed(fabsf(pspeed)), animePhase(0), offsetObject(0)
 {
     //printf("add smoke\n");
     float addrX = (float)((rand()%20) - 10) / 20.0f;
@@ -2157,6 +2211,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
         node->setMaterialFlag(video::EMF_LIGHTING, false);
     else
         node->setMaterialFlag(video::EMF_LIGHTING, globalLight);
+    
     //node->getMaterial(0).TextureLayer[0].AnisotropicFilter = true;
     //node->getMaterial(0).TextureLayer[0].BilinearFilter = false;
     //if (driverType == video::EDT_OPENGL)
@@ -2561,6 +2616,10 @@ void NewtonRaceCar::collide(const vector3df &point, const vector3df &direction,
             if (mb->getPosition(j).getDistanceFrom(rotpos) < len /*10.f*/)
             {
                 vector3df amort = dir * ((len - dist) * 1.5f * amortMultip/** (len - dist)*/);
+                if (amort.getLength() > 0.4f)
+                {
+                    amort.setLength(0.4f);
+                }
                 //printf("collision amort: %f %f %f\n", amort.X, amort.Y, amort.Z);
                 //printf("collision %u. vert: %f %f %f  dist: %f\n", j, mb->getPosition(j).X, mb->getPosition(j).Y, mb->getPosition(j).Z, dist);
                 video::S3DVertex* vertex = (video::S3DVertex*)((char*)mb->getVertices()+j*sizeof(video::S3DVertex));
@@ -2625,6 +2684,11 @@ void NewtonRaceCar::repair()
             //delete m_tires[i]->m_newtonBody;
             NewtonDestroyBody(nWorld, m_tires[i]->m_newtonBody);
             m_tires[i]->m_newtonBody = 0;
+            if (m_tires[i]->offsetObject)
+            {
+                m_tires[i]->offsetObject->setBody(0);
+            }
+
         }
 #endif
         m_tires[i]->connected = true;
@@ -2679,6 +2743,12 @@ void NewtonRaceCar::render()
     m_node->render();
     for (int i = 0; i < m_tires.size(); i++)
         m_tires[i]->m_tireNode->render();
+}
+
+void NewtonRaceCar::offsetObjectCallback(void* userData, const irr::core::vector3df& newPos)
+{
+    NewtonRaceCar* vehicle = (NewtonRaceCar*)userData;
+    vehicle->m_matrix.setTranslation(newPos);
 }
 
 //#endif

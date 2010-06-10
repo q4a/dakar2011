@@ -31,6 +31,7 @@ using namespace io;
 using namespace gui;
 
 class CRaceEngine;
+class OffsetObject;
 
 class SStarter
 {
@@ -58,6 +59,7 @@ public:
     unsigned int forResetCnt;
     float currentRand;
     ITextSceneNode* nameText;
+    OffsetObject* nameTextOffsetObject;
     vector2df dir;
 #ifdef SPEED_BASE_AI
     float nextPointCD;

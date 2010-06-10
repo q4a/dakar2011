@@ -22,6 +22,10 @@ using namespace gui;
 
 #include "Newton.h"
 
+class BigTerrain;
+class SmallTerrain;
+class OffsetObject;
+
 class CMyRoad
 {
 public:
@@ -49,7 +53,7 @@ public:
     video::ITexture* getTexture() {return texture;}
     char* getTextureName() {return textureName;}
     
-    ISceneNode* generateRoadNode();
+    ISceneNode* generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate);
     
     float getFrictionMulti() {return friction_multi;}
     
@@ -73,6 +77,7 @@ private:
     char textureName[256];
     
     float friction_multi;
+    OffsetObject* offsetObject;
 };
 
 #endif // __MYROAD_H__

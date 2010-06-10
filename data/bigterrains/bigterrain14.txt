@@ -16,7 +16,7 @@ data/vehicles/sound/skids/gravel.wav
 speed: 150.0
 friction_multi: 0.8
 vscale: 0.3
-water_height: 30.0
+water_height: 30.5
 start_pos: 15080.0 17080.0
 start_offset: 20.0 0.0
 start_rot: 0.0 180.0 0.0

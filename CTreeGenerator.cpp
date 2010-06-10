@@ -431,6 +431,8 @@ void CTreeGenerator::loadFromXML( io::IXMLReader* xml )
                 }
                 
                 break;
+            default:
+                break;
         }
     }
     

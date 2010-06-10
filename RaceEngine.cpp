@@ -54,7 +54,7 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
       competitor(p_competitor), startingCD(p_startingCD), startTime(0),
       finishTime(0), nextPoint(0), currentPos(),
       crashed(false), visible(false), vehicle(0), forResetCnt(0),
-      currentRand(0.f), nameText(0),
+      currentRand(0.f), nameText(0), nameTextOffsetObject(0),
 #ifdef SPEED_BASE_AI
       nextPointCD(0.f), dir()//, nextPointDist(0.f)
 #else
@@ -78,6 +78,13 @@ SStarter::~SStarter()
         nameText->remove();
         nameText = 0;
     }
+    if (nameTextOffsetObject)
+    {
+        nameTextOffsetObject->setNode(0);
+        offsetManager->removeObject(nameTextOffsetObject);
+        delete nameTextOffsetObject;
+        nameTextOffsetObject = 0;
+    }
 }
 
 bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
@@ -93,7 +100,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             return true;
         }
         // base calculation
-        vector3df cp(vehicle->getMatrix().getTranslation());
+        vector3df cp(offsetManager->getOffset()+vehicle->getMatrix().getTranslation());
         currentPos = vector2df(cp.X, cp.Z);
         vector2df nextPointPos(m_bigTerrain->getAIPoints()[nextPoint]->getPosition().X,
                                m_bigTerrain->getAIPoints()[nextPoint]->getPosition().Z);
@@ -131,9 +138,23 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             if (forResetCnt >= 20)
             {
                 dprintf(printf("-------------\nreset AI car %d\n------------\n", competitor->num);)
-                competitor->lastPenalityTime += RESET_PENALITY;
-                cp += vector3df(3.f, 3.f, 3.f); // we don't know why stop: tree or felt over
-                vehicle->reset(cp);
+                competitor->lastPenalityTime += RESET_PENALITY*2;
+                //cp += vector3df(3.f, 3.f, 3.f); // we don't know why stop: tree or felt over
+                if (0 < nextPoint)
+                {
+                    cp = vector3df(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                                   m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                                                           m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z),
+                                   m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+                }
+                else
+                {
+                    cp = vector3df(m_bigTerrain->getAIPoints()[0]->getPosition().X,
+                                   m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[0]->getPosition().X,
+                                                           m_bigTerrain->getAIPoints()[0]->getPosition().Z),
+                                   m_bigTerrain->getAIPoints()[0]->getPosition().Z);
+                }
+                vehicle->reset(cp-offsetManager->getOffset());
                 forResetCnt=0;
             }
         }
@@ -207,21 +228,21 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         else
         {
             // small difference
-            steer = angleToNext / angleLimit;
+            steer = angleToNext / (angleLimit*2.0f);
         }
         
         // if we are near to the nextPoint calculate some to the next-next point
         if (distToNextPoint<(REACHED_POINT_DIST_NEAR+(speed*0.5f)) && fabsf(angleToNextNext) > (angleLimit*2.f)/3.f)
         {
-            float brakeMulti = 1.0f;
-            if (speed > brakeSpeedLimit*3)
+            float brakeMulti = 0.0f;
+            if (speed > brakeSpeedLimit*4)
             {
                 brake = 1.0f;
             }
             else
             if (speed > brakeSpeedLimit)
             {
-                brake = (speed - brakeSpeedLimit) / (brakeSpeedLimit*2);
+                brake = (speed - brakeSpeedLimit) / (brakeSpeedLimit*3);
             }
             
             if (fabsf(angleToNextNext) > (angleLimit*2.f))
@@ -229,6 +250,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
                 brakeMulti = 1.0f;
             }
             else
+            if (fabsf(angleToNextNext) > (angleLimit*2.f)/3.f)
             {
                 brakeMulti = (fabsf(angleToNextNext) - (angleLimit*2.f)/3.f) / (angleLimit+(angleLimit/3.f));
             }
@@ -342,6 +364,8 @@ void SStarter::switchToVisible()
         m_raceEngine->addUpdater(this);
         if (/*settings*/show_names)
             nameText->setVisible(true);
+        nameTextOffsetObject = new OffsetObject(nameText, true);
+        offsetManager->addObject(nameTextOffsetObject);
     }
     dprintf(printf("%d became visible end\n", competitor->num);)
 }
@@ -352,13 +376,20 @@ void SStarter::switchToNotVisible()
     visible = false;
     if (vehicle)
     {
-        vector3df cp(vehicle->getMatrix().getTranslation());
+        vector3df cp(offsetManager->getOffset()+vehicle->getMatrix().getTranslation());
         vehicle->setNameText(0);
         vehiclePool->putVehicle(vehicle);
         vehicle = 0;
         currentPos = vector2df(cp.X, cp.Z);
         calculateTo(m_bigTerrain->getAIPoints()[nextPoint]->getPosition());
         nameText->setVisible(false);
+        if (nameTextOffsetObject)
+        {
+            nameTextOffsetObject->setNode(0);
+            offsetManager->removeObject(nameTextOffsetObject);
+            delete nameTextOffsetObject;
+            nameTextOffsetObject = 0;
+        }
     }
     m_raceEngine->removeUpdater(this);
 }

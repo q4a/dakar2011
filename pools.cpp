@@ -64,7 +64,7 @@ struct ObjectWrapper
 public:
     ObjectWrapper(NewtonWorld* pnWorld)
         :objectNode(0), farObjectNode(0), visible(true), fvisible(true), nWorld(pnWorld), body(0),
-         collision(0), addShadow(false), shadowNode(0), type(NONE)
+         collision(0), addShadow(false), shadowNode(0), type(NONE), offsetObject(0)
      {}
     ~ObjectWrapper()
     {
@@ -101,12 +101,14 @@ public:
                 
                 //float boxP0[3]; 
                 //float boxP1[3]; 
+                /*
                 float matrix[16]; 
                 NewtonBodyGetMatrix (body, &matrix[0]); 
                 matrix[12] = objectNode->getPosition().X; //+ ofs.X - box.X * 0.5f;
                 matrix[13] = objectNode->getPosition().Y; //+ ofs.Y;
                 matrix[14] = objectNode->getPosition().Z; //+ ofs.Z - box.Z * 0.5f;
                 NewtonBodySetMatrix (body, &matrix[0]); 
+                */
                 //printf("calculateAABB\n");
                 //NewtonCollisionCalculateAABB (collision, &matrix[0],  &boxP0[0], &boxP1[0]); 
                 
@@ -139,6 +141,8 @@ public:
                 else
                     addToShadowNodes(objectNode);
             }
+            offsetObject = new OffsetObject(objectNode, body);
+            offsetManager->addObject(offsetObject);
             addToObjectNodes(objectNode);
         }
         else
@@ -155,6 +159,12 @@ public:
             {
                 NewtonDestroyBody(nWorld, body);
                 body = 0;
+            }
+            if (offsetObject)
+            {
+                offsetManager->removeObject(offsetObject);
+                delete offsetObject;
+                offsetObject = 0;
             }
         }
     }
@@ -243,6 +253,7 @@ private:
     NewtonCollision* collision;
     core::vector3df box;
     core::vector3df ofs;
+    OffsetObject* offsetObject;
 };
 
 struct nameNum

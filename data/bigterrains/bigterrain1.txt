@@ -1,5 +1,5 @@
 128 x 20.000000
-data/bigterrains/heightmaps/stage1_hm.hm
+data/bigterrains/heightmaps/stage1_hm.hmbin
 data/bigterrains/densitymaps/stage1_dm.png
 data/bigterrains/texturemaps/stage1_tm.png
 data/bigterrains/textures/dirt_09.jpg
@@ -16,7 +16,7 @@ data/vehicles/sound/skids/gravel.wav
 speed: 150.0
 friction_multi: 0.75
 vscale: 0.3
-water_height: 30.0
+water_height: 30.5
 start_pos: 47524.0 10015.0
 start_offset: 20.0 -20.0
 start_rot: 0.0 -135.0 0.0

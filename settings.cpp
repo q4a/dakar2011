@@ -129,6 +129,8 @@ bool editorMode = false;
 bool followCarlos = false;
 unsigned int terrain_tesselation = 1;
 
+bool use_threads = true;
+
 void readSettings(const char* fileName)
 {
     FILE* f;
@@ -764,6 +766,15 @@ void readSettings(const char* fileName)
             else
                 followCarlos = false;
         } else
+        if (strcmp(key,"use_threads")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                use_threads = true;
+            else
+                use_threads = false;
+        } else
         if (strcmp(key,"trace_net")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -1033,6 +1044,8 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "editor_mode: %s\n", editorMode?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "follow_carlos: %s\n", followCarlos?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "use_threads: %s\n", use_threads?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "trace_net: %s\n", trace_net?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}

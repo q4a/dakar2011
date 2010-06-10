@@ -122,6 +122,8 @@ extern bool followCarlos;
 
 extern unsigned int terrain_tesselation;
 
+extern bool use_threads;
+
 void readSettings(const char*);
 
 bool writeSettings(const char*);

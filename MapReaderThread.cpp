@@ -27,7 +27,9 @@
 CMapReaderThread::CMapReaderThread(irr::IrrlichtDevice* p_device) :
     device(p_device),
     running(false),
-    updateList()
+    updateList(),
+    updatePieceList(),
+    pieceLock()
 {
     dprintf(printf("MapReader ctor\n");)
 }
@@ -36,6 +38,7 @@ CMapReaderThread::~CMapReaderThread()
 {
     dprintf(printf("MapReader dtor\n");)
     updateList.delList();
+    updatePieceList.delList();
 }
     
 void CMapReaderThread::run()
@@ -43,12 +46,26 @@ void CMapReaderThread::run()
     //dprintf(printf("MapReader run()\n");)
     //device->sleep(1500);
     running = true;
+/*
     SBTPos* btpos = updateList.removeFirst();
     while (btpos)
     {
         btpos->m_bigTerrain->updateMaps(btpos->new_x, btpos->new_y, btpos->obj_density);
         delete btpos;
         btpos = updateList.removeFirst();
+    }
+*/
+
+    pieceLock.lock();
+    PieceElement* piece = updatePieceList.removeFirst();
+    pieceLock.unlock();
+    while (piece)
+    {
+        piece->m_bigTerrain->checkMapsQueueThread(piece->mQE);
+        delete piece;
+        pieceLock.lock();
+        piece = updatePieceList.removeFirst();
+        pieceLock.unlock();
     }
     running = false;
 }
@@ -62,6 +79,21 @@ void CMapReaderThread::updateMap(BigTerrain* p_bigTerrain, int new_x, int new_y,
     btpos->obj_density = obj_density;
     updateList.push_back(btpos);
     if (!running || updateList.length()==1)
+    {
+        execute();
+    }
+}
+
+void CMapReaderThread::updatePieceOfMap(BigTerrain* p_bigTerrain, SMapsQueueElement* p_mQE)
+{
+    PieceElement* piece = new PieceElement;
+    piece->m_bigTerrain = p_bigTerrain;
+    piece->mQE = p_mQE;
+    pieceLock.lock();
+    updatePieceList.push_back(piece);
+    unsigned int len = updatePieceList.length();
+    pieceLock.unlock();
+    if (!running || len==1)
     {
         execute();
     }

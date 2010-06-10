@@ -48,7 +48,9 @@ NewtonRaceCar* car = 0;
 //                                        bigTerrain->getStartPos(), bigTerrain->getStartRot());
 scene::ICameraSceneNode* camera = 0;
 scene::ICameraSceneNode* fix_camera = 0;
+OffsetObject* fix_cameraOffsetObject = 0;
 scene::ICameraSceneNode* fps_camera = 0;
+OffsetObject* fps_cameraOffsetObject = 0;
 scene::ICameraSceneNode* car_selector_camera = 0;
 gui::IGUIStaticText* fpsText = 0;
 gui::IGUIStaticText* polyText = 0;
@@ -131,6 +133,7 @@ CRaceEngine* raceEngine = 0;
 static CRaceEngine* loadedRaceEngine = 0;
 
 TerrainPool* terrainPool = 0;
+OffsetManager* offsetManager = 0;
 
 const char* bgImagesHi[MAX_BGIMAGE+1] =
 {
@@ -328,6 +331,13 @@ void startGame(int stageNum, SState* state)
         savedCarDirt = 0;
         car_dirt = 0.f;
     }
+
+    camera->setPosition(state ? state->carPos : bigTerrain->getStartPos());
+    offsetManager->addObject(fix_cameraOffsetObject);
+    offsetManager->addObject(fps_cameraOffsetObject);
+    offsetManager->update(camera->getPosition(), true);
+    //camera->setPosition(camera->getPosition()-offsetManager->getOffset());
+    //offsetManager->update(camera->getPosition(), true);
     
     if (state)
     {
@@ -571,6 +581,12 @@ void endGame()
     
     if (isMultiplayer)
         leaveStageToServer();
+
+    printf("offset stuff");
+    offsetManager->removeObject(fix_cameraOffsetObject);
+    offsetManager->removeObject(fps_cameraOffsetObject);
+    assert(offsetManager->empty() && "offsetManager is not empty");
+    offsetManager->reset();
 }
 
 void pauseGame()
@@ -641,9 +657,9 @@ bool saveGame(const c8* name)
                      "started: %u\nended: %u\ncpsize: %u\ntime_offset: %d\n" \
                      "current_stage: %d\nglobal_time: %u\ncar_type: %d\nview_num: %d\n" \
                      "car_dirt: %d\ncar_dirt_delta: %d\nuse_dyn_cam: %d\n",
-                savedState->carPos.X,
+                offsetManager->getOffset().X+savedState->carPos.X,
                 savedState->carPos.Y,
-                savedState->carPos.Z,
+                offsetManager->getOffset().Z+savedState->carPos.Z,
                 savedState->carRot.X,
                 savedState->carRot.Y,
                 savedState->carRot.Z,

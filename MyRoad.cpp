@@ -13,6 +13,9 @@
 #include "my_shaders.h"
 #include "Materials.h"
 #include <assert.h>
+#include "BigTerrain.h"
+#include "SmallTerrain.h"
+#include "gameplay.h"
 
 #include "linux_includes.h"
 
@@ -40,7 +43,8 @@ CMyRoad::CMyRoad(ISceneManager* p_smgr, IVideoDriver* p_driver, NewtonWorld *p_n
     driver(p_driver),
     nWorld(p_nWorld),
     texture(0),
-    friction_multi(0.9f)
+    friction_multi(0.9f),
+    offsetObject(0)
 {
     memset(textureName, 0, sizeof(textureName));
 }
@@ -64,6 +68,14 @@ CMyRoad::~CMyRoad()
         NewtonReleaseCollision(nWorld, collision);
     }
     collision = 0;
+    if (offsetObject)
+    {
+        offsetObject->setNode(0);
+        offsetObject->setBody(0);
+        offsetManager->removeObject(offsetObject);
+        delete offsetObject;
+        offsetObject = 0;
+    }
 }
 
 void CMyRoad::addBasePoint(const core::vector3df& newPoint)
@@ -106,7 +118,7 @@ void CMyRoad::setTextureName(const char* newTextureName)
     strcpy(textureName, newTextureName);
 }
 
-ISceneNode* CMyRoad::generateRoadNode()
+ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate)
 {
     if (roadNode)
     {
@@ -124,6 +136,13 @@ ISceneNode* CMyRoad::generateRoadNode()
         NewtonReleaseCollision(nWorld, collision);
     }
     collision = 0;
+
+    if (offsetObject)
+    {
+        offsetObject->setBody(0);
+        offsetObject->setNode(0);
+        offsetManager->removeObject(offsetObject);
+    }
     
     if (basePoints.size() < 2 || slicePoints.size() < 2 || sliceIndices.size()%3 != 0)
     {
@@ -132,6 +151,9 @@ ISceneNode* CMyRoad::generateRoadNode()
     
     SMeshBuffer* buffer = new SMeshBuffer();
     SMesh* mesh = new SMesh();
+
+    float prevHeight = 0.f;
+    float prevPrevHeight = 0.f;
 
     float ty = 0.f;
     int vertexCount = 0;
@@ -153,13 +175,47 @@ ISceneNode* CMyRoad::generateRoadNode()
         normal.normalize();
         normal.rotateBy(-90.f);
         
+        float addHeight = 0.f;
+        {
+            float h0 = p_smallTerrain->terrain->getHeight((slicePoints[0].X*normal.X)+basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), (slicePoints[0].X*normal.Y)+basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
+            float hb = p_smallTerrain->terrain->getHeight(basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
+            float hl = p_smallTerrain->terrain->getHeight((slicePoints[slicePoints.size()-1].X*normal.X)+basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), (slicePoints[slicePoints.size()-1].X*normal.Y)+basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
+            addHeight = hb;
+            if (h0 > hb && h0 > hl) addHeight = h0;
+            if (hl > h0 && hl > hb) addHeight = hl;
+            if (addHeight < 0.01f)
+            {
+                //printf("%u. h0 %f hb %f hl %f ph %f pph %f ah %f nah %f\n", i, h0, hb, hl, prevHeight, prevPrevHeight, addHeight, prevHeight - (prevPrevHeight - prevHeight));
+                addHeight = prevHeight - (prevPrevHeight - prevHeight);
+                //assert(0);
+            }
+        }
+        prevPrevHeight = prevHeight;
+        prevHeight = addHeight;
+        
         float tx = 0.f;
         for (int j = 0; j < slicePoints.size(); j++)
         {
             video::S3DVertex vtx;
-            vtx.Pos = vector3df((slicePoints[j].X*normal.X)+basePoints[i].X,
-                                slicePoints[j].Y+basePoints[i].Y,
-                                (slicePoints[j].X*normal.Y)+basePoints[i].Z);
+            if (j == 0)
+            {
+                vtx.Pos = vector3df(((slicePoints[j+1].X-((slicePoints[j+1].X-slicePoints[j].X)*10.f))*normal.X)+basePoints[i].X,
+                                    (slicePoints[j].Y*10.f)+basePoints[i].Y+addHeight,
+                                    ((slicePoints[j+1].X-((slicePoints[j+1].X-slicePoints[j].X)*10.f))*normal.Y)+basePoints[i].Z);
+            }
+            else
+            if (j == slicePoints.size()-1)
+            {
+                vtx.Pos = vector3df(((slicePoints[j-1].X+((slicePoints[j].X-slicePoints[j-1].X)*10.f))*normal.X)+basePoints[i].X,
+                                    (slicePoints[j].Y*10.f)+basePoints[i].Y+addHeight,
+                                    ((slicePoints[j-1].X+((slicePoints[j].X-slicePoints[j-1].X)*10.f))*normal.Y)+basePoints[i].Z);
+            }
+            else
+            {
+                vtx.Pos = vector3df((slicePoints[j].X*normal.X)+basePoints[i].X,
+                                    slicePoints[j].Y+basePoints[i].Y+addHeight,
+                                    (slicePoints[j].X*normal.Y)+basePoints[i].Z);
+            }
             vtx.TCoords = vector2df(tx, ty);
             
             if (j < slicePoints.size() - 1) tx += (slicePoints[j+1] - slicePoints[j]).getLength()/tRate;
@@ -310,6 +366,17 @@ ISceneNode* CMyRoad::generateRoadNode()
 	NewtonBodySetUserData(newtonBody, this);
 #endif // 0 or 1
 ////////////////////////
+    if (offsetObject)
+    {
+        offsetObject->setNode(roadNode);
+        offsetObject->setBody(newtonBody);
+        offsetManager->addObject(offsetObject);
+    }
+    else
+    {
+        offsetObject = new OffsetObject(roadNode, newtonBody);
+        offsetManager->addObject(offsetObject);
+    }
 
     return roadNode;
 }
