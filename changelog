@@ -1,3 +1,16 @@
+Build 2.1.1.1839
+
+- Add offset manager: there can be big stages where the stage length is over 100Km.
+                      In this case the the "float" type has precision lose. And there
+                      can be drawing problems. We the offset the camera is always near
+                      to the origo (max. 2500 m).
+- Modified thread handling, seems to be much more stable
+- For the new stages we use real height datas
+- The real height datas are stored in our format, no heightmap images are used anymore, only for editing
+- Faster AI. New reset for them: now reset back to the last reached AI point, insted of reset in place.
+  it was necessary because in some new stages there are big ravines and the AI driven cars have stucked.
+- 
+
 Build 2.1.1.1339
 
 - Add new fonts

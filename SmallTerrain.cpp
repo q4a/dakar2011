@@ -201,20 +201,37 @@ SmallTerrain::SmallTerrain(
     // calculate image part from the texture
     const int sizeX = SMALLTERRAIN_HEIGHTMAP_SIZE; //textureMap->getDimension().Width / max_x;
     const int sizeY = SMALLTERRAIN_HEIGHTMAP_SIZE; //textureMap->getDimension().Height / max_y;
+/*
     IImage* partImage = //fullImage;
                         driver->createImage(textureMap,
-                                            core::position2d<s32>((/*max_x-1-*/x)*sizeX, (/*max_y-1-*/y)*sizeY),
+                                            core::position2d<s32>((x)*sizeX, (y)*sizeY),
+#ifdef IRRLICHT_SDK_15
+                                            core::dimension2d<s32>(sizeX,sizeY));
+#else
+                                            core::dimension2d<u32>(sizeX,sizeY));
+#endif
+    for (int i = 0; i < sizeX/2; i++)
+        for (int j = 0; j<sizeY; j++)
+        {
+            SColor tmp_col = partImage->getPixel(i, j);
+            partImage->setPixel(i, j, partImage->getPixel(sizeX-1-i, j));
+            partImage->setPixel(sizeX-1-i, j, tmp_col);
+        }
+*/
+    IImage* partImage = //fullImage;
+                        driver->createImage(textureMap->getColorFormat(),
+//                                            core::position2d<s32>((/*max_x-1-*/x)*sizeX, (/*max_y-1-*/y)*sizeY),
 #ifdef IRRLICHT_SDK_15
                                             core::dimension2d<s32>(sizeX,sizeY));
 #else
                                             core::dimension2d<u32>(sizeX,sizeY));
 #endif
 
-    for (int i = 0; i < sizeX/2; i++)
+    for (int i = 0; i < sizeX; i++)
         for (int j = 0; j<sizeY; j++)
         {
-            SColor tmp_col = partImage->getPixel(i, j);
-            partImage->setPixel(i, j, partImage->getPixel(sizeX-1-i, j));
+            SColor tmp_col = textureMap->getPixel((x*sizeX)+i, (y*sizeY)+j);
+            //partImage->setPixel(i, j, partImage->getPixel(sizeX-1-i, j));
             partImage->setPixel(sizeX-1-i, j, tmp_col);
         }
 /*

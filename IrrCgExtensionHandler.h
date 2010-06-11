@@ -7,6 +7,8 @@
 
 #ifdef IrrCgOGL
 
+#include <GL/glx.h>
+
 namespace IrrCg
 {
     class IrrCgExtensionHandler
