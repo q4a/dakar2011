@@ -61,7 +61,7 @@ float min_fps = 60.f;
 bool display_extra_info = false;
 bool info_bg = true;
 bool message_bg = true;
-bool anti_aliasing = false;
+int anti_aliasing = 0;
 bool vsync = false;
 bool high_precision_fpu = false;
 int display_bits = 32;
@@ -129,7 +129,8 @@ bool editorMode = false;
 bool followCarlos = false;
 unsigned int terrain_tesselation = 1;
 
-bool use_threads = true;
+bool use_threads = false;
+bool use_demage = true;
 
 void readSettings(const char* fileName)
 {
@@ -687,12 +688,32 @@ void readSettings(const char* fileName)
         } else
         if (strcmp(key,"anti_aliasing")==0)
         {
-            ret = fscanf(f, "%s\n", values);
+            ret = fscanf(f, "%d\n", &anti_aliasing);
             if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                anti_aliasing = true;
+            if (anti_aliasing >= 16)
+            {
+                anti_aliasing = 16;
+            }
             else
-                anti_aliasing = false;
+            if (anti_aliasing >= 8)
+            {
+                anti_aliasing = 8;
+            }
+            else
+            if (anti_aliasing >= 4)
+            {
+                anti_aliasing = 4;
+            }
+            else
+            if (anti_aliasing >= 2)
+            {
+                anti_aliasing = 2;
+            }
+            else
+            {
+                anti_aliasing = 0;
+            }
+                
         } else
         if (strcmp(key,"vsync")==0)
         {
@@ -774,6 +795,15 @@ void readSettings(const char* fileName)
                 use_threads = true;
             else
                 use_threads = false;
+        } else
+        if (strcmp(key,"use_demage")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                use_demage = true;
+            else
+                use_demage = false;
         } else
         if (strcmp(key,"trace_net")==0)
         {
@@ -1046,6 +1076,8 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "follow_carlos: %s\n", followCarlos?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_threads: %s\n", use_threads?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "use_demage: %s\n", use_demage?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "trace_net: %s\n", trace_net?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}

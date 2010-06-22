@@ -7,7 +7,9 @@
 
 #ifdef IrrCgOGL
 
+#ifdef IrrCgLinux
 #include <GL/glx.h>
+#endif
 
 namespace IrrCg
 {

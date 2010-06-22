@@ -915,7 +915,9 @@ public:
                 eyePositionF,
                 pov_limit,
                 petick,
-                prtsm, pshadowMap, pshadowParam
+                prtsm,
+                pshadowMap, pshadowParam, pshadowRes,
+                ptextureMatrix
                 ;
 public:
     MyShaderCallBack2_transp(IrrlichtDevice* pdevice,
@@ -933,6 +935,8 @@ public:
 	    ADD_WORLD_VIEW_PROJ_V
         
 	    ADD_WORLD_V
+
+        ADD_TEXTURE_MATRIX_V
 	    
         // Pixel Shader
         ADD_TEXTURE0
@@ -949,6 +953,8 @@ public:
         ADD_OV_LIMIT_F
         //ADD_TICK
         ADD_ETICK_F
+
+        ADD_SHADOWMAP_F
 	}
 
 public:
@@ -1482,8 +1488,8 @@ void setupShaders2 (IrrlichtDevice* device,
 			mc_shadow, video::EMT_SOLID);
 
 		myMaterialType_screenRTT = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			screenRTT_fileName, "main_v", "arbvp1", vs_version,
-			screenRTT_fileName, "main_f", "arbfp1", ps_version,
+			screenRTT_fileName, "main_v", "arbvp1", /*"vs_2_0"*/vs_version,
+			screenRTT_fileName, "main_f", "arbfp1", /*"ps_2_0"*/ps_version,
 			mc_screenRTT, video::EMT_SOLID);
 
 		myMaterialType_depth = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,

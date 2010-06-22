@@ -57,6 +57,8 @@ public:
     NewtonRaceCar* vehicle;
     CRaceEngine* m_raceEngine;
     unsigned int forResetCnt;
+    unsigned int forBigResetCnt;
+    unsigned int forNonResetCnt;
     float currentRand;
     ITextSceneNode* nameText;
     OffsetObject* nameTextOffsetObject;
@@ -82,7 +84,7 @@ public:
     
     CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env, BigTerrain* p_bigTerrain /*, core::array<SCompetitor*> &p_raceState*/);
     ~CRaceEngine();
-    bool update(u32 p_tick, const vector3df& me, SCompetitor* p_playerCompetitor, UpdateWhen when = InTheMiddle);
+    bool update(u32 p_tick, const vector3df& me, SCompetitor* p_playerCompetitor, irr::IrrlichtDevice* device, UpdateWhen when = InTheMiddle);
     void updateShowNames();
     void addUpdater(SStarter* starter);
     void removeUpdater(SStarter* starter);

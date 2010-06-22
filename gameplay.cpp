@@ -31,6 +31,7 @@ using namespace gui;
 #include "competitors.h"
 #include "editor.h"
 #include <assert.h>
+#include <unistd.h>
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -184,6 +185,8 @@ video::ITexture* bgImagesTextures[MAX_BGIMAGE+1] =
 
 video::ITexture* hudTextures[MAX_HUD+2] = {0,0,0,0,0,0,0,0,0};
 
+#define SAVE_TMP_FILE "savegames/tmp_state.txt"
+
 // -----------------STATICS --------------------------
 static IVideoDriver* driver = 0;
 static ISceneManager* smgr = 0;
@@ -199,6 +202,8 @@ static irrklang::ISoundEngine* soundEngine = 0;
 static int savedCarDirt = 0;
 
 static SState* savedState = 0;
+static void saveStateInternal();
+static bool restoreStateInternal();
 
 // ---------------- STRUCTURES -----------------------
 Stages **stages;
@@ -398,13 +403,14 @@ void startGame(int stageNum, SState* state)
         if (!editorMode)
         {
             raceEngine = new CRaceEngine(smgr, env, bigTerrain);
-            while (raceEngine && raceEngine->update(0, vector3df(), playerCompetitor, CRaceEngine::AtStart));
+            while (raceEngine && raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtStart));
         }
     }
     else
     {
         raceEngine = loadedRaceEngine;
         assert(raceEngine);
+        loadedRaceEngine = 0;
         raceEngine->refreshBigTerrain(bigTerrain);
     }
 //#endif
@@ -518,7 +524,7 @@ void endGame()
     if (raceEngine)
     {
         printf("race engine: enter into update loop\n");
-        while (raceEngine->update(0, vector3df(), playerCompetitor, CRaceEngine::AtTheEnd));
+        while (raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtTheEnd));
         printf("race engine: leave update loop\n");
         // todo update global states here
         CRaceEngine::refreshRaceState(raceEngine);
@@ -651,7 +657,7 @@ bool saveGame(const c8* name)
         return false;
     }
 
-    saveState();
+    saveStateInternal();
     
     ret = fprintf(f, "carpos: %f %f %f\ncarrot: %f %f %f\ncurrent_time: %u\ncps: %d\npenality: %u\n" \
                      "started: %u\nended: %u\ncpsize: %u\ntime_offset: %d\n" \
@@ -789,6 +795,8 @@ bool loadGame(const c8* name)
 
     dprintf(printf("load game - load cps: %d\n", cpsize);)
 
+    savedState->cpTime.clear();
+    savedState->cpTimed.clear();
     for (int i = 0; i < cpsize; i++)
     {
         int dummy = 0;
@@ -841,7 +849,7 @@ bool loadGame(const c8* name)
 
     dprintf(printf("load game end, restore state\n");)
     
-    restoreState();
+    restoreStateInternal();
     
     startNewGame = 2; // TODO: what is it for?
     
@@ -913,13 +921,18 @@ void removeFromObjectNodes(irr::scene::ISceneNode* node)
 
 void saveState()
 {
+    saveGame(SAVE_TMP_FILE);
+}
+
+void saveStateInternal()
+{
     if (car && bigTerrain)
     {
         if (savedState==0)
             savedState = new SState;
         
         savedState->carPos = car->getMatrix().getTranslation();
-        savedState->carRot = car->getMatrix().getRotationDegrees();
+        savedState->carRot = vector3df(0.f, car->getAngle(), 0.f);//car->getMatrix().getRotationDegrees();
         bigTerrain->saveState(savedState);
 
         savedState->day_start_time_offset = lasttick - day_start_time;
@@ -934,6 +947,11 @@ void saveState()
 }
 
 bool restoreState()
+{
+    return loadGame(SAVE_TMP_FILE);
+}
+
+bool restoreStateInternal()
 {
     if (savedState)
     {
@@ -956,6 +974,11 @@ bool restoreState()
         return true;
     }
     return false;
+}
+
+void removeState()
+{
+    unlink(SAVE_TMP_FILE);
 }
 
 void releaseGameStuff()

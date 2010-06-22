@@ -2523,6 +2523,7 @@ void NewtonRaceCar::switchBrake(bool brake)
 void NewtonRaceCar::collide(const vector3df &point, const vector3df &direction,
                             float speed, float demageMultip, float amortMultip)
 {
+    if (!use_demage) return;
     vector3df dir = direction;
     dir = dir.normalize() * (0.2f + (speed * 0.008f));
     
@@ -2616,9 +2617,9 @@ void NewtonRaceCar::collide(const vector3df &point, const vector3df &direction,
             if (mb->getPosition(j).getDistanceFrom(rotpos) < len /*10.f*/)
             {
                 vector3df amort = dir * ((len - dist) * 1.5f * amortMultip/** (len - dist)*/);
-                if (amort.getLength() > 0.4f)
+                if (amort.getLength() > 0.25f)
                 {
-                    amort.setLength(0.4f);
+                    amort.setLength(0.25f);
                 }
                 //printf("collision amort: %f %f %f\n", amort.X, amort.Y, amort.Z);
                 //printf("collision %u. vert: %f %f %f  dist: %f\n", j, mb->getPosition(j).X, mb->getPosition(j).Y, mb->getPosition(j).Z, dist);

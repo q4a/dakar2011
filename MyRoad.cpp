@@ -118,7 +118,7 @@ void CMyRoad::setTextureName(const char* newTextureName)
     strcpy(textureName, newTextureName);
 }
 
-ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate)
+ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate, video::ITexture* p_shadowMap)
 {
     if (roadNode)
     {
@@ -264,6 +264,7 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
        roadNode->setMaterialFlag(video::EMF_LIGHTING, globalLight);
     
     roadNode->setMaterialTexture(0, texture);
+    roadNode->setMaterialTexture(1, p_shadowMap);
     if (useShaders && useCgShaders)
         roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
     else

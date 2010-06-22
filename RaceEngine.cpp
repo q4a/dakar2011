@@ -54,6 +54,7 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
       competitor(p_competitor), startingCD(p_startingCD), startTime(0),
       finishTime(0), nextPoint(0), currentPos(),
       crashed(false), visible(false), vehicle(0), forResetCnt(0),
+      forBigResetCnt(0), forNonResetCnt(500),
       currentRand(0.f), nameText(0), nameTextOffsetObject(0),
 #ifdef SPEED_BASE_AI
       nextPointCD(0.f), dir()//, nextPointDist(0.f)
@@ -137,25 +138,46 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             forResetCnt++;
             if (forResetCnt >= 20)
             {
-                dprintf(printf("-------------\nreset AI car %d\n------------\n", competitor->num);)
-                competitor->lastPenalityTime += RESET_PENALITY*2;
-                //cp += vector3df(3.f, 3.f, 3.f); // we don't know why stop: tree or felt over
-                if (0 < nextPoint)
+                dprintf(printf("-------------\nreset AI car %d\nnrc: %u\nbrc: %u\n------------\n", competitor->num, forNonResetCnt, forBigResetCnt);)
+                if (forNonResetCnt >= 500)
                 {
-                    cp = vector3df(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
-                                   m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
-                                                           m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z),
-                                   m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+                    competitor->lastPenalityTime += RESET_PENALITY/2;
+                    cp += vector3df(3.f, 3.f, 3.f); // we don't know why stop: tree or felt over
+                    forBigResetCnt++;
+                    if (forBigResetCnt >= 2)
+                    {
+                        forNonResetCnt = 0;
+                        forBigResetCnt = 0;
+                    }
                 }
                 else
                 {
-                    cp = vector3df(m_bigTerrain->getAIPoints()[0]->getPosition().X,
-                                   m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[0]->getPosition().X,
-                                                           m_bigTerrain->getAIPoints()[0]->getPosition().Z),
-                                   m_bigTerrain->getAIPoints()[0]->getPosition().Z);
+                    competitor->lastPenalityTime += RESET_PENALITY;
+                    if (0 < nextPoint)
+                    {
+                        cp = vector3df(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                                       m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().X,
+                                                               m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z)+3.0f,
+                                       m_bigTerrain->getAIPoints()[nextPoint-1]->getPosition().Z);
+                    }
+                    else
+                    {
+                        cp = vector3df(m_bigTerrain->getAIPoints()[0]->getPosition().X,
+                                       m_bigTerrain->getHeight(m_bigTerrain->getAIPoints()[0]->getPosition().X,
+                                                               m_bigTerrain->getAIPoints()[0]->getPosition().Z)+3.0f,
+                                       m_bigTerrain->getAIPoints()[0]->getPosition().Z);
+                    }
                 }
                 vehicle->reset(cp-offsetManager->getOffset());
                 forResetCnt=0;
+            }
+        }
+        else
+        {
+            forNonResetCnt++;
+            if (forNonResetCnt >= 100000)
+            {
+                forNonResetCnt = 500;
             }
         }
         
@@ -303,7 +325,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         }
 #else // SPEED_BASE_AI
         passedDistance += distanceStep;
-        if (passedDistance > m_bigTerrain->getAIPoints()[nextPoint]->getDistance())
+        if (passedDistance > m_bigTerrain->getAIPoints()[nextPoint]->getDistance()-0.0001f)
         {
             goToNextPoint(currentTime);
         }
@@ -511,7 +533,7 @@ CRaceEngine::~CRaceEngine()
     cupdaters.clear();
 }
 
-bool CRaceEngine::update(u32 p_tick, const vector3df& me, SCompetitor* p_playerCompetitor, UpdateWhen when)
+bool CRaceEngine::update(u32 p_tick, const vector3df& me, SCompetitor* p_playerCompetitor, irr::IrrlichtDevice* device, UpdateWhen when)
 {
     const u32 mtick = p_tick/1000;
     const u32 ctick = p_tick/100;
@@ -526,7 +548,17 @@ bool CRaceEngine::update(u32 p_tick, const vector3df& me, SCompetitor* p_playerC
         
         for (int i = 0; i < starters.size(); i++)
         {
-            pdprintf(printf("race engine %d sCD %d finishTime %d\n", i, starters[i]->startingCD, starters[i]->finishTime);)
+            pdprintf(printf("race engine %d. sCD %d, nextPoint %d/%d, pd %f, finishTime %d\n",
+                i, starters[i]->startingCD, starters[i]->nextPoint, m_bigTerrain->getAIPoints().size(),
+                starters[i]->passedDistance, starters[i]->finishTime);)
+/*
+            if (m_bigTerrain->getAIPoints().size()!=starters[i]->nextPoint && when == AtTheEnd)
+            {
+                printf("race engine %d. sCD %d, nextPoint %d/%d, passedfinishTime %d\n",
+                    i, starters[i]->startingCD, starters[i]->nextPoint, m_bigTerrain->getAIPoints().size(), starters[i]->finishTime);
+            }
+*/
+//            if (when == AtTheEnd) device->sleep(100);
             if (starters[i]->startingCD > 0)
             {
                 updates++;
@@ -551,7 +583,6 @@ bool CRaceEngine::update(u32 p_tick, const vector3df& me, SCompetitor* p_playerC
                     updates++;
                 }
             }
-
         }
         
         pdprintf(printf("race engine update end, updates: %d\n", updates);)
@@ -622,6 +653,9 @@ void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
 
 bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
 {
+#ifdef SPEED_BASE_AI
+# error "Speed base AI is not supported any more"
+#endif
     int ret;
     
     ret = fprintf(f, "current_time: %u\n", currentTime);
@@ -640,6 +674,7 @@ bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
     
     for (int i = 0; i < starters.size(); i++)
     {
+/*
 #ifdef SPEED_BASE_AI
         ret = fprintf(f, "starter[%d]: %d %u %u %u %u %u %u %u %d %f %f %f %f %f\n",
                       i,
@@ -665,6 +700,7 @@ bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
             return false;
         }
 #else // SPEED_BASE_AI
+*/
         ret = fprintf(f, "starter[%d]: %d %u %u %u %u %u %u %u %d %f %f %f\n",
                       i,
                       starters[i]->competitor->num,
@@ -685,13 +721,18 @@ bool CRaceEngine::save(FILE* f/*, SCompetitor* p_playerCompetitor*/)
             printf("error writing save file ret %d errno %d\n", ret, errno);
             return false;
         }
+/*
 #endif // SPEED_BASE_AI
+*/
     }
     return true;
 }
 
 bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCompetitor* p_playerCompetitor*/)
 {
+#ifdef SPEED_BASE_AI
+# error "Speed base AI is not supported any more"
+#endif
     int ret;
     int startersSize = 0;
     int tmpi;
@@ -743,6 +784,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
             printf("error reading save file num %d not found in raceState\n", compnum);
             return false;
         }
+/*
 #ifdef SPEED_BASE_AI
         ret = fscanf(f, "%u %u %u %u %u %u %u %d %f %f %f %f %f\n",
                       &starter->competitor->lastTime,
@@ -766,6 +808,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
             return false;
         }
 #else // SPEED_BASE_AI
+*/
         ret = fscanf(f, "%u %u %u %u %u %u %u %d %f %f %f\n",
                       &starter->competitor->lastTime,
                       &starter->competitor->lastPenalityTime,
@@ -784,7 +827,9 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
             printf("error writing save file ret %d errno %d\n", ret, errno);
             return false;
         }
+/*
 #endif // SPEED_BASE_AI
+*/
         starters.push_back(starter);
         if (starter->finishTime!=0) insertIntoFinishedState(starter->competitor);
     }
@@ -797,6 +842,7 @@ void CRaceEngine::refreshBigTerrain(BigTerrain* p_bigTerrain)
     for (int i = 0; i < starters.size(); i++)
     {
         starters[i]->m_bigTerrain = m_bigTerrain;
+        starters[i]->calculateTo(m_bigTerrain->getAIPoints()[starters[i]->nextPoint]->getPosition());
     }
 }
 

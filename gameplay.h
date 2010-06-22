@@ -182,6 +182,12 @@ extern TerrainPool* terrainPool;
 
 extern OffsetManager* offsetManager;
 
+/*struct SRaceEngineState
+{
+    u32 currentTime;
+    
+};
+*/
 struct SState
 {
     core::vector3df carPos;
@@ -204,6 +210,7 @@ struct SState
     int savedCarDirt;
     int car_dirt_delta;
     bool useDynCam;
+//    bool raceEngineExists;
 };
 
 void loadGameplay(  const c8* name,
@@ -242,6 +249,8 @@ void removeFromObjectNodes(irr::scene::ISceneNode*);
 void saveState();
 
 bool restoreState();
+
+void removeState();
 
 void releaseGameStuff();
 

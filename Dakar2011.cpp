@@ -10,6 +10,10 @@
 *                                                               *
 ****************************************************************/
 
+// debug defines
+//-DMY_DEBUG
+//-DUSE_EDITOR
+
 #include "irrlicht.h"
 #include <iostream>
 #include <Newton.h>
@@ -107,8 +111,8 @@ int main()
     getcwd(currentDirectory, 256);
     readSettings("data/settings.txt");
     
-    if (reinitialize && driverType == video::EDT_DIRECT3D9)
-        useCgShaders = false;
+//    if (reinitialize && driverType == video::EDT_DIRECT3D9)
+//        useShaders = useCgShaders = false;
     reinitialize = false;
 
     // let user select driver type
@@ -280,7 +284,7 @@ int main()
     
 	// Newton vars
 	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
-	NewtonSetThreadsCount(nWorld, use_threads?2:1);
+	NewtonSetThreadsCount(nWorld, /*use_threads?*/2/*:1*/);
 
 	// Set up default material properties for newton
 	SetupMaterials(nWorld, soundEngine);
@@ -304,7 +308,7 @@ int main()
     {
         env->addStaticText(
             L"This will be the Dakar 2011 simulator program",
-	        core::rect<int>(10,10,190,26), true, true, 0, -1, true);
+	        core::rect<int>(10,10,210,26), true, true, 0, -1, true);
     }
 
     fpsText = env->addStaticText(L"FPS: ",
@@ -628,6 +632,8 @@ this value is not used, it only specifies the amount of default colors available
 		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
     lnode->getLightData().Type=ELT_DIRECTIONAL; 
     lnode->setRotation(core::vector3df(110.f, 0.f, 0.f));
+    if (useShaders && !useCgShaders) useCgShaders = true;
+//    useShaders = useCgShaders = true; // force using of shaders
     if (useShaders)
     {
     	lnode_4_shaders = smgr->addLightSceneNode(0,
@@ -669,11 +675,13 @@ this value is not used, it only specifies the amount of default colors available
 	// disable mouse cursor
     //device->getCursorControl()->setVisible(false);
 
-    useShaders = useCgShaders = true; // force using of shaders
     dprintf(printf("2 %p %d\n", hudImage, useCgShaders));
     try
     {
-        setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
+        if (useShaders && useCgShaders)
+        {
+            setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
+        }
     } catch(...)
     {
         printf("Cg shader setup casued exception, fall back to standard shaders\n");
@@ -1011,7 +1019,7 @@ this value is not used, it only specifies the amount of default colors available
                     if (raceEngine->getStarters()[carlosNum]->vehicle)
                     {
                         useCarlosView = true;
-                        printf("%f %f\n", raceEngine->getStarters()[carlosNum]->vehicle->getSpeed()*1.6f, raceEngine->getStarters()[carlosNum]->vehicle->getTorqueReal());
+                        dprintf(printf("s: %f, t: %f, d: %d\n", raceEngine->getStarters()[carlosNum]->vehicle->getSpeed()*1.6f, raceEngine->getStarters()[carlosNum]->vehicle->getTorqueReal(), (int)(raceEngine->getStarters()[carlosNum]->vehicle->getDemagePer()));)
                     }
                 }
                 
@@ -1280,17 +1288,24 @@ this value is not used, it only specifies the amount of default colors available
                 }
                 */
 	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
+	            //driver->setRenderTarget(screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT], true, true, video::SColor(0, 255, 255, 0));
                 if (!useBgImageToRender)
 	            {
                     int i = 1;
                     int j = 1;
-                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%3]);
+                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%MAX_SCREENRTT]);
                     //for (;i<MAX_SCREENRTT && j<3;i+=1, j++)
                     //  screenQuad.getMaterial().setTexture(j, screenRTT[(usedScreenRTT+i)%3]);
                     screenQuad.getMaterial().setTexture(1, depthRTT);
                     screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
                     screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
                     screenQuad.render(driver);
+                    /*
+    	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
+                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT]);
+                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)EMT_SOLID;
+                    screenQuad.render(driver);
+                    */
                 }
                 //currentScreenRTT++;
            }
@@ -1510,7 +1525,7 @@ this value is not used, it only specifies the amount of default colors available
                 str = L"Demage: ";
                 str += (int)(car->getDemagePer());
                 str += "%";
-                    /*
+                /*
                 if (car)
                 {
                     str += (int)(car->getFriction(0)*100.f);
@@ -1520,7 +1535,7 @@ this value is not used, it only specifies the amount of default colors available
                     str += (int)(car->getFriction(2)*100.f);
                     str += ", ";
                     str += (int)(car->getFriction(3)*100.f);
-
+                
                     str += car->getHitBody(0);
                     str += ", ";
                     str += car->getHitBody(1);
@@ -1537,7 +1552,7 @@ this value is not used, it only specifies the amount of default colors available
                     str += ", ";
                     str += car->getHitBodyID(3);
                 }
-                    */
+                */
                 demageText->setText(str.c_str());
         
                 str = L"Speed: ";
@@ -1596,7 +1611,7 @@ this value is not used, it only specifies the amount of default colors available
                       bigTerrain->updateTime(tick);
                   //#ifndef USE_EDITOR
                       if (raceEngine)
-                          raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor);
+                          raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
                   //#endif
                   //for (int i = 0; i<2; i++)
                   while (lasttick+16<tick)
@@ -1657,6 +1672,11 @@ this value is not used, it only specifies the amount of default colors available
        }
        else
        {
+            if (inGame == 0)
+            {
+                printf("save state\n");
+                saveState();
+            }
             menu_receiver->openMainWindow();
             /*
             driver->beginScene(true, true, SColor(0,192,192,192));
@@ -1673,6 +1693,10 @@ this value is not used, it only specifies the amount of default colors available
     {
         printf("save state\n");
         saveState();
+    }
+    else
+    {
+//        removeState();
     }
     
     printf("end game\n");

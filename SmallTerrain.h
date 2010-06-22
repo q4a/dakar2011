@@ -78,7 +78,7 @@ public:
        //void addGrass(SObjectWrapper* grassWrapper);
        
        void updatePos(float newX, float newY, float limit, bool force);
-       void updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate);
+       void updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate, video::ITexture* p_shadowMap);
        
        /*static */IAnimatedMeshSceneNode* loadMySimpleObject(const char* name);
 

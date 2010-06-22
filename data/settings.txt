@@ -49,7 +49,7 @@ gear_type: a
 full_screen: no
 auto_resolution: no
 light: yes
-shadows: no
+shadows: yes
 stencil_shadows: no
 use_mipmaps: yes
 use_openal: no
@@ -71,7 +71,7 @@ start_with_mainmenu: no
 display_extra_info: yes
 info_bg: yes
 message_bg: yes
-anti_aliasing: no
+anti_aliasing: 0
 vsync: no
 high_precision_fpu: no
 this_will_display: no
@@ -89,4 +89,5 @@ editor_mode: yes
 adv_cg_shaders: yes
 follow_carlos: yes
 terrain_tesselation: 1
-use_threads: yes
+use_threads: no
+use_demage: no

@@ -25,6 +25,6 @@ using namespace gui;
 void initEditor(IGUIEnvironment* env);
 void editorSetVisible(bool vis);
 void updateEditor();
-void actionEditor(int key);
+bool actionEditor(int key);
 
 #endif // __EDITOR_H__

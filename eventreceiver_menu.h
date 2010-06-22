@@ -113,6 +113,7 @@ private:
 	gui::IGUIComboBox* carfilename_cbox;
 	gui::IGUIComboBox* driverType_cbox;
 	gui::IGUIComboBox* resolution_cbox;
+	gui::IGUIComboBox* antialiasing_cbox;
 	gui::IGUIComboBox* display_bits_cbox;
 	gui::IGUIComboBox* LOD_distance_cbox;
 	gui::IGUIComboBox* joys_cbox;

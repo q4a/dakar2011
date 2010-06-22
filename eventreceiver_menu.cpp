@@ -46,6 +46,7 @@ enum
 	GUI_ID_USE_SMOKES,
 	GUI_ID_DRAW_HUD,
 	GUI_ID_SHOW_NAMES,
+	GUI_ID_USE_DEMAGE,
 	GUI_ID_FULL_SCREEN,
 	GUI_ID_AUTO_RES,
 	GUI_ID_ANTI_ALIASING,
@@ -1022,7 +1023,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
     				case GUI_ID_LEPORGET_BUTTON:
                         playSound(clickSound);
                         stateWindow->remove();
-                        while (raceEngine->update(0, vector3df(), playerCompetitor, CRaceEngine::AtTheEnd));
+                        while (raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtTheEnd));
                         // todo update global states here
                         CRaceEngine::refreshRaceState(raceEngine);
                         refreshStateWindow(false); // false - no need the leporget button again
@@ -1288,6 +1289,32 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         */
                         break;
                     }
+                    case GUI_ID_ANTI_ALIASING:
+                    {
+                        playSound(closeSound);
+                        
+                        s32 pos = antialiasing_cbox->getSelected();
+                        switch (pos)
+                        {
+                            case 1:
+                                anti_aliasing = 2;
+                                break;
+                            case 2:
+                                anti_aliasing = 4;
+                                break;
+                            case 3:
+                                anti_aliasing = 8;
+                                break;
+                            case 4:
+                                anti_aliasing = 16;
+                                break;
+                            case 0:
+                            default:
+                                anti_aliasing = 0;
+                                break;
+                        }
+                        break;
+                    }
                     case GUI_ID_DISPLAY_BITS_CBOX:
                     {
                         playSound(closeSound);
@@ -1462,6 +1489,13 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
+                    case GUI_ID_USE_DEMAGE:
+                        {
+                            playSound(clickSound);
+                            use_demage = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
+                            return true;
+                            break;
+                        }
                     case GUI_ID_FULL_SCREEN:
                         {
                             playSound(clickSound);
@@ -1476,6 +1510,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
+                    /*
                     case GUI_ID_ANTI_ALIASING:
                         {
                             playSound(clickSound);
@@ -1483,6 +1518,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
+                    */
                     case GUI_ID_VSYNC:
                         {
                             playSound(clickSound);
@@ -2397,6 +2433,16 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		gameTab, GUI_ID_SHOW_NAMES, L"Hello75");
 
+    line += 20;
+	env->addStaticText(L"Demage",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	env->addCheckBox(use_demage,
+		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+		gameTab, GUI_ID_USE_DEMAGE, L"Hello78");
+
 	line += 40;
 	env->addStaticText(L"Gravity",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2667,6 +2713,33 @@ void eventreceiver_menu::openOptionsWindow()
     display_bits_cbox->addItem(L"32");
     if (display_bits==32) display_bits_cbox->setSelected(1);
     */
+
+    line += 20;
+	env->addStaticText(L"Anti aliasing",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		graphic2Tab);
+	antialiasing_cbox = env->addComboBox(
+		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+		graphic2Tab,
+        GUI_ID_ANTI_ALIASING);
+    antialiasing_cbox->addItem(L"0x");
+    if (anti_aliasing == 0) antialiasing_cbox->setSelected(0);
+    antialiasing_cbox->addItem(L"2x");
+    if (anti_aliasing == 2) antialiasing_cbox->setSelected(1);
+    antialiasing_cbox->addItem(L"4x");
+    if (anti_aliasing == 4) antialiasing_cbox->setSelected(2);
+    antialiasing_cbox->addItem(L"8x");
+    if (anti_aliasing == 8) antialiasing_cbox->setSelected(3);
+    antialiasing_cbox->addItem(L"16x");
+    if (anti_aliasing == 16) antialiasing_cbox->setSelected(4);
+
+	/*
+	env->addCheckBox(anti_aliasing,
+		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+		graphic2Tab, GUI_ID_ANTI_ALIASING, L"Hello4");
+    */
     
     line += 20;
 	env->addStaticText(L"Full screen",
@@ -2692,16 +2765,6 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		graphic2Tab);
-
-    line += 20;
-	env->addStaticText(L"Anti aliasing",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(anti_aliasing,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_ANTI_ALIASING, L"Hello4");
 
     line += 20;
 	env->addStaticText(L"Vsync",

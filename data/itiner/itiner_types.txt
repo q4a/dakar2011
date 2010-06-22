@@ -22,3 +22,5 @@ data/itiner/itiner_ditch.png
 data/itiner/itiner_edge_left.png
 data/itiner/itiner_edge_right.png
 data/itiner/itiner_edge_both.png
+data/itiner/itiner_gap.png
+data/itiner/itiner_gap_ditch.png

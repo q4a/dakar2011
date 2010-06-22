@@ -354,7 +354,7 @@ SmallTerrain::SmallTerrain(
 #ifdef USE_IMAGE_HM
     }
 #endif
-    updateRoads(bigRoadList, 0);
+    updateRoads(bigRoadList, 0, shadowMap);
 
     // ocean
     oceanNode = loadMySimpleObject("data/bigterrains/ocean/ocean_surface.mso");
@@ -384,7 +384,7 @@ SmallTerrain::SmallTerrain(
 //            oceanNode->setMaterialTexture(2, shadowMap);
         }
 
-        if (fixOcean || true)
+        if (fixOcean /*|| true*/)
         {
             oceanNode->setMaterialType(/*video::EMT_REFLECTION_2_LAYER*/(video::E_MATERIAL_TYPE)myMaterialType_ocean_fix);
         }
@@ -1052,7 +1052,7 @@ void SmallTerrain::addRoad_old(SRoadWrapper_old* roadWrapper_old)
     roadWrappers_old.push_back(roadWrapper_old);
 }
 
-void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate)
+void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int regenerate, video::ITexture* p_shadowMap)
 {
     dprintf(printf("ST::updateRoads() old size %d\n", roadList.size());)
     for (int i = 0; i < roadList.size(); i++)
@@ -1130,7 +1130,7 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int 
                         }
                         dprintf(printf("ST::updateRoads() end road found BT road num %d basePoint %d, new road size %d\n", i, j, road->getBasePoints().size());)
                         //road->addBasePoint(vector3df(basePoints[j].X,terrain->getHeight(basePoints[j-1].X, basePoints[j-1].Z),basePoints[j].Z));
-                        road->generateRoadNode(this, regenerate);
+                        road->generateRoadNode(this, regenerate, p_shadowMap);
                         roadList.push_back(road);
                         road = 0;
                     }
@@ -1139,7 +1139,7 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int 
             if (road)
             {
                 dprintf(printf("ST::updateRoads() end road found BT 2 road num %d, new road size %d\n", i, road->getBasePoints().size());)
-                road->generateRoadNode(this, regenerate);
+                road->generateRoadNode(this, regenerate, p_shadowMap);
                 roadList.push_back(road);
                 road = 0;
             }

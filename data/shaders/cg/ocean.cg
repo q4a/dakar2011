@@ -45,7 +45,8 @@ const float2 textureScale = float2(1.2, 1.0);
 const float2 bumpSpeed = float2(0.015, 0.005);
 //const float waveFreq = 0.028;
 const float waveFreq = 0.03;
-const float waveAmp = 1.8;
+//const float waveAmp = 1.8;
+const float waveAmp = 0.3;
 const float time = tick * 0.0005;
 
 	#define NWAVES 2

@@ -55,7 +55,7 @@ extern float min_fps;
 extern bool display_extra_info;
 extern bool info_bg;
 extern bool message_bg;
-extern bool anti_aliasing;
+extern int anti_aliasing;
 extern bool vsync;
 extern bool high_precision_fpu;
 extern int display_bits;
@@ -123,6 +123,7 @@ extern bool followCarlos;
 extern unsigned int terrain_tesselation;
 
 extern bool use_threads;
+extern bool use_demage;
 
 void readSettings(const char*);
 

@@ -53,7 +53,7 @@ public:
     video::ITexture* getTexture() {return texture;}
     char* getTextureName() {return textureName;}
     
-    ISceneNode* generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate);
+    ISceneNode* generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate, video::ITexture* p_shadowMap);
     
     float getFrictionMulti() {return friction_multi;}
     

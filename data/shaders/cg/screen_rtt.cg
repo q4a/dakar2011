@@ -44,6 +44,9 @@ f_output main_f(float2 texCoord : TEXCOORD0,
   f_output OUT;
 
   float4 col;
+///  col = tex2D(tex0, texCoord);
+//  col.xyz = float3(car_speed, car_speed, car_speed);
+//  col.xyz = float3(car_speed, coll_tick, etick);
   col = coll_effect_f(coll_tick, tex0, texCoord);
 
   if (car_speed > 0.1 && coll_tick < -0.5)

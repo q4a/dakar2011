@@ -71,9 +71,10 @@ void updateEditor()
 #endif // USE_EDITOR
 }
 
-void actionEditor(int key)
+bool actionEditor(int key)
 {
 #ifdef USE_EDITOR
+    if (!editorMode) return false;
     switch (key)
     {
 		case irr::KEY_KEY_0:
@@ -269,6 +270,9 @@ void actionEditor(int key)
         default:
             break;
     }
+    return true;
+#else
+    return false;
 #endif // USE_EDITOR
 }
 /*

@@ -143,9 +143,11 @@ public:
     u32 getTime() {return time;}
 
     // comment it out if you don't need the visible stuff
-    //virtual void setVisible(bool pvisible) {}
-    //virtual void setFarVisible() {}
-    //virtual void setNearVisible(){}
+#ifndef MY_DEBUG
+    virtual void setVisible(bool pvisible) {}
+    virtual void setFarVisible() {}
+    virtual void setNearVisible(){}
+#endif
     
 private:
     u32 time;

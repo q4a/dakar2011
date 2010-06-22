@@ -1603,6 +1603,8 @@ void BigTerrain::restoreState(SState* state)
     timeStarted = state->timeStarted;
     timeEnded = state->timeEnded;
     
+    dprintf(printf("BigTerrain::restoreState(): cpTime.size() %u state->cpTime.size() %u\n", cpTime.size(), state->cpTime.size());)
+    
     assert(cpTime.size() == state->cpTime.size());
     assert(cpTimed.size() == state->cpTimed.size());
     
@@ -1847,7 +1849,7 @@ void BigTerrain::updateRoads()
         {
             if (map[x + (max_x*y)] != 0)
             {
-                map[x + (max_x*y)]->updateRoads(roadList, 1);
+                map[x + (max_x*y)]->updateRoads(roadList, 1, shadowMap);
             }
         }
     }

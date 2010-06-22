@@ -1,3 +1,13 @@
+data/bigterrains/bigterrain7.txt
+1575
+1
+0
+Iquique -> Arica
+NL
+Difficulty: hard
+NL
+Type: sand
+EOM
 data/bigterrains/bigterrain1.txt
 730
 1
@@ -42,13 +52,23 @@ data/bigterrains/bigterrain5.txt
 4050
 1
 0
-San Salvador de Jujuy -> Calama
+San Salvador de Jujuy (Arg) -> Calama (Chi)
 NL
 Difficulty: medium
 NL
 Type: grass / mud / sand
 EOM
-data/bigterrains/bigterrain9.txt
+data/bigterrains/bigterrain6.txt
+2910
+1
+0
+Calama -> Iquique
+NL
+Difficulty: hard
+NL
+Type: sand
+EOM
+data/bigterrains/bigterrain9_old.txt
 4800
 9
 0

@@ -392,57 +392,6 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 return true;
                 break;
             }
-/*
-		case irr::KEY_KEY_1:
-            {
-                if (car)
-                    car->updateGear(1);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_2:
-            {
-                if (car)
-                    car->updateGear(2);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_3:
-            {
-                if (car)
-                    car->updateGear(3);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_4:
-            {
-                if (car)
-                    car->updateGear(4);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_5:
-            {
-                if (car)
-                    car->updateGear(5);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_6:
-            {
-                if (car)
-                    car->updateGear(6);
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_0:
-            {
-                if (car)
-                    car->updateGear(0);
-                return true;
-                break;
-            }
-*/
 #ifdef USE_EDITOR
 		case irr::KEY_KEY_0:
 		case irr::KEY_KEY_1:
@@ -451,6 +400,19 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 		case irr::KEY_KEY_4:
 		case irr::KEY_KEY_5:
 		case irr::KEY_KEY_6:
+            {
+                if (!editorMode)
+                {
+                    if (car)
+                        car->updateGear(event.KeyInput.Key-irr::KEY_KEY_0);
+                    return true;
+                }
+                else
+                {
+                    return actionEditor(event.KeyInput.Key);
+                }
+                break;
+            }
 		case irr::KEY_KEY_7:
 		case irr::KEY_KEY_8:
 		case irr::KEY_KEY_9:
@@ -461,9 +423,22 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 		case irr::KEY_DELETE:
 		case irr::KEY_HOME:
 		case irr::KEY_END:
-            actionEditor(event.KeyInput.Key);
-            return true;
+            return actionEditor(event.KeyInput.Key);
             break;
+#else
+		case irr::KEY_KEY_0:
+		case irr::KEY_KEY_1:
+		case irr::KEY_KEY_2:
+		case irr::KEY_KEY_3:
+		case irr::KEY_KEY_4:
+		case irr::KEY_KEY_5:
+		case irr::KEY_KEY_6:
+            {
+                if (car)
+                    car->updateGear(event.KeyInput.Key-irr::KEY_KEY_0);
+                return true;
+                break;
+            }
 #endif // USE_EDITOR
 		case irr::KEY_KEY_G:
             {
@@ -535,13 +510,11 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
     {
         if (event.MouseInput.Event == EMIE_LMOUSE_PRESSED_DOWN)
         {
-            actionEditor(irr::KEY_KEY_0);
-            return true;
+            return actionEditor(irr::KEY_KEY_0);
         }
         if (event.MouseInput.Event == EMIE_RMOUSE_PRESSED_DOWN)
         {
-            actionEditor(irr::KEY_KEY_6);
-            return true;
+            return actionEditor(irr::KEY_KEY_6);
         }
     }
 #endif // USE_EDITOR
