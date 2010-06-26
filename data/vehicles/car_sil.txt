@@ -11,10 +11,10 @@ chassis_rotation_limit: 0.89
 chassis_rotation_rate: 0.01
 max_brake_force: 405.0
 max_gears: 4
-gear: 20000.0 330.0
-gear: 32000.0 330.0
-gear: 42500.0 330.0
-gear: 52000.0 330.0
+gear: 10000.0 330.0
+gear: 16000.0 330.0
+gear: 21250.0 330.0
+gear: 26000.0 330.0
 change_gear_time: 15
 max_steer_angle: 23.0
 max_steer_rate: 0.1

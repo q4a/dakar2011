@@ -22,7 +22,11 @@
 
 #define FAR_VALUE (farValue / 2.f)
 #define NEAR_VALUE ((farValue / 2.f)-100.f)
-#define START_SECS 10
+#ifdef MY_DEBUG
+# define START_SECS 10
+#else
+# define START_SECS 40
+#endif
 #define REACHED_POINT_DIST 15.f
 #define REACHED_POINT_DIST_NEAR 20.f
 #define ANGLE_LIMIT 30.f
@@ -381,6 +385,7 @@ void SStarter::switchToVisible()
                       skydome,
                       shadowMap,
                       m_bigTerrain->getWaterHeight(),
+                      true,
                       0);
         vehicle->setNameText(nameText);
         m_raceEngine->addUpdater(this);
@@ -639,7 +644,7 @@ int CRaceEngine::insertIntoFinishedState(SCompetitor* competitor)
 void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
 {
     raceState.clear();
-    
+/*
     for (int i = 0; i < stageState->finishedState.size(); i++)
     {
         int j = 0;
@@ -648,6 +653,17 @@ void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
             j++;
         }
         raceState.insert(stageState->finishedState[i], j);
+    }
+*/
+    for (int i = 0; i < stageState->starters.size(); i++)
+    {
+        int j = 0;
+        if (stageState->starters[i]->competitor->lastTime == 0) continue;
+        while (j < raceState.size() && stageState->starters[i]->competitor->globalTime >= raceState[j]->globalTime)
+        {
+            j++;
+        }
+        raceState.insert(stageState->starters[i]->competitor, j);
     }
 }
 
@@ -774,6 +790,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
         {
             if (raceState[j]->num == compnum) break;
         }
+        //printf("read stater[%d], num %d, j %d, raceState.size() = %d\n", tmpi, compnum, j, raceState.size());
         if (j < raceState.size())
         {
             starter = new SStarter(smgr, env, m_bigTerrain, this, raceState[j], START_SECS);
@@ -831,7 +848,9 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
 #endif // SPEED_BASE_AI
 */
         starters.push_back(starter);
-        if (starter->finishTime!=0) insertIntoFinishedState(starter->competitor);
+        //printf("starter->finishTime: %u\n", starter->finishTime);
+        //if (starter->finishTime!=0) insertIntoFinishedState(starter->competitor);
+        if (starter->competitor->lastTime!=0) insertIntoFinishedState(starter->competitor);
     }
     return true;
 }

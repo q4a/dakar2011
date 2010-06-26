@@ -93,6 +93,8 @@ enum
     GUI_ID_SERVER_NAME_EBOX,
     GUI_ID_SERVER_PORT_EBOX,
     GUI_ID_SERVER_DELAY_EBOX,
+    GUI_ID_PLAYER_NAME_EBOX,
+    GUI_ID_TEAM_NAME_EBOX,
 	GUI_ID_OPTIONS_WINDOW,
 	GUI_ID_HELP_WINDOW,
 	GUI_ID_STATE_WINDOW,
@@ -842,6 +844,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             if (window)
                                 closeWindow(window);
                             currentStage = 0;
+                            startNewGame = 1;
                             startGame(0);
                             return true;
                             break;
@@ -869,7 +872,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                                   0.5,
                                                   skydome,
                                                   shadowMap,
-                                                  WATER_HEIGHT);
+                                                  WATER_HEIGHT,
+                                                  false);
                             //NewtonUpdate(nWorld, 0.015f);
                             car_to_draw->pause();
                             return true;
@@ -895,10 +899,11 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             car_to_draw->activate(core::vector3df(0.f,0.f,0.f),
                                                   core::vector3df(0.f,0.f,0.f), 
                                                   "", "", "",
-                                                  0.5,
+                                                  0.8f,
                                                   skydome,
                                                   shadowMap,
-                                                  WATER_HEIGHT);
+                                                  WATER_HEIGHT,
+                                                  false);
                             //NewtonUpdate(nWorld, 0.015f);
                             car_to_draw->pause();
                             return true;
@@ -992,6 +997,24 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             wcstombs(portString, orig, origsize);
                             sscanf(portString, "%d", &send_server_delay);
                             // server stuff update end
+
+                            str = player_name_text->getText();
+                            str.replace(L' ', L'_');
+                            orig = str.c_str();
+                            origsize = wcslen(orig) + 1;
+                            wcstombs(player_name, orig, origsize);
+
+                            str = team_name_text->getText();
+                            str.replace(L' ', L'_');
+                            orig = str.c_str();
+                            origsize = wcslen(orig) + 1;
+                            wcstombs(team_name, orig, origsize);
+
+                            if (playerCompetitor)
+                            {
+                                strcpy(playerCompetitor->name, player_name);
+                                strcpy(playerCompetitor->teamName, team_name);
+                            }
 
                             if (writeSettings("data/settings.txt"))
                                 MessageText::addText(L"Settings saved", 5);
@@ -1188,6 +1211,38 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             size_t origsize = wcslen(orig) + 1;
                             wcstombs(portString, orig, origsize);
                             sscanf(portString, "%d", &send_server_delay);
+                            break;
+                        }
+                    case GUI_ID_PLAYER_NAME_EBOX:
+                        {
+                            playSound(closeSound);
+
+                            core::stringw str = player_name_text->getText();
+                            str.replace(L' ', L'_');
+                            const wchar_t* orig = str.c_str();
+                            size_t origsize = wcslen(orig) + 1;
+                            wcstombs(player_name, orig, origsize);
+                            if (playerCompetitor)
+                            {
+                                strcpy(playerCompetitor->name, player_name);
+                            }
+
+                            break;
+                        }
+                    case GUI_ID_TEAM_NAME_EBOX:
+                        {
+                            playSound(closeSound);
+
+                            core::stringw str = team_name_text->getText();
+                            str.replace(L' ', L'_');
+                            const wchar_t* orig = str.c_str();
+                            size_t origsize = wcslen(orig) + 1;
+                            wcstombs(team_name, orig, origsize);
+                            if (playerCompetitor)
+                            {
+                                strcpy(playerCompetitor->teamName, team_name);
+                            }
+
                             break;
                         }
                 }
@@ -2279,19 +2334,20 @@ void eventreceiver_menu::openSelectionWindow()
     //bgImage->setImage(car_selector_rtt);
     shadowMap = shadowMapMenu;
     
-    printf("create car: %d\n", vehiclePool->getVehicleTypesSize());
+    dprintf(printf("create car: %d\n", vehiclePool->getVehicleTypesSize());)
     car_to_draw = vehiclePool->getVehicle(carType);
-    printf("create car 2\n");
+    dprintf(printf("create car 2\n");)
     assert(car_to_draw);
-    printf("create car 3\n");
+    dprintf(printf("create car 3\n");)
     car_to_draw->activate(core::vector3df(0.f,0.f,0.f),
                           core::vector3df(0.f,0.f,0.f), 
                           "", "", "",
-                          0.5,
+                          0.8f,
                           skydome,
                           shadowMap,
-                          WATER_HEIGHT);
-    printf("create car end\n");
+                          WATER_HEIGHT,
+                          false);
+    dprintf(printf("create car end\n");)
     //NewtonUpdate(nWorld, 0.015f);
     //printf("update car end\n");
     car_to_draw->pause();
@@ -2355,6 +2411,30 @@ void eventreceiver_menu::openOptionsWindow()
 //  Game tab
 // ------------------------
     line = startLine;
+    if (playerCompetitor)
+    {
+    	env->addStaticText(L"Player name",
+    		rect<s32>(indist,line,indist+firsttextlen,line+16),
+    		false, // border?
+    		false, // wordwrap?
+    		gameTab);
+    	player_name_text = env->addEditBox(playerCompetitor->getName().c_str(),
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+    		true, // border?
+    		gameTab,
+            GUI_ID_PLAYER_NAME_EBOX);
+        line += 20;
+    	env->addStaticText(L"Team name",
+    		rect<s32>(indist,line,indist+firsttextlen,line+16),
+    		false, // border?
+    		false, // wordwrap?
+    		gameTab);
+    	team_name_text = env->addEditBox(playerCompetitor->getTeamName().c_str(),
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+    		true, // border?
+    		gameTab,
+            GUI_ID_TEAM_NAME_EBOX);
+    }
 /*
 	env->addStaticText(L"Car",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2387,9 +2467,9 @@ void eventreceiver_menu::openOptionsWindow()
 //            rect<s32>(screenSize.Width - (indist+outdist*2+valuelen/2),line,screenSize.Width - (indist+outdist*2),line+16),
         gameTab, GUI_ID_APPLY_CAR_BUTTON,
         L"Set", 0);
-        
+*/        
     line += 40;
-*/	env->addStaticText(L"Draw hud",
+	env->addStaticText(L"Draw hud",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
 		false, // wordwrap?
@@ -3489,7 +3569,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
     
     //bool leporget = false;
     
-    if (raceEngine && raceEngine->isRaceFinished()) leporget = false;
+    if (raceEngine && raceEngine->isRaceFinished() || (bigTerrain && !bigTerrain->getTimeEnded())) leporget = false;
     
     if (!leporget) // no leporget button needed
         stateHeight = screenSize.Height - (indist+outdist*2) - indist - 33 - indist;

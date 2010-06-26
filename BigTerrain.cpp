@@ -61,6 +61,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              timeStarted(false), timeEnded(false), lastTick(0), currentTime(0),
              cps(0), penality(0),
              stageTime(pstageTime), stageLength(0.f), gtime(pgtime),
+             friction_multi(0.8f),
              densityMap(0), objectWire(0),
              heightMap(0), textureMap(0), shadowMap(p_shadowMap),
              cpPos(), cpTime(), cpTimed(), cpGate(), cpOffsetObject(),
@@ -941,8 +942,9 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
         {
             dprintf(printf("startpos\n"));
             core::stringw str = L"Start point passed of stage ";
-            str += stages[oldStage]->stageNum;
+            str += oldStage+1;
             /*
+            str += stages[oldStage]->stageNum;
             if (stages[oldStage]->stagePart > 0)
             {
                 str += L" part ";
@@ -1037,8 +1039,9 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
         {
             dprintf(printf("endpos\n"));
             core::stringw str = L"You have reached the endpoint of stage ";
-            str += stages[oldStage]->stageNum;
+            str += oldStage+1;
             /*
+            str += stages[oldStage]->stageNum;
             if (stages[oldStage]->stagePart > 0)
             {
                 str += L" part ";
@@ -1143,6 +1146,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             // new stuff
             playerCompetitor->lastTime = diffTime;
             playerCompetitor->globalTime += diffTime;
+            //playerCompetitor->finishTime = diffTime - penality;
             if (raceEngine)
                 raceEngine->insertIntoFinishedState(playerCompetitor);
         }

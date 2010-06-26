@@ -36,7 +36,11 @@ public:
     core::stringw getName();
     core::stringw getCoName();
     core::stringw getTeamName();
-
+/*
+    void setName(const core::stringw& newName);
+    void setCoName(const core::stringw& newCoName);
+    void setTeamName(const core::stringw& newTeamName);
+*/
     int num;    
     char name[256];
     char coName[256];

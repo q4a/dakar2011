@@ -91,3 +91,5 @@ follow_carlos: yes
 terrain_tesselation: 1
 use_threads: no
 use_demage: no
+player_name: Player
+team_name: Player's_Team

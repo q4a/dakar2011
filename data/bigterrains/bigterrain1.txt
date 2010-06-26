@@ -18,7 +18,7 @@ friction_multi: 0.75
 vscale: 0.3
 water_height: 30.5
 start_pos: 47524.0 10015.0
-start_offset: 20.0 -20.0
-start_rot: 0.0 -135.0 0.0
+start_offset: 20.0 -10.0
+start_rot: 0.0 -160.0 0.0
 cp_pos: 14360.0 12360.0
 end_pos: 6109.0 6530.0

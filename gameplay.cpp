@@ -203,7 +203,7 @@ static int savedCarDirt = 0;
 
 static SState* savedState = 0;
 static void saveStateInternal();
-static bool restoreStateInternal();
+static bool restoreStateInternal(int newStartNewGame);
 
 // ---------------- STRUCTURES -----------------------
 Stages **stages;
@@ -255,10 +255,9 @@ void loadGameplay(  const c8* name,
         u32 stageNum = 0;
         //u32 stagePart = 0;
         
-        ret = fscanf(f, "%s\n%u\n%u\n", bigterrain_name, &stageTime, &stageNum);
-        if ( ret < 3 ) break;
+        ret = fscanf(f, "%s\n%u\n", bigterrain_name, &stageTime);
+        if ( ret < 2 ) break;
         dprintf(printf("%d. %s add to gameplay, time: %u\n", i, bigterrain_name, stageTime));
-        printf("%d. %s add to gameplay, time: %u\n", i, bigterrain_name, stageTime);
         stages[i] = new Stages();
         strcpy(stages[i]->name, bigterrain_name);
         memset(stages[i]->info, 0, sizeof(stages[i]->info));
@@ -316,11 +315,17 @@ void startGame(int stageNum, SState* state)
     }
     bgImage->setVisible(true);
 
-    if (stageNum == 0)
+    if (stageNum == 0 && startNewGame == 1)
+    {
         globalTime = 0;
-    else
+    }
+//    else
 //        if (!startNewGame && bigTerrain && bigTerrain->getEndTime()) globalTime += bigTerrain->getEndTime() - bigTerrain->getStartTime();
-        if (!startNewGame && bigTerrain && bigTerrain->getTimeEnded()) globalTime += bigTerrain->getCurrentTime();
+    //printf("startNewGame: %u, bigTerrain: %p, TimeEnded: %u\n", startNewGame, bigTerrain, bigTerrain?bigTerrain->getCurrentTime():0);
+    if (startNewGame==0 && bigTerrain && bigTerrain->getTimeEnded())
+    {
+        globalTime += bigTerrain->getCurrentTime();
+    }
     
     endGame();
     
@@ -369,6 +374,7 @@ void startGame(int stageNum, SState* state)
                   skydome,
                   shadowMap,
                   bigTerrain->getWaterHeight(),
+                  true,
                   savedCarDirt);
     car->setAutoGear(gear_type=='a');
 
@@ -390,7 +396,11 @@ void startGame(int stageNum, SState* state)
                 competitors[i]->globalPenalityTime = 0;
             }
             CRaceEngine::getRaceState() = competitors;
+#ifdef MY_DEBUG
             CRaceEngine::getRaceState().push_front(playerCompetitor);
+#else
+            CRaceEngine::getRaceState().push_back(playerCompetitor);
+#endif
         }
         else
         {
@@ -479,8 +489,9 @@ void startGame(int stageNum, SState* state)
     if (!state)
     {
         str = L"Stage ";
-        str += stages[stageNum]->stageNum;
+        str += stageNum+1;
         /*
+        str += stages[stageNum]->stageNum;
         if (stages[stageNum]->stagePart > 0)
         {
             str += L" part ";
@@ -588,7 +599,7 @@ void endGame()
     if (isMultiplayer)
         leaveStageToServer();
 
-    printf("offset stuff");
+    dprintf(printf("offset stuff\n");)
     offsetManager->removeObject(fix_cameraOffsetObject);
     offsetManager->removeObject(fps_cameraOffsetObject);
     assert(offsetManager->empty() && "offsetManager is not empty");
@@ -849,9 +860,9 @@ bool loadGame(const c8* name)
 
     dprintf(printf("load game end, restore state\n");)
     
-    restoreStateInternal();
+    restoreStateInternal(2);
     
-    startNewGame = 2; // TODO: what is it for?
+    //startNewGame = 2; // TODO: what is it for?
     
     return true;
 }
@@ -951,11 +962,11 @@ bool restoreState()
     return loadGame(SAVE_TMP_FILE);
 }
 
-bool restoreStateInternal()
+bool restoreStateInternal(int newStartNewGame)
 {
     if (savedState)
     {
-        startNewGame = 1;
+        startNewGame = newStartNewGame;
         currentStage = oldStage = savedState->currentStage;
         globalTime = savedState->globalTime;
         carType = savedState->carType;

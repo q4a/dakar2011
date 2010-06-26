@@ -70,7 +70,7 @@ public:
     c8 info[1024];
     u32 stageTime;
     u32 gtime;
-    u32 stageNum;
+    //u32 stageNum;
     //u32 stagePart;
 };
 

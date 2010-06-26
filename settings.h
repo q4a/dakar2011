@@ -125,6 +125,9 @@ extern unsigned int terrain_tesselation;
 extern bool use_threads;
 extern bool use_demage;
 
+extern char player_name[256];
+extern char team_name[256];
+
 void readSettings(const char*);
 
 bool writeSettings(const char*);

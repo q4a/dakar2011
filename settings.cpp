@@ -132,6 +132,9 @@ unsigned int terrain_tesselation = 1;
 bool use_threads = false;
 bool use_demage = true;
 
+char player_name[256] = "Player";
+char team_name[256] = "Players_Team";
+
 void readSettings(const char* fileName)
 {
     FILE* f;
@@ -444,6 +447,16 @@ void readSettings(const char* fileName)
         if (strcmp(key,"server_name")==0)
         {
             ret = fscanf(f, "%s\n", server_name);
+            if ( ret <=0 ) break;
+        } else
+        if (strcmp(key,"player_name")==0)
+        {
+            ret = fscanf(f, "%s\n", player_name);
+            if ( ret <=0 ) break;
+        } else
+        if (strcmp(key,"team_name")==0)
+        {
+            ret = fscanf(f, "%s\n", team_name);
             if ( ret <=0 ) break;
         } else
         if (strcmp(key,"gear_type")==0)
@@ -1002,6 +1015,10 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "server_port: %hd\n", server_port);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "server_name: %s\n", server_name);
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "player_name: %s\n", player_name);
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "team_name: %s\n", team_name);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "gear_type: %c\n", gear_type);
     if ( ret <=0 ) {fclose(f); return false;}

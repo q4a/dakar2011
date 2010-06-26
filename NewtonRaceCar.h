@@ -63,7 +63,7 @@ class NewtonRaceCar
 		RaceCarTire(ISceneManager* smgr, IVideoDriver* driver, NewtonRaceCar *root, int witchTire, FILE* f);
 		virtual ~RaceCarTire();
 		
-		void activate();
+		void activate(bool p_useOffset);
 		void deactivate();
         
 		// witchTire: 1 fr, 2 fl, 3 rr 4 rl
@@ -130,6 +130,7 @@ public:
             scene::ISceneNode* skydome,
             video::ITexture* shadowMap,
             const float p_waterHeight,
+            bool p_useOffset = true,
             const int savedCarDirt = 0
             );
     void deactivate();

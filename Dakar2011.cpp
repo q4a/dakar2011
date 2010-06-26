@@ -11,8 +11,10 @@
 ****************************************************************/
 
 // debug defines
-//-DMY_DEBUG
-//-DUSE_EDITOR
+/*
+-DMY_DEBUG
+-DUSE_EDITOR
+*/
 
 #include "irrlicht.h"
 #include <iostream>
@@ -328,7 +330,7 @@ int main()
         core::stringw str = L" Build ";
         str += VER_STRING;
         versionText = env->addStaticText(str.c_str(),
-                            core::rect<int>(screenSize.Width - 120, screenSize.Height - 20,screenSize.Width - 4, screenSize.Height - 4),
+                            core::rect<int>(screenSize.Width - 140, screenSize.Height - 20,screenSize.Width - 4, screenSize.Height - 4),
                             false, true, 0, -1, true);
         versionText->setVisible(false);
     }
@@ -767,13 +769,15 @@ this value is not used, it only specifies the amount of default colors available
     loadTreeTypes("data/objects/tree_types.txt", smgr, driver, device, nWorld);
     loadMyTreeTypes("data/objects/my_tree_types.txt", smgr, driver, device, nWorld);
     MessageText::addText(L"Please wait [         *  ]", 1, true);
+#ifdef MY_DEBUG
     printPoolStat();
+#endif
     vehiclePool = new CVehiclePool(device, smgr, driver, nWorld, soundEngine, "data/vehicles/vehicle_list.txt");
     //terrainPool = new TerrainPool(12, smgr, driver);
     MessageText::addText(L"Please wait [          * ]", 1, true);
     loadItinerTypes("data/itiner/itiner_types.txt", smgr, driver, nWorld);
     loadCompetitors("data/competitors/car.txt");
-    playerCompetitor = new SCompetitor(444, "Player_1", "Player_1_Co-pilot", "Player_1_Team",
+    playerCompetitor = new SCompetitor(444, player_name, "", team_name,
                                        0, 100, false);
 
     MessageText::addText(L"Please wait [           *]", 1, true);
@@ -950,12 +954,17 @@ this value is not used, it only specifies the amount of default colors available
 
     if (!restoreState())
     {
+       	dprintf(printf("DEBUG: there is not state to be restore, start_with_main: %u\n", start_with_mainmenu);)
         if (start_with_mainmenu)
         {
             menu_receiver->openMainWindow();
-        } else {
+        }
+        else
+        {
+           	dprintf(printf("DEBUG: try load game\n");)
             if (!loadGame(SAVE_FILE))
                 currentStage = 0;
+           	dprintf(printf("DEBUG: start stage: %u\n", currentStage);)
             startGame(currentStage);
         }
     }
@@ -1696,7 +1705,7 @@ this value is not used, it only specifies the amount of default colors available
     }
     else
     {
-//        removeState();
+        removeState();
     }
     
     printf("end game\n");

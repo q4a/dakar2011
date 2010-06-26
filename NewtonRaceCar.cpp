@@ -251,7 +251,7 @@ NewtonRaceCar::NewtonRaceCar(
      m_steer(0.f), m_steer_kb(0.f), m_steer_rate(0.f),
      m_torque(0.f), m_torqueReal(0.f), m_brakes(0.f), m_debug(0), m_clutch(0),
      smokes(0), torque_multi(1.0f),/*, vId(0)*/
-     friction_multi(0.5f), m_carType(pcarType),
+     friction_multi(0.8f), m_carType(pcarType),
      gear(1), engineGoing(false), engineRotate(0.f),
      cLight(0), current_car_dirt(0),
      carTex(0), clnode(0),
@@ -644,6 +644,21 @@ NewtonRaceCar::NewtonRaceCar(
 	smokes = new Smoke*[MAX_SMOKES];
 	memset(smokes, 0, MAX_SMOKES*sizeof(Smoke*));
 
+    if (torque_tires.size() > 0)
+    {
+        int divSpeed = 4 / torque_tires.size();
+
+        if (divSpeed > 1)
+        {
+            for (int i = 0; i < gearLimits.size(); i++)
+            {
+                //gearLimits[i].low /= 2;
+                //gearLimits[i].high /= 2;
+                gearLimits[i].max_torque *= divSpeed+1;
+                gearLimits[i].max_torque_rate *= divSpeed+1;
+            }
+        }
+    }
     //NewtonBodySetFreezeState(m_vehicleBody, 1);
     //reset(core::vector3df(-20000.f,-20000.f,-20000.f));
 
@@ -658,6 +673,7 @@ void NewtonRaceCar::activate(
                         scene::ISceneNode* skydome,
                         video::ITexture* shadowMap,
                         const float p_waterHeight,
+                        bool p_useOffset,
                         const int savedCarDirt
                         )
 {
@@ -830,7 +846,7 @@ void NewtonRaceCar::activate(
 	setMatrixWithNB(mat);
     dprintf(printf("end phys\n");)
 
-    if (offsetObject)
+    if (p_useOffset && offsetObject)
     {
         offsetObject->setBody(m_vehicleBody);
     	offsetManager->addObject(offsetObject);
@@ -841,7 +857,7 @@ void NewtonRaceCar::activate(
     {
         // tire position will be get from the m_node's position, so
         // don't ned to set it manually
-        m_tires[i]->activate();
+        m_tires[i]->activate(p_useOffset);
     }
 
 	// set a destructor for this rigid body
@@ -879,6 +895,7 @@ void NewtonRaceCar::deactivate()
     }
 
     pause();
+    stopEngine();
     if (groundSound)
     {
 #ifdef USE_MY_SOUNDENGINE
@@ -1902,7 +1919,7 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
     }
 }
 
-void NewtonRaceCar::RaceCarTire::activate()
+void NewtonRaceCar::RaceCarTire::activate(bool p_useOffset)
 {
     m_tireNode->setVisible(true);
     if (shadowNode)
@@ -1950,7 +1967,7 @@ void NewtonRaceCar::RaceCarTire::activate()
     
     connected = true;
     connectionStrength = 1.f;
-    if (offsetObject)
+    if (p_useOffset && offsetObject)
     {
         offsetManager->addObject(offsetObject);
     }
@@ -2306,7 +2323,9 @@ void NewtonRaceCar::startEngine()
     if (!engineGoing)
     {
         if (engineSound)
+        {
             engineSound->setIsPaused(false);
+        }
         engineGoing = true;
     }
 }

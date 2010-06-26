@@ -196,6 +196,10 @@ private:
     video::ITexture* button_bg_sel_next;
     video::ITexture* button_bg_sel_prev;
     video::ITexture* button_bg_sel_back;
+
+	gui::IGUIEditBox* player_name_text;
+	//gui::IGUIEditBox* player_coname_text;
+	gui::IGUIEditBox* team_name_text;
 };
 
 
