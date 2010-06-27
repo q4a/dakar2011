@@ -100,7 +100,7 @@ void calculate_day_delta(u32 ptick)
     }
     else
         day_delta_multi = 1.0f;
-        
+/*        
     if (!useShaders)
     {
         float lightColor = day_delta_multi - 0.3f * day_delta_multi;
@@ -108,7 +108,7 @@ void calculate_day_delta(u32 ptick)
         lnode->getLightData().AmbientColor = video::SColorf(lightColor,lightColor,lightColor);
         lnode->getLightData().SpecularColor = video::SColorf(lightColor,lightColor,lightColor);
     }
-        
+*/        
     //printf("hour: %u dm: %f ptick %u start %u\n", hour, day_delta_multi, ptick, day_start_time);
 }
 

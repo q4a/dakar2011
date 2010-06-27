@@ -188,7 +188,14 @@ SmallTerrain::SmallTerrain(
 
 // remove me
 //    terrain->setMaterialFlag(video::EMF_WIREFRAME, true);
-    terrain->setMaterialFlag(video::EMF_TEXTURE_WRAP, true);
+    if (useCgShaders)
+    {
+        terrain->setMaterialFlag(video::EMF_TEXTURE_WRAP, true);
+    }
+    else
+    {
+        terrain->scaleTexture(1.0f, (float)SMALLTERRAIN_HEIGHTMAP_SIZE /* 3.0f*/);
+    }
     if (!m_terrainPool)
     {
 //        terrain->scaleTexture(1.0f, (float)SMALLTERRAIN_HEIGHTMAP_SIZE /* 3.0f*/);

@@ -63,7 +63,7 @@ NL
 Type: sand
 EOM
 data/bigterrains/bigterrain9_old.txt
-4800
+2910
 Antofagasta -> Copiapo
 NL
 Difficulty: very easy

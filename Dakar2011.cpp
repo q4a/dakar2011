@@ -631,9 +631,10 @@ this value is not used, it only specifies the amount of default colors available
     float lightColor = 1.0f;
    	lnode = smgr->addLightSceneNode(0,
             core::vector3df(3750.f,20000.f,3750.f),
+//            core::vector3df(0.f,20.f,0.f),
 		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
-    lnode->getLightData().Type=ELT_DIRECTIONAL; 
-    lnode->setRotation(core::vector3df(110.f, 0.f, 0.f));
+//    lnode->getLightData().Type=ELT_DIRECTIONAL; 
+//    lnode->setRotation(core::vector3df(110.f, 0.f, 0.f));
     if (useShaders && !useCgShaders) useCgShaders = true;
 //    useShaders = useCgShaders = true; // force using of shaders
     if (useShaders)

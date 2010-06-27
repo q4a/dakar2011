@@ -210,13 +210,26 @@ eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
 
   	bool tempTexFlagMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
     bool tempTexFlag32 = driver->getTextureCreationFlag(ETCF_ALWAYS_32_BIT);
-    car_selector_rtt = driver->addRenderTargetTexture(
+    if (driverType == video::EDT_DIRECT3D8)
+    {
+        car_selector_rtt = driver->addRenderTargetTexture(
+              //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
+#ifdef IRRLICHT_SDK_15
+              dimension2d<s32>(512, 512));
+#else
+              dimension2d<u32>(512, 512));
+#endif
+    }
+    else
+    {
+        car_selector_rtt = driver->addRenderTargetTexture(
               //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
 #ifdef IRRLICHT_SDK_15
               dimension2d<s32>(1024, 1024));
 #else
               dimension2d<u32>(1024, 1024));
 #endif
+    }
     driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
     driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
     

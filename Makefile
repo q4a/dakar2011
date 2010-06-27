@@ -26,7 +26,8 @@ CG_DEF =
 
 # general compiler settings
 CPPFLAGS = -I. -I$(IRRLICHT_DIR)/include -I$(IRRLICHT_DIR)/source/Irrlicht -I/usr/X11R6/include -I$(IRRKALNG_DIR)/include -I$(NEWTON_DIR) -I$(CG_DIR)/include
-CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DMY_DEBUG -DUSE_EDITOR -DIRR_CG_8
+CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DUSE_EDITOR -DIRR_CG_8
+# -DMY_DEBUG
 #CXXFLAGS = -g -Wall
 
 #default target is Linux

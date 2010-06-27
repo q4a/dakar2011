@@ -2,24 +2,24 @@
 data/bigterrains/heightmaps/stage9_old_hm.hmbin
 data/bigterrains/densitymaps/stage9_old_dm.png
 data/bigterrains/texturemaps/stage9_old_tm.png
-data/bigterrains/textures/dirt_06.jpg
-data/bigterrains/textures/grass_01.jpg
-data/bigterrains/textures/dirt_03.jpg
-data/bigterrains/textures/sand_11.jpg
-data/bigterrains/textures/sand_11.jpg
+data/bigterrains/textures/dirt_01.jpg
+data/bigterrains/textures/sand_10.jpg
+data/bigterrains/textures/dirt_08.jpg
+data/bigterrains/textures/grass_04.jpg
+data/bigterrains/textures/concrete_03.jpg
 data/skys/fairday.jpg
 data/roads/roads9_old.txt
 data/objects/objects9_old.txt
-data/vehicles/sound/surfaces/mud.wav
+data/vehicles/sound/surfaces/sand.wav
 data/vehicles/sound/puff.wav
-data/vehicles/sound/skids/mud.wav
+data/vehicles/sound/skids/sand.wav
 speed: 150.0
-friction_multi: 0.5
+friction_multi: 0.8
 vscale: 0.3
 water_height: 30.5
 start_pos: 4427.0 5489.0
-start_offset: -20.0 0.0
-start_rot: 0.0 0.0 0.0
+start_offset: -20.0 -7.0
+start_rot: 0.0 -25.0 0.0
 cp_pos: 14226.0 13006.0
 cp_pos: 33008.0 14259.0
 cp_pos: 41682.0 16382.0

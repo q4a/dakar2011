@@ -170,7 +170,10 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
             fpsText->setVisible(display_extra_info);
             polyText->setVisible(display_extra_info);
             posText->setVisible(display_extra_info);
-            editorSetVisible(display_extra_info);
+            if (editorMode)
+            {
+                editorSetVisible(display_extra_info);
+            }
 			return true;
 		case irr::KEY_F3:
 		    draw_hud = !draw_hud;
@@ -298,12 +301,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 if (car && bigTerrain && inGame == 0)
                 {
                     float demage = car->getDemagePer();
-                    int penality = (int)(3.f*demage);
+                    int penality = (int)(10.f*demage);
                     for (int i = 0; i < 4; i++) 
                     {
                         if (!car->isTyreConnected(i))
                         {
-                            penality += 15;
+                            penality += 60;
                         }
                     }
                     if (!penality)
@@ -316,8 +319,9 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                         if (bigTerrain->addPenality(penality)!=(u32)-1)
                         {
                             core::stringw str = L"Add ";
-                            str += penality;
-                            str += L" seconds penality, because of repairing the car.";
+                            BigTerrain::addTimeToStr(str, penality);
+                            //str += penality;
+                            str += L" penality, because of repairing the car.";
                             MessageText::addText(str.c_str(), 5);
                         }
                     }
@@ -773,12 +777,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 if (car && bigTerrain && inGame == 0)
                 {
                     float demage = car->getDemagePer();
-                    int penality = (int)(3.f*demage);
+                    int penality = (int)(10.f*demage);
                     for (int i = 0; i < 4; i++) 
                     {
                         if (!car->isTyreConnected(i))
                         {
-                            penality += 15;
+                            penality += 60;
                         }
                     }
                     if (!penality)
@@ -791,8 +795,9 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                         if (bigTerrain->addPenality(penality)!=(u32)-1)
                         {
                             core::stringw str = L"Add ";
-                            str += penality;
-                            str += L" seconds penality, because of repairing the car.";
+                            BigTerrain::addTimeToStr(str, penality);
+                            //str += penality;
+                            str += L" penality, because of repairing the car.";
                             MessageText::addText(str.c_str(), 5);
                         }
                     }

@@ -223,7 +223,17 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     str = L"Loading: 16%";
     MessageText::addText(str.c_str(), 1, true);
     
-	
+    if (!useCgShaders)	
+    {
+        char baseName[256];
+        char extName[256];
+
+        strcpy(baseName, textureMapName);
+        baseName[strlen(textureMapName)-4] = '\0';
+        strcpy(extName, textureMapName + (strlen(textureMapName)-4));
+        dprintf(printf("terrain texture file name base: %s, ext: %s\n", baseName, extName);)
+        strcpy(textureMapName, baseName); strcat(textureMapName, "_ns"); strcat(textureMapName, extName);
+    }
 	textureMap = driver->createImageFromFile(textureMapName);
 	partImage = textureMap;
     sizeX = partImage->getDimension().Width;
@@ -281,20 +291,30 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
             return;
         }
 
-        if (use_highres_textures)
+        if (useCgShaders)
         {
-            strcpy(baseName, textureName);
-            baseName[strlen(textureName)-4] = '\0';
-            strcpy(extName, textureName + (strlen(textureName)-4));
-            dprintf(printf("terrain texture file name base: %s, ext: %s\n", baseName, extName);)
-            strcpy(useName, baseName); strcat(useName, "_512"); strcat(useName, extName);
+            if (use_highres_textures)
+            {
+                strcpy(baseName, textureName);
+                baseName[strlen(textureName)-4] = '\0';
+                strcpy(extName, textureName + (strlen(textureName)-4));
+                dprintf(printf("terrain texture file name base: %s, ext: %s\n", baseName, extName);)
+                strcpy(useName, baseName); strcat(useName, "_512"); strcat(useName, extName);
+            }
+            else
+            {
+                strcpy(useName, textureName);
+            }
+    
+            textures[i] = driver->getTexture(useName);
         }
         else
         {
-            strcpy(useName, textureName);
+            if (i == 0)
+                textures[i] = driver->getTexture("data/bigterrains/textures/detailmap.jpg");
+            else
+                textures[i] = 0;
         }
-
-        textures[i] = driver->getTexture(useName);
     }
 
     // read skydome texture
@@ -1555,8 +1575,11 @@ float BigTerrain::getOVLimit()
 
 void BigTerrain::addTimeToStr(core::stringw& str, u32 diffTime)
 {
-    str += diffTime/3600; // hours
-    str += " : ";
+    if (diffTime/3600 > 0)
+    {
+        str += diffTime/3600; // hours
+        str += ":";
+    }
     if ((diffTime/60)%60==0)
         str += "00";
     else
@@ -1565,7 +1588,7 @@ void BigTerrain::addTimeToStr(core::stringw& str, u32 diffTime)
                 str += "0";
             str += (diffTime/60)%60; // minutes
         }
-    str += " : ";
+    str += ":";
     if (diffTime%60==0)
         str += "00";
     else
