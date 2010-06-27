@@ -33,6 +33,13 @@
 #define dprintf(x)
 #endif
 
+#define NON_STENCIL_OBJ_NUM 1
+
+static const char* non_stencil_objs[NON_STENCIL_OBJ_NUM] =
+{
+    "tree1.ms3d",
+};
+
 #define USE_GRASS_BILLBOARDS 0
 #ifndef USE_GRASS_BILLBOARDS
 #define USE_GRASS_MSO 0
@@ -782,7 +789,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
 
 void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
 {
-    if (poolId >= objectPools.size()) return 0;
+    if (poolId < 0 || poolId >= objectPools.size()) return 0;
     
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
     
@@ -839,7 +846,7 @@ void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
 
 void putPoolElement(int poolId, void* arg)
 {
-    if (poolId >= objectPools.size()) return;
+    if (poolId < 0 || poolId >= objectPools.size()) return;
     
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
     
@@ -1433,6 +1440,16 @@ void loadItinerTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
 int getPoolIdFromName(const char* name)
 {
     int ind = 0;
+    if (stencil_shadows)
+    {
+        for (int i = 0; i < NON_STENCIL_OBJ_NUM; i++)
+        {
+            if (strstr(name, non_stencil_objs[i]))
+            {
+                return -1;
+            }
+        }
+    }
     for (ind = 0; ind < objectPools.size();ind++)
     {
         if (strstr(objectPools[ind]->name, name))

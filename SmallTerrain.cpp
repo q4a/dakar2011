@@ -377,18 +377,28 @@ SmallTerrain::SmallTerrain(
     {
         oceanNode->setPosition(vector3df(-0.25f, p_waterHeight, -0.25f) + terrain->getPosition());
         oceanNode->setScale(vector3df(SMALLTERRAIN_SIZE+0.5f, 1.0f, SMALLTERRAIN_SIZE+0.5f));
-        //oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/noise.png"));
-        oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/normal2.png"));
-//        oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/water02.jpg"));
-
-        if (skydome && skydome->getMaterial(0).getTexture(0))
-            oceanNode->setMaterialTexture(1, skydome->getMaterial(0).getTexture(0));
-
-        //oceanNode->setMaterialTexture(1, driver->getTexture("data/bigterrains/ocean/water.png"));
-
-        if (shadowMap)
+        if (useCgShaders)
         {
-//            oceanNode->setMaterialTexture(2, shadowMap);
+            //oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/noise.png"));
+            oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/normal2.png"));
+            //oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/water02.jpg"));
+    
+            if (skydome && skydome->getMaterial(0).getTexture(0))
+                oceanNode->setMaterialTexture(1, skydome->getMaterial(0).getTexture(0));
+    
+            //oceanNode->setMaterialTexture(1, driver->getTexture("data/bigterrains/ocean/water.png"));
+    
+            if (shadowMap)
+            {
+                //oceanNode->setMaterialTexture(2, shadowMap);
+            }
+        }
+        else
+        {
+            oceanNode->setMaterialTexture(0, driver->getTexture("data/bigterrains/ocean/water.jpg"));
+            //if (skydome && skydome->getMaterial(0).getTexture(0))
+            //    oceanNode->setMaterialTexture(1, skydome->getMaterial(0).getTexture(0));
+            //oceanNode->setMaterialTexture(1, driver->getTexture("data/bigterrains/ocean/normal2.png"));
         }
 
         if (fixOcean /*|| true*/)

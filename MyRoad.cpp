@@ -268,7 +268,7 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     if (useShaders && useCgShaders)
         roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
     else
-        roadNode->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+        roadNode->setMaterialType(video::EMT_SOLID/*TRANSPARENT_ALPHA_CHANNEL*/);
 
 //////////////////
 #if 1

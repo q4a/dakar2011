@@ -684,19 +684,30 @@ void NewtonRaceCar::activate(
     if (current_car_dirt >= MAX_CAR_DIRT ) current_car_dirt = MAX_CAR_DIRT - 1;
 
 // sets the current sky and shadowMap
-    if (m_node->getMaterial(0).getTexture(0))
+    if (useCgShaders)
     {
-        m_node->setMaterialTexture(1, car_dirttexture_array[current_car_dirt]);
-        if (skydome && skydome->getMaterial(0).getTexture(0))
-            m_node->setMaterialTexture(2, skydome->getMaterial(0).getTexture(0));
-        if (shadowMap)
-            m_node->setMaterialTexture(3, shadowMap);
+        if (m_node->getMaterial(0).getTexture(0))
+        {
+            m_node->setMaterialTexture(1, car_dirttexture_array[current_car_dirt]);
+            if (skydome && skydome->getMaterial(0).getTexture(0))
+                m_node->setMaterialTexture(2, skydome->getMaterial(0).getTexture(0));
+            if (shadowMap)
+                m_node->setMaterialTexture(3, shadowMap);
+        }
+        else
+        {
+            if (skydome && skydome->getMaterial(0).getTexture(0))
+            {
+                m_node->setMaterialTexture(0, skydome->getMaterial(0).getTexture(0));
+            }
+        }
     }
     else
     {
         if (skydome && skydome->getMaterial(0).getTexture(0))
         {
-            m_node->setMaterialTexture(0, skydome->getMaterial(0).getTexture(0));
+            //m_node->setMaterialTexture(1, m_node->getMaterial(0).getTexture(0));
+            m_node->setMaterialTexture(1, skydome->getMaterial(0).getTexture(0));
         }
     }
 

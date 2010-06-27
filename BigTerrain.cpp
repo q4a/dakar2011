@@ -1489,6 +1489,7 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
                 break;
             }
             poolId = getPoolIdFromName(meshName);
+            if (poolId < 0) continue;
             SObjectWrapper* objectWrapper;
             if (poolId == 0)
             {
@@ -1508,7 +1509,7 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
         else
         if (strcmp(type, "iti:")==0)
         {
-            // fix positioned objects
+            // fix positioned objects: itinerary
             ret = fscanf(f, "%f %f", &pos.X, &pos.Z);
             if (ret < 2)
             {
@@ -1517,6 +1518,7 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
                 break;
             }
             poolId = getItinerIdFromName(meshName);
+            if (poolId < 0) continue;
             SItinerPoint* objectWrapper = new SItinerPoint(this);
             objectWrapper->setPosition(pos);
             objectWrapper->setPool(poolId);
@@ -1525,7 +1527,7 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
         }
         else
         {
-            // fix positioned objects
+            // frandom positioned objects
             ret = fscanf(f, "%d", &repeat);
             if (ret < 1)
             {
@@ -1535,9 +1537,9 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
             }
             // random positioned objects
             poolId = getPoolIdFromName(meshName);
+            if (poolId < 0) continue;
             objectReps.push_back(SObjectPoolIdRepPair(poolId, repeat));
         }
-        
     }
     fclose(f);
     
