@@ -14,6 +14,7 @@
 /*
 -DMY_DEBUG
 -DUSE_EDITOR
+-DUSE_MY_SOUNDENGINE
 */
 
 #include "irrlicht.h"

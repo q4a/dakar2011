@@ -14,7 +14,7 @@ IRRLICHT_SDK_VER = 17
 IRRLICHT_DIR = ../irrlicht-1.7.1
 #IRRLICHT_DIR = ../irrlicht-svn/irrlicht-20090825
 #IRRLICHT_DIR = ../irrlicht-svn/irrlicht
-IRRKLANG_DIR = ../irrKlang-1.2.0
+IRRKLANG_DIR = ../irrKlang-1.3.0
 NEWTON_DIR = ../newtonSDK/sdk
 
 MY_LIBS = ./lib
@@ -25,8 +25,8 @@ CG_DEF =
 #CG_DEF = -DDISABLE_CG_SHADERS
 
 # general compiler settings
-CPPFLAGS = -I. -I$(IRRLICHT_DIR)/include -I$(IRRLICHT_DIR)/source/Irrlicht -I/usr/X11R6/include -I$(IRRKALNG_DIR)/include -I$(NEWTON_DIR) -I$(CG_DIR)/include
-CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DUSE_EDITOR -DIRR_CG_8
+CPPFLAGS = -I. -I$(IRRLICHT_DIR)/include -I$(IRRLICHT_DIR)/source/Irrlicht -I/usr/X11R6/include -I$(IRRKLANG_DIR)/include -I$(NEWTON_DIR) -I$(CG_DIR)/include
+CXXFLAGS = -O3 -ffast-math -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DUSE_EDITOR -DIRR_CG_8 -DUSE_MY_SOUNDENGINE
 # -DMY_DEBUG
 #CXXFLAGS = -g -Wall
 
