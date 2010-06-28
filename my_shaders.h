@@ -54,6 +54,7 @@ extern float renderToShadowMap;
 extern core::matrix4 projMat;
 extern core::matrix4 viewMat;
 extern float max_shadow;
+extern bool ableToUseShaders;
 
 
 void setupShaders (IrrlichtDevice* device,

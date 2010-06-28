@@ -5,11 +5,11 @@
 #define DAKAR2011_PRIVATE_H
 
 /* VERSION DEFINITIONS */
-#define VER_STRING	"2.1.1.2022"
+#define VER_STRING	"2.1.1.2027"
 #define VER_MAJOR	2
 #define VER_MINOR	1
 #define VER_RELEASE	1
-#define VER_BUILD	2022
+#define VER_BUILD	2027
 #define COMPANY_NAME	""
 #define FILE_VERSION	""
 #define FILE_DESCRIPTION	"Developed using the Dev-C++ IDE"

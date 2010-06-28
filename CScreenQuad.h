@@ -45,6 +45,7 @@ public:
 		driver->setMaterial(Material);
 		driver->setTransform(irr::video::ETS_WORLD, irr::core::matrix4());
 		driver->drawIndexedTriangleList(&Vertices[0], 6, &indices[0], 2);
+        driver->setMaterial(irr::video::SMaterial());
 	}
 
 	virtual irr::video::SMaterial& getMaterial()

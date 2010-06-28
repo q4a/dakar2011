@@ -682,10 +682,10 @@ this value is not used, it only specifies the amount of default colors available
     dprintf(printf("2 %p %d\n", hudImage, useCgShaders));
     try
     {
-        if (useShaders && useCgShaders)
-        {
+        //if (useShaders && useCgShaders)
+        //{
             setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
-        }
+        //}
     } catch(...)
     {
         printf("Cg shader setup casued exception, fall back to standard shaders\n");

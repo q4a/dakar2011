@@ -62,6 +62,7 @@ float renderToShadowMap = 0.f;
 core::matrix4 projMat;
 core::matrix4 viewMat;
 float max_shadow = 0.f;
+bool ableToUseShaders = true;
 
 #define ADD_TEXTURE0 
 /*
@@ -1248,9 +1249,10 @@ void setupShaders2 (IrrlichtDevice* device,
 	else
 	{
 		dprintf(printf("Not use high level shaders, because of missing driver/hardware support.\n"));
-        useShaders = useCgShaders = false;
+        ableToUseShaders = useShaders = useCgShaders = false;
         return;
     }
+    if (!useCgShaders) return;
     
 	light_tex_psFileName = "data/shaders/cg/light_tex.cg";
 	light_tex_vsFileName = light_tex_psFileName; // both shaders are in the same file
