@@ -353,7 +353,7 @@ int main()
     hudInfo->setImage(hudInfoTexture);
     hudInfo->setVisible(false);
 
-    demageText = env->addStaticText(L"Demage: ",
+    demageText = env->addStaticText(L"Damage: ",
                         core::rect<int>(10,screenSize.Height-(fontO+fontH*3),1350,screenSize.Height-(fontO+fontH*2)),
                         false, true, 0, -1, false);
     demageText->setVisible(false);

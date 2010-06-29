@@ -300,10 +300,10 @@ SmallTerrain::SmallTerrain(
   
             if (tries > 0 || m_bigTerrain->getDensity(pos.X, pos.Z, getPoolCategoryFromId(objectReps[i].poolId)) > 0.6f)
   */
-            float val = ((float)rand())/32768.f;
-            pos = vector3df(terrain->getPosition().X+(((float)rand())/32768.f)*SMALLTERRAIN_SIZE,
+            float val = ((float)(rand()%32768))/32768.f;
+            pos = vector3df(terrain->getPosition().X+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE,
                             0.0f,
-                            terrain->getPosition().Z+(((float)rand())/32768.f)*SMALLTERRAIN_SIZE);
+                            terrain->getPosition().Z+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE);
             float tval = m_bigTerrain->getDensity(pos.X, pos.Z, getPoolCategoryFromId(objectReps[i].poolId));
             if (tval > 0.05f && val < tval)
 

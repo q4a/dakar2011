@@ -1074,7 +1074,7 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "message_bg: %s\n", message_bg?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "anti_aliasing: %s\n", anti_aliasing?"yes":"no");
+    ret = fprintf(f, "anti_aliasing: %d\n", anti_aliasing);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "vsync: %s\n", vsync?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}

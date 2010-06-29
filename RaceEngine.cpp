@@ -659,7 +659,12 @@ void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
     {
         int j = 0;
         if (stageState->starters[i]->competitor->lastTime == 0) continue;
-        while (j < raceState.size() && stageState->starters[i]->competitor->globalTime >= raceState[j]->globalTime)
+        while (j < raceState.size() &&
+               (
+                /*(stageState->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime!=0) ||*/
+                (stageState->starters[i]->competitor->globalTime >= raceState[j]->globalTime)
+               )
+              )
         {
             j++;
         }

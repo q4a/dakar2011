@@ -2534,7 +2534,7 @@ void eventreceiver_menu::openOptionsWindow()
 		gameTab, GUI_ID_SHOW_NAMES, L"Hello75");
 
     line += 20;
-	env->addStaticText(L"Demage",
+	env->addStaticText(L"Damage",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
 		false, // wordwrap?

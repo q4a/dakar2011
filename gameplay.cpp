@@ -410,6 +410,8 @@ void startGame(int stageNum, SState* state)
                 competitors[i]->lastPenalityTime = 0;
             }
         }
+        playerCompetitor->lastTime = 0;
+        playerCompetitor->lastPenalityTime = 0;
         if (!editorMode)
         {
             raceEngine = new CRaceEngine(smgr, env, bigTerrain);
