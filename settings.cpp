@@ -135,6 +135,8 @@ bool use_demage = true;
 char player_name[256] = "Player";
 char team_name[256] = "Players_Team";
 
+bool fps_compensation = true;
+
 void readSettings(const char* fileName)
 {
     FILE* f;
@@ -818,6 +820,24 @@ void readSettings(const char* fileName)
             else
                 use_demage = false;
         } else
+        if (strcmp(key,"use_damage")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                use_demage = true;
+            else
+                use_demage = false;
+        } else
+        if (strcmp(key,"fps_compensation")==0)
+        {
+            ret = fscanf(f, "%s\n", values);
+            if ( ret <=0 ) break;
+            if (strcmp(values,"yes")==0)
+                fps_compensation = true;
+            else
+                fps_compensation = false;
+        } else
         if (strcmp(key,"trace_net")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -1094,7 +1114,9 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_threads: %s\n", use_threads?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_demage: %s\n", use_demage?"yes":"no");
+    ret = fprintf(f, "use_damage: %s\n", use_demage?"yes":"no");
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "fps_compensation: %s\n", fps_compensation?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "trace_net: %s\n", trace_net?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}

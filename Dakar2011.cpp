@@ -49,6 +49,7 @@
 #include "itiner_hud.h"
 #include "error.h"
 #include "fonts.h"
+#include "MyRoad.h"
 
 #include <CHeightmap.h>
 
@@ -767,6 +768,7 @@ this value is not used, it only specifies the amount of default colors available
     loadObjectTypes("data/objects/object_types.txt", smgr, driver, nWorld);
     MessageText::addText(L"Please wait [      *     ]", 1, true);
     loadGrassTypes("data/objects/grass_types.txt", smgr, driver, nWorld);
+    CRoadType::loadRoadTypes("data/roads/road_types.txt", driver);
     MessageText::addText(L"Please wait [        *   ]", 1, true);
     loadTreeTypes("data/objects/tree_types.txt", smgr, driver, device, nWorld);
     loadMyTreeTypes("data/objects/my_tree_types.txt", smgr, driver, device, nWorld);
@@ -785,7 +787,7 @@ this value is not used, it only specifies the amount of default colors available
     MessageText::addText(L"Please wait [           *]", 1, true);
     
     mapReader = new CMapReaderThread(device);
-
+/*
 // 1. cam
     viewpos[0][12] = -6.f;
     viewpos[0][13] = 3.f;
@@ -857,7 +859,7 @@ this value is not used, it only specifies the amount of default colors available
 
     viewpos_cur = viewpos[view_num];
     viewdest_cur = viewdest[view_num];
-
+*/
     if (useShaders)
     {
         cLightPos_loc[12] = 3.0f;
@@ -1000,6 +1002,24 @@ this value is not used, it only specifies the amount of default colors available
     float compassDotp = 0.f;
     float compassAngle = 0.f;
     
+    u32 drawTick = 0;
+    u32 newtonUpdateCount = 0;
+    s32 sleepTime = 0;
+/*
+    u32 otherTick = 0;
+    u32 saveLastTick = 0;
+    u32 drawCount = 0;
+    
+    u32 lastTickDiff = 0;
+    u32 tickDiff = 0;
+    u32 newNewtonUpdateCount = 0;
+    u32 oldNewtonUpdateCount = 0;
+    u32 tmpOldNewtonUpdateCount = 0;
+    u32 newtonUpdateCountChange = 0;
+    u32 uplace = 0;
+    //u32 newSleepTime = 0;
+#define NEWTONUPDATECOUNTCHANGE_LIMIT 5
+*/    
     int failed_render = 0;
     //intf("device %p\n", device);
     dprintf(printf("device %p\n", device));
@@ -1009,6 +1029,150 @@ this value is not used, it only specifies the amount of default colors available
         if (device->isWindowActive() || (followCarlos && !editorMode))
         {
             tick = device->getTimer()->getTime();
+            if (!fps_compensation)
+            {
+                sleepTime = 0;
+                newtonUpdateCount = (tick - lasttick) / 16;
+            }
+#if 0
+            tickDiff = tick - (lasttick+lastTickDiff);
+            uplace = 0;
+            sleepTime = 0;
+            tmpOldNewtonUpdateCount = oldNewtonUpdateCount;
+            //if (tickDiff <= 96)
+            //{
+                /*
+                    FPS      MS        NUC
+                    > 60     < 16      0 - 1
+                    60       16.6666   1
+                    30       33.3333   2
+                    20       50        3
+                    15       66.6666   4
+                    12       83.3333   5
+                    10       100       6
+                    < 10     > 100     6+
+                */
+                //sleepTime = 0;
+                newNewtonUpdateCount = (tickDiff + 16) / 16;
+                sleepTime = (newNewtonUpdateCount * 16) - tickDiff;
+                /*
+                if (tickDiff > 96)
+                {
+                    sleepTime = 0;
+                    newNewtonUpdateCount = (tick - lasttick) / 16;
+                }
+                else
+                if (tickDiff > 80)
+                {
+                    sleepTime = 96 - tickDiff;
+                    newNewtonUpdateCount = 6;
+                }
+                else
+                if (tickDiff > 64)
+                {
+                    sleepTime = 80 - tickDiff;
+                    newNewtonUpdateCount = 5;
+                }
+                else
+                if (tickDiff > 48)
+                {
+                    sleepTime = 64 - tickDiff;
+                    newNewtonUpdateCount = 4;
+                }
+                else
+                if (tickDiff > 32)
+                {
+                    sleepTime = 48 - tickDiff;
+                    newNewtonUpdateCount = 3;
+                }
+                else
+                if (tickDiff > 16)
+                {
+                    sleepTime = 32 - tickDiff;
+                    newNewtonUpdateCount = 2;
+                }
+                else
+                {
+                    sleepTime = 16 - tickDiff;
+                    newNewtonUpdateCount = 1;
+                }
+                */
+                /*
+                else
+                {
+                    assert(0);
+                }
+                */
+                printf("td: %u st: %d dt: %u nnuc: %u onuc: %u nucc: %u\n",
+                    tickDiff, sleepTime, drawTick,
+                    newNewtonUpdateCount, oldNewtonUpdateCount, newtonUpdateCountChange);
+
+                if (newNewtonUpdateCount != oldNewtonUpdateCount)
+                {
+                    //printf("hello\n");
+                    newtonUpdateCountChange++;
+                    if (newtonUpdateCountChange > NEWTONUPDATECOUNTCHANGE_LIMIT)
+                    {
+                        newtonUpdateCountChange = 0;
+                        newtonUpdateCount = newNewtonUpdateCount;
+                        uplace = 1;
+                    }
+                    else
+                    {
+                        //if (newNewtonUpdateCount < oldNewtonUpdateCount)
+                        {
+                            sleepTime = (oldNewtonUpdateCount*16) - tickDiff;
+                            newtonUpdateCount = oldNewtonUpdateCount;
+                            uplace = 2;
+                        }
+                        /*
+                        else
+                        {
+                            sleepTime = 0;
+                            newtonUpdateCount = (tick - lasttick) / 16;
+                            uplace = 3;
+                        }
+                        */
+                    }
+                }
+                else
+                {
+                    newtonUpdateCountChange = 0;
+                    newtonUpdateCount = newNewtonUpdateCount;
+                    uplace = 4;
+                }
+                
+                //newtonUpdateCount = newNewtonUpdateCount;
+                if (sleepTime > 1)
+                {
+                    //printf("sleep: %u\n", sleepTime);
+                    device->sleep(sleepTime);
+                    device->getTimer()->tick();
+                    tick = device->getTimer()->getTime();
+                }
+                lasttick = tick - (16 * newtonUpdateCount);
+            //}
+            //else
+            //{
+            //    //newtonUpdateCount = 0;
+            //    newtonUpdateCount = (tick - lasttick) / 16;
+            //    uplace = 5;
+            //}
+            oldNewtonUpdateCount = newtonUpdateCount;
+            /*
+            if (newtonUpdateCount==0)
+            {
+                newtonUpdateCount = (tick - lasttick) / 16;
+            }
+            else
+            {
+                lasttick = tick - (16 * newtonUpdateCount);
+            }
+            */
+            
+            printf("u: %u td: %u st: %d nuc: %u nucc: %u\n",
+                    uplace, tickDiff, sleepTime, newtonUpdateCount, newtonUpdateCountChange);
+#endif
             pdprintf(printf("1\n"));
             if (car && bigTerrain && inGame == 0)
             {
@@ -1023,6 +1187,9 @@ this value is not used, it only specifies the amount of default colors available
                 vector3df centar;
                 bool useCarlosView = false;
                 int carlosNum = 1;
+                
+                viewpos_cur = car->getViewPos(view_num+view_mask);
+                viewdest_cur = car->getViewDest(view_num+view_mask);
                 
                 if (followCarlos && raceEngine)
                 {
@@ -1073,6 +1240,7 @@ this value is not used, it only specifies the amount of default colors available
                    
                     ///dynCamPos = centar + dir;
                     ///camera->setPosition(dynCamPos);
+                    if (dir.Y < 0.05f) dir.Y = 0.05f;
                     camera->setPosition(centar + dir);
                 }
                 pdprintf(printf("1d %f %f\n", camera->getPosition().X, camera->getPosition().Z));
@@ -1428,6 +1596,16 @@ this value is not used, it only specifies the amount of default colors available
                 driver->draw2DLine(hudPos2d, hudCenter2d2,SColor(255,255,0,0));
            }
            driver->endScene();
+           //device->run();
+           device->getTimer()->tick();
+           drawTick = device->getTimer()->getTime() - tick;
+           // with sleep
+           if (fps_compensation)
+           {
+              newtonUpdateCount = (drawTick + 16) / 16;
+              sleepTime = (newtonUpdateCount * 16) - drawTick + (newtonUpdateCount/2);
+           }
+           //printf("dt: %u nuc: %u st: %u\n", drawTick, newtonUpdateCount, sleepTime);
            pdprintf(printf("14\n"));
            // display frames per second in window title
 		   int fps = driver->getFPS();
@@ -1533,9 +1711,18 @@ this value is not used, it only specifies the amount of default colors available
           if (car && bigTerrain)
           {
                 core::stringw str;
-                str = L"Demage: ";
+                str = L"Damage: ";
                 str += (int)(car->getDemagePer());
                 str += "%";
+                /*
+                // remove me
+                str += ", ";
+                str += drawTick;
+                str += ", ";
+                str += sleepTime;
+                str += ", ";
+                str += newtonUpdateCount;
+                */
                 /*
                 if (car)
                 {
@@ -1612,9 +1799,13 @@ this value is not used, it only specifies the amount of default colors available
           }
           // Update newton 100 times / second
           //tick = device->getTimer()->getTime();
+          //saveLastTick = lasttick; // remove me
           if (inGame == 0)
           {
-              if (tick > lasttick + 16/*(1000/min_fps*//*(lastFPS+1)) && inGame == 0*/)
+              if (newtonUpdateCount
+                  /*tick >= lasttick + 16*/
+                  /*(1000/min_fps*//*(lastFPS+1)) && inGame == 0*/
+                 )
               {
                   if (bigTerrain)
                       bigTerrain->checkMapsQueue();
@@ -1625,7 +1816,8 @@ this value is not used, it only specifies the amount of default colors available
                           raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
                   //#endif
                   //for (int i = 0; i<2; i++)
-                  while (lasttick+16<tick)
+                  //int newtonUpdateCount = 0;
+                  while (newtonUpdateCount/*lasttick+16<=tick*/)
                   {
                       if (car)
                       {
@@ -1659,27 +1851,37 @@ this value is not used, it only specifies the amount of default colors available
                           pdprintf(printf("16b\n"));
                           vehiclePool->updateActiveVehicles();
                       }
-                      //NewtonUpdate(nWorld, (1.0f/min_fps)*0.5f/*1.066667f*/);
-                      //NewtonUpdate(nWorld, (1.0f/min_fps)/*1.066667f*/);
                       pdprintf(printf("17\n"));
                       //NewtonWorldCriticalSectionLock(nWorld);
                       pdprintf(printf("17b\n"));
                       NewtonUpdate(nWorld, 0.015f/*1.066667f*/);
                       //NewtonWorldCriticalSectionUnlock(nWorld);
                       pdprintf(printf("17c\n"));
-                      //NewtonUpdate(nWorld, 0.0167f/*1.066667f*/);
-                      //NewtonUpdate(nWorld, ((float)(tick-lasttick)/1000.f)*1.066667f);
-                      //NewtonUpdate(nWorld, 0.0106f);
                       lasttick += 16;
+                      newtonUpdateCount--;
+                      /*
+                      if (newtonUpdateCount>=4)
+                      {
+                        lasttick = tick;
+                      }
+                      */
                   }
+                  //drawCount = newtonUpdateCount; // remove me
                   pdprintf(printf("18\n"));
                   soundEngine->setListenerPosition(camera->getPosition(), camera->getTarget()-camera->getPosition());
                   //lasttick = tick;
               }
           }
           else
+          {
             lasttick = tick;
-
+          }
+          //device->run();
+          //otherTick = device->getTimer()->getTime();
+          //lastTickDiff = tick - lasttick;
+          if (sleepTime > 1)
+            device->sleep(sleepTime);
+          //printf("%u %u %u %u\n", tick - saveLastTick, drawTick - tick, otherTick - drawTick, drawCount);
        }
        else
        {
@@ -1697,6 +1899,7 @@ this value is not used, it only specifies the amount of default colors available
             */
             device->sleep(100);
             lasttick = device->getTimer()->getTime();
+            //lastTickDiff = 0;
        }
 	}
 

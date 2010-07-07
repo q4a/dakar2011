@@ -18,6 +18,7 @@
 #ifdef USE_EDITOR
 static gui::IGUIStaticText* editorText = 0;
 static int currentRoad = 0;
+static int currentRoadType = 0;
 static int currentObj = 0;
 static int currentItiner = ITINER_POOLID_OFFSET;
 static char tmpRoadFileName[256] = "data/editor/tmproads.txt";
@@ -45,11 +46,13 @@ void updateEditor()
 {
 #ifdef USE_EDITOR
     core::stringw str;
-    str = L"Help:\n0 - addPoint to road (LMB)\n1 - prev road\n2 - next road\n3 - new road\n4 - save roads\n5 - load roads\nF7 - remove last point\n\n";
+    str = L"Help:\n0 - addPoint to road (LMB)\n1 - prev road\n2 - next road\n3 - new road\n4 - save roads\n5 - load roads\nF7 - remove last point\nN - next road type\n\n";
     str += L"6 - add new obj (RMB)\n7 - prev obj\n8 - next obj\n9 - refresh object wire\nU - save obj\nF8 - remove last obj\n\n";
     str += L"Del - add new itiner\nIns - prev itiner\nHome - next itiner\nEnd - remove nearest obj\n\n";
     
-    str += L"Road: ";
+    str += L"Road type: ";
+    str += currentRoadType;
+    str += L"\nRoad: ";
     str += currentRoad + 1;
     str += L"/";
     str += bigTerrain->getRoadList().size();
@@ -130,8 +133,8 @@ bool actionEditor(int key)
             }
 		case irr::KEY_KEY_3:
             {
-                printf("new road\n");
-                bigTerrain->addNewRoad();
+                printf("new road, type: %u\n", currentRoadType);
+                bigTerrain->addNewRoad(currentRoadType);
                 break;
             }
 		case irr::KEY_KEY_4:
@@ -203,6 +206,12 @@ bool actionEditor(int key)
 		case irr::KEY_KEY_U:
             {
                 bigTerrain->saveObjects(tmpObjFileName);
+                break;
+            }
+		case irr::KEY_KEY_N:
+            {
+                currentRoadType++;
+                if (currentRoadType>=CRoadType::roadTypes.size()) currentRoadType = 0;
                 break;
             }
 		case irr::KEY_DELETE:

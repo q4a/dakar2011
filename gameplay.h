@@ -16,6 +16,10 @@
 #define __GAMEPLAY_H__
 
 #include "irrlicht.h"
+
+//#define view_max 3
+//#define view_multi 4
+
 #include "NewtonRaceCar.h"
 #include "BigTerrain.h"
 #include <Newton.h>
@@ -55,9 +59,6 @@ using namespace gui;
 #define CAMERA_SPEED cameraSpeed
 #define DEFAULT_FAR_VALUE farValue
 #define FAR_VALUE_MULTI 1.5f
-
-#define view_max 3
-#define view_multi 4
 
 #define RESET_PENALITY 120
 #define WATER_HEIGHT 30.3f
@@ -114,11 +115,11 @@ extern bool reinitialize;
 
 extern int view_num;
 extern int view_mask;
-extern matrix4 viewdest[view_max*view_multi];
-extern matrix4 viewpos[view_max*view_multi];
+//extern matrix4 viewdest[view_max*view_multi];
+//extern matrix4 viewpos[view_max*view_multi];
 
-extern matrix4 viewdest_cur;
-extern matrix4 viewpos_cur;
+extern matrix4& viewdest_cur;
+extern matrix4& viewpos_cur;
 
 extern bool useDynCam;
 extern bool dynCamReset;

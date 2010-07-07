@@ -468,10 +468,10 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     str = L"Loading: 40%";
     MessageText::addText(str.c_str(), 1, true);
 
-	//driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
+    //driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
     //loadRoads_old(roadfileName, smgr, driver, core::vector3df(0.f, 0.f, 0.f));
     CMyRoad::loadRoads(roadfileName, roadList, smgr, driver, nWorld);
-	//driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
+    //driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
     
     str = L"Loading: 45%";
     MessageText::addText(str.c_str(), 1, true);
@@ -1884,15 +1884,18 @@ void BigTerrain::updateRoads()
     }
 }
 
-void BigTerrain::addNewRoad()
+void BigTerrain::addNewRoad(unsigned int type)
 {
     if (roadList.size() == 0) return;
     
     CMyRoad* road = new CMyRoad(smgr, driver, nWorld);
+    road->setType(type);
+    /*
     road->setSlicePoints(roadList[roadList.size()-1]->getSlicePoints());
     road->setSliceIndices(roadList[roadList.size()-1]->getSliceIndices());
     road->setTexture(roadList[roadList.size()-1]->getTexture());
     road->setTextureName(roadList[roadList.size()-1]->getTextureName());
+    */
     roadList.push_back(road);
 }
 

@@ -1,0 +1,90 @@
+texture: data/roads/asphalt_02.jpg
+friction_multi: 0.9
+num_of_slice_points: 4
+-5.000000 -0.200000
+-4.800000 0.300000
+4.800000 0.300000
+5.000000 -0.200000
+num_of_slice_indices: 18
+0
+4
+1
+1
+4
+5
+1
+5
+2
+2
+5
+6
+2
+6
+3
+3
+6
+7
+texture: data/roads/asphalt_04.jpg
+friction_multi: 0.9
+num_of_slice_points: 4
+-6.000000 -0.200000
+-5.800000 0.300000
+5.800000 0.300000
+6.000000 -0.200000
+num_of_slice_indices: 18
+0
+4
+1
+1
+4
+5
+1
+5
+2
+2
+5
+6
+2
+6
+3
+3
+6
+7
+texture: data/roads/asphalt_damaged_01.jpg
+friction_multi: 0.9
+num_of_slice_points: 4
+-4.000000 -0.200000
+-3.500000 0.300000
+3.500000 0.300000
+4.000000 -0.200000
+num_of_slice_indices: 18
+0
+4
+1
+1
+4
+5
+1
+5
+2
+2
+5
+6
+2
+6
+3
+3
+6
+7
+texture: data/roads/sand_road.png
+friction_multi: 0.0
+num_of_slice_points: 2
+-5.100000 0.060000
+5.100000 0.060000
+num_of_slice_indices: 6
+0
+2
+1
+1
+2
+3

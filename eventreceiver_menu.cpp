@@ -47,6 +47,7 @@ enum
 	GUI_ID_DRAW_HUD,
 	GUI_ID_SHOW_NAMES,
 	GUI_ID_USE_DEMAGE,
+	GUI_ID_FPS_COMPENSATION,
 	GUI_ID_FULL_SCREEN,
 	GUI_ID_AUTO_RES,
 	GUI_ID_ANTI_ALIASING,
@@ -1571,6 +1572,13 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
+                    case GUI_ID_FPS_COMPENSATION:
+                        {
+                            playSound(clickSound);
+                            fps_compensation = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
+                            return true;
+                            break;
+                        }
                     case GUI_ID_FULL_SCREEN:
                         {
                             playSound(clickSound);
@@ -2542,6 +2550,16 @@ void eventreceiver_menu::openOptionsWindow()
 	env->addCheckBox(use_demage,
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		gameTab, GUI_ID_USE_DEMAGE, L"Hello78");
+
+    line += 20;
+	env->addStaticText(L"FPS correction",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	env->addCheckBox(fps_compensation,
+		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+		gameTab, GUI_ID_FPS_COMPENSATION, L"Hello79");
 
 	line += 40;
 	env->addStaticText(L"Gravity",

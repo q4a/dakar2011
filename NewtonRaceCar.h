@@ -47,6 +47,11 @@ using namespace gui;
 #endif
 
 #include "MyList.h"
+//#include "gameplay.h"
+
+#define view_max 3
+#define view_multi 4
+
 
 #define TIRE_COLLITION_ID	0x100
 #define CHASIS_COLLITION_ID	0x200
@@ -253,6 +258,24 @@ public:
         }
         return (unsigned int)0;
     }
+    
+    matrix4& getViewPos(unsigned int num)
+    {
+        if (num >= view_max*view_multi)
+        {
+            num = 0;
+        }
+        return viewpos[num];
+    }
+
+    matrix4& getViewDest(unsigned int num)
+    {
+        if (num >= view_max*view_multi)
+        {
+            num = 0;
+        }
+        return viewdest[num];
+    }
 
 private:
 	//void Render() const;
@@ -372,6 +395,9 @@ private:
 	ITextSceneNode* nameText; // the name of the competitor
 	float waterHeight;
     OffsetObject* offsetObject;
+    matrix4 viewdest[view_max*view_multi];
+    matrix4 viewpos[view_max*view_multi];
+    
 };
 
 #endif // !defined(AFX_NEWTONRACECAR_H__96CF72A9_A2BD_4A11_9F6D_40DD9A3CCC12__INCLUDED_)

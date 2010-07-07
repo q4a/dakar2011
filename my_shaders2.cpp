@@ -45,7 +45,7 @@ s32 myMaterialType_light_tex_s = video::EMT_SOLID;
 s32 myMaterialType_light_tex_s_car = /*video::EMT_SOLID video::EMT_SPHERE_MAP*/video::EMT_REFLECTION_2_LAYER;
 s32 myMaterialType_light_tex_s_car_tyre = video::EMT_SOLID;
 s32 myMaterialType_transp = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-s32 myMaterialType_transp_road = video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/;
+s32 myMaterialType_transp_road = /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 s32 myMaterialType_transp_stat = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 s32 myMaterialType_tex = video::EMT_SOLID;
 s32 myMaterialType_shadow = video::EMT_SOLID;
@@ -1469,7 +1469,7 @@ void setupShaders2 (IrrlichtDevice* device,
 			transp_road_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			transp_road_fileName, "main_f", "arbfp1", ps_version,
-			mc_tr, /*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/video::EMT_SOLID);
+			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL/*video::EMT_SOLID*/);
 
 		myMaterialType_transp_stat = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			transp_stat_fileName, "main_v", "arbvp1", vs_version,

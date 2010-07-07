@@ -62,7 +62,7 @@ public:
        void checkMapsQueue();
        void checkMapsQueueThread(SMapsQueueElement* mQE);
        void updateRoads();
-       void addNewRoad();
+       void addNewRoad(unsigned int type);
        void loadRoads(const char* roadsName);
        void updateObjectWire();
        void saveObjects(const char* name);

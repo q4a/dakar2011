@@ -90,6 +90,7 @@ adv_cg_shaders: yes
 follow_carlos: yes
 terrain_tesselation: 1
 use_threads: no
-use_demage: no
+use_damage: no
 player_name: Player
 team_name: Player's_Team
+fps_compensation: yes

@@ -615,6 +615,30 @@ NewtonRaceCar::NewtonRaceCar(
         fclose(f);
         return;
     }
+    
+    for (int i = 0; i < view_max*view_multi; i++)
+    {
+        char viewName[256];
+        viewpos[i] = matrix4();
+        ret = fscanf(f, "%s %f %f %f\n", viewName, &viewpos[i][12], &viewpos[i][13], &viewpos[i][14]);
+        if ( ret < 4 )
+        {
+            printf("error reading %s ret %d errno %d\n", fileName, ret, errno);
+            fclose(f);
+            return;
+        }
+        viewdest[i] = matrix4();
+        ret = fscanf(f, "%s %f %f %f\n", viewName, &viewdest[i][12], &viewdest[i][13], &viewdest[i][14]);
+        if ( ret < 4 )
+        {
+            printf("error reading %s ret %d errno %d\n", fileName, ret, errno);
+            fclose(f);
+            return;
+        }
+    }
+    //matrix4 viewdest[view_max*view_multi];
+    //matrix4 viewpos[view_max*view_multi];
+    
 
 	// Add tires;
 	for (int i = 0; i < num_of_tires; i++)

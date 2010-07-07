@@ -81,11 +81,14 @@ bool reinitialize = false;
 
 int view_num = 0;
 int view_mask = 0;
-matrix4 viewdest[view_max*view_multi];
-matrix4 viewpos[view_max*view_multi];
+//matrix4 viewdest[view_max*view_multi];
+//matrix4 viewpos[view_max*view_multi];
 
-matrix4 viewdest_cur;
-matrix4 viewpos_cur;
+matrix4 viewdest_cur_helper;
+matrix4 viewpos_cur_helper;
+
+matrix4& viewdest_cur = viewdest_cur_helper;
+matrix4& viewpos_cur = viewpos_cur_helper;
 
 bool useDynCam = true;
 bool dynCamReset = true;
@@ -977,8 +980,8 @@ bool restoreStateInternal(int newStartNewGame)
         car_dirt_delta = savedState->car_dirt_delta;
         useDynCam = savedState->useDynCam;
         
-        viewpos_cur = viewpos[view_num];
-        viewdest_cur = viewdest[view_num];
+        //viewpos_cur = viewpos[view_num];
+        //viewdest_cur = viewdest[view_num];
         car_dirt = (float)savedCarDirt/(float)(MAX_CAR_DIRT-1); //tcd;
 
         startGame(oldStage, savedState);

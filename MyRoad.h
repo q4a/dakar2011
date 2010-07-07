@@ -26,6 +26,37 @@ class BigTerrain;
 class SmallTerrain;
 class OffsetObject;
 
+class CRoadType
+{
+public:
+    CRoadType(IVideoDriver* p_driver);
+    ~CRoadType();
+    
+    bool load(FILE* f);
+
+    static bool loadRoadTypes(const char* name, IVideoDriver* p_driver);
+    static core::array<CRoadType*> roadTypes;
+
+    core::array<core::vector2df>& getSlicePoints() {return slicePoints;}
+    core::array<int>& getSliceIndices() {return sliceIndices;}
+
+//    void setTexture(video::ITexture* newTexture) {texture = newTexture;}
+//    void setTextureName(const char* newTextureName);
+//    video::ITexture* getTexture() {return texture;}
+//    char* getTextureName() {return textureName;}
+
+private:
+    friend class CMyRoad;
+    IVideoDriver* driver;
+
+    core::array<core::vector2df> slicePoints;
+    core::array<int> sliceIndices;
+
+    video::ITexture* texture;
+    float friction_multi;
+    float tRate;
+};
+
 class CMyRoad
 {
 public:
@@ -42,42 +73,30 @@ public:
     void addBasePoint(const core::vector3df& newPoint);
 
     void setBasePoints(const core::array<core::vector3df> &newBasePoints);
-    void setSlicePoints(const core::array<core::vector2df> &newSlicePoints);
-    void setSliceIndices(const core::array<int> &newSliceIndices);
-    void setTexture(video::ITexture* newTexture) {texture = newTexture;}
-    void setTextureName(const char* newTextureName);
+    void setType(unsigned int newType);
 
     core::array<core::vector3df>& getBasePoints() {return basePoints;}
-    core::array<core::vector2df>& getSlicePoints() {return slicePoints;}
-    core::array<int>& getSliceIndices() {return sliceIndices;}
-    video::ITexture* getTexture() {return texture;}
-    char* getTextureName() {return textureName;}
+    unsigned int getType() {return type;}
     
     ISceneNode* generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate, video::ITexture* p_shadowMap);
     
-    float getFrictionMulti() {return friction_multi;}
+    float getFrictionMulti() {return roadType->friction_multi;}
     
 private:
     core::array<core::vector3df> basePoints;
 
-    core::array<core::vector2df> slicePoints;
-    core::array<int> sliceIndices;
-    
     ISceneNode* roadNode;
     NewtonBody* newtonBody;
     NewtonCollision* collision;
-    
-    float tRate;
     
     ISceneManager* smgr;
     IVideoDriver* driver;
     NewtonWorld *nWorld;
     
-    video::ITexture* texture;
-    char textureName[256];
-    
-    float friction_multi;
     OffsetObject* offsetObject;
+
+    unsigned int type;
+    CRoadType* roadType;
 };
 
 #endif // __MYROAD_H__

@@ -1100,10 +1100,13 @@ void SmallTerrain::updateRoads(core::array<CMyRoad*> &bigRoadList, unsigned int 
                         dprintf(printf("ST::updateRoads() new road found BT road num %d basePoint %d\n", i, j);)
                         road = new CMyRoad(smgr, driver, nWorld);
                         //dprintf(printf("ST::updateRoads() new road found BT road num %d basePoint %d, bpnum: %d\n", i, j, road->getBasePoints().size());)
+                        road->setType(bigRoadList[i]->getType());
+                        /*
                         road->setSlicePoints(bigRoadList[i]->getSlicePoints());
                         road->setSliceIndices(bigRoadList[i]->getSliceIndices());
                         road->setTexture(bigRoadList[i]->getTexture());
                         road->setTextureName(bigRoadList[i]->getTextureName());
+                        */
                         if (j > 0)
                         {
                             float height = 0.0f;

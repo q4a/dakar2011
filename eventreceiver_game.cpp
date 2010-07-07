@@ -42,8 +42,8 @@ int joy_menu_p = 0;
 
 void actualizeView()
 {
-     viewpos_cur = viewpos[view_num+view_mask];
-     viewdest_cur = viewdest[view_num+view_mask];
+//     viewpos_cur = viewpos[view_num+view_mask];
+//     viewdest_cur = viewdest[view_num+view_mask];
      dynCamReset = true;
 /*
     switch (view_mask)
@@ -96,9 +96,9 @@ void changeView()
 {
     if (inGame == 0)
     {
-	    view_num = (view_num + view_multi) % (view_max*view_multi);
-        viewpos_cur = viewpos[view_num];
-        viewdest_cur = viewdest[view_num];
+        view_num = (view_num + view_multi) % (view_max*view_multi);
+//        viewpos_cur = viewpos[view_num];
+//        viewdest_cur = viewdest[view_num];
         dynCamReset = true;
     }
 }
@@ -421,6 +421,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 		case irr::KEY_KEY_8:
 		case irr::KEY_KEY_9:
 		case irr::KEY_KEY_U:
+		case irr::KEY_KEY_N:
 		case irr::KEY_F7:
 		case irr::KEY_F8:
 		case irr::KEY_INSERT:

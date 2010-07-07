@@ -128,6 +128,8 @@ extern bool use_demage;
 extern char player_name[256];
 extern char team_name[256];
 
+extern bool fps_compensation;
+
 void readSettings(const char*);
 
 bool writeSettings(const char*);

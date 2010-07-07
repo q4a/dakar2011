@@ -1,29 +1,5 @@
 num_of_roads: 1
-texture: data/roads/asphalt_02.jpg
-num_of_slice_points: 4
--5.000000 -0.200000
--4.800000 0.300000
-4.800000 0.300000
-5.000000 -0.200000
-num_of_slice_indices: 18
-0
-4
-1
-1
-4
-5
-1
-5
-2
-2
-5
-6
-2
-6
-3
-3
-6
-7
+type: 0
 num_of_base_points: 7
 3070.000000 100.000000
 3075.000000 100.000000
