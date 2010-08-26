@@ -698,7 +698,11 @@ void NewtonRaceCar::activate(
                         video::ITexture* shadowMap,
                         const float p_waterHeight,
                         bool p_useOffset,
-                        const int savedCarDirt
+                        const int savedCarDirt,
+                        float pressure_multi,
+                        float ss_multi,
+                        float sd_multi,
+                        float sl_multi
                         )
 {
     friction_multi = pfriction_multi;
@@ -853,7 +857,7 @@ void NewtonRaceCar::activate(
 //	CustomBasicRayCastCar(int maxTireCount, const dMatrix& chassisMatrix, NewtonBody* carBody, const dVector& gravity = dVector (0.0f, -9.8f, 0.0f, 0.0f));
 	m_vehicleJoint = new CustomMultiBodyVehicle(chassisMatrix.m_front, chassisMatrix.m_up, m_vehicleBody) ;
 #else
-	m_vehicleJoint = new CustomDGRayCastCar(num_of_tires, chassisMatrix, m_vehicleBody) ;
+	m_vehicleJoint = new CustomDGRayCastCar(m_tires.size(), chassisMatrix, m_vehicleBody) ;
 #endif
     dprintf(printf("m_vehicleJoint: %p %p\n", m_vehicleJoint, m_vehicleJoint->GetJoint()));
 	
@@ -906,6 +910,11 @@ void NewtonRaceCar::activate(
 
     NewtonBodySetAutoSleep(m_vehicleBody, 0);
     //NewtonBodySetFreezeState(m_vehicleBody, 0);
+    setPressure(pressure_multi);
+    setSuspensionSpring(ss_multi);
+    setSuspensionDamper(sd_multi);
+    setSuspensionLength(sl_multi);
+    
     dprintf(printf("end activate %p\n", this);)
 }
 
@@ -1885,7 +1894,7 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
     }
 
     ret = fscanf(f, "tyre_mass: %f\nfriction: %f\nsuspension_length: %f\nsuspension_spring: %f\nsuspension_damper: %f\n", 
-                     &tyre_mass, &friction, &suspension_length, &suspension_spring, &suspension_damper);
+                     &tyre_mass, &friction_orig, &suspension_length_orig, &suspension_spring, &suspension_damper);
     if ( ret <=0 )
     {
         printf("error reading car file ret %d errno %d 6\n", ret, errno);
@@ -1893,6 +1902,9 @@ NewtonRaceCar::RaceCarTire::RaceCarTire(ISceneManager* smgr, IVideoDriver* drive
         return;
     }
 
+    friction = friction_orig;
+    suspension_length = suspension_length_orig;
+    
 	tirePosition.Y -= suspension_length;
 
 /*    
@@ -2755,7 +2767,8 @@ void NewtonRaceCar::repair()
             m_vehicleJoint->GetTire(m_tires[i]->tire_num)->m_mass = m_tires[i]->tyre_mass;
 #else
             m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_suspensionLenght = m_tires[i]->suspension_length;
-            m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_mass = m_tires[i]->tyre_mass;
+            //m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_mass = m_tires[i]->tyre_mass;
+            m_vehicleJoint->SetTireMassAndRadius(m_tires[i]->tire_num, m_tires[i]->tyre_mass, m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_radius);
 #endif
         }
     }
@@ -2778,7 +2791,8 @@ void NewtonRaceCar::loseTyre(int num)
     m_vehicleJoint->GetTire(m_tires[num]->tire_num)->m_mass = m_tires[num]->tyre_mass * 0.1f;
 #else
     m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_suspensionLenght = m_tires[num]->suspension_length * 0.1f;
-    m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_mass = m_tires[num]->tyre_mass * 0.1f;
+    m_vehicleJoint->SetTireMassAndRadius(m_tires[num]->tire_num, m_tires[num]->tyre_mass * 0.1f, m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_radius);
+    //m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_mass = m_tires[num]->tyre_mass * 0.1f;
 #endif
 }
 
@@ -2804,6 +2818,46 @@ void NewtonRaceCar::offsetObjectCallback(void* userData, const irr::core::vector
 {
     NewtonRaceCar* vehicle = (NewtonRaceCar*)userData;
     vehicle->m_matrix.setTranslation(newPos);
+}
+
+void NewtonRaceCar::setPressure(float pressure_multi)
+{
+    float lmass_multi = TYRE_MASS_GET_FROM_MULTI(pressure_multi);
+    float lradius_multi = TYRE_RADIUS_GET_FROM_MULTI(pressure_multi);
+    float lfriction_multi = TYRE_FRICTION_GET_FROM_MULTI(1.f-pressure_multi);
+    for (unsigned int i = 0; i < m_tires.size(); i++)
+    {
+        m_vehicleJoint->SetTireMassAndRadius(m_tires[i]->tire_num, m_tires[i]->tyre_mass * lmass_multi, m_tires[i]->m_radius*lradius_multi);
+        m_tires[i]->friction = m_tires[i]->friction_orig * lfriction_multi;
+    }
+}
+
+void NewtonRaceCar::setSuspensionSpring(float ss_multi)
+{
+    for (unsigned int i = 0; i < m_tires.size(); i++)
+    {
+        m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_springConst = m_tires[i]->suspension_spring * SUSPENSION_SPRING_GET_FROM_MULTI(ss_multi);
+    }
+}
+
+void NewtonRaceCar::setSuspensionDamper(float sd_multi)
+{
+    for (unsigned int i = 0; i < m_tires.size(); i++)
+    {
+        m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_springDamper = m_tires[i]->suspension_damper * SUSPENSION_DAMPER_GET_FROM_MULTI(sd_multi);
+    }
+}
+
+void NewtonRaceCar::setSuspensionLength(float sl_multi)
+{
+    for (unsigned int i = 0; i < m_tires.size(); i++)
+    {
+        m_tires[i]->suspension_length = m_tires[i]->suspension_length_orig * SUSPENSION_LENGTH_GET_FROM_MULTI(sl_multi);
+        if (m_tires[i]->connected)
+        {
+            m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_suspensionLenght = m_tires[i]->suspension_length;
+        }
+    }
 }
 
 //#endif

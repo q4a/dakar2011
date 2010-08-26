@@ -64,9 +64,11 @@ gui::IGUIStaticText* versionText = 0;
 gui::IGUIImage* bgImage = 0;
 gui::IGUIImage* hudImage = 0;
 gui::IGUIImage* hudCompassImage = 0;
+gui::IGUIImage* hudMap = 0;
 gui::IGUIImage* hudInfo = 0;
 gui::IGUIImage* crossImage = 0;
 bool showCompass = false;
+bool showMap = false;
 scene::IAnimatedMeshSceneNode* compassArrow = 0;
 scene::ISceneNode* skydome = 0;
 scene::IBillboardSceneNode* sunSphere = 0;
@@ -111,11 +113,7 @@ irr::core::array<irr::scene::ISceneNode*> shadowNodes;
 irr::core::array<irr::scene::ISceneNode*> depthNodes;
 irr::core::array<irr::scene::ISceneNode*> objectNodes;
 
-#ifdef IRRLICHT_SDK_15
-core::dimension2d<s32> screenSize;
-#else
 core::dimension2d<u32> screenSize;
-#endif
 video::ITexture* screenRTT[MAX_SCREENRTT] = {0, 0, 0};
 int currentScreenRTT = 0;
 video::ITexture* bgImageTexture = 0;
@@ -123,6 +121,7 @@ video::ITexture* depthRTT = 0;
 video::ITexture* blurmap = 0;
 video::ITexture* blurmapSide = 0;
 video::ITexture* motiondir_map[view_multi] = {0, 0, 0, 0};
+core::array<video::IRenderTarget> mrtList;
 //video::ITexture* motiondir_mapSide = 0;
 
 int loading = 0;
@@ -138,6 +137,12 @@ static CRaceEngine* loadedRaceEngine = 0;
 
 TerrainPool* terrainPool = 0;
 OffsetManager* offsetManager = 0;
+
+float car_pressure_multi = TYRE_PRESSURE_MULTI_DEFAULT;
+float car_ss_multi = SUSPENSION_SPRING_MULTI_DEFAULT;
+float car_sd_multi = SUSPENSION_DAMPER_MULTI_DEFAULT;
+float car_sl_multi = SUSPENSION_LENGTH_MULTI_DEFAULT;
+
 
 const char* bgImagesHi[MAX_BGIMAGE+1] =
 {
@@ -187,6 +192,8 @@ video::ITexture* bgImagesTextures[MAX_BGIMAGE+1] =
 };
 
 video::ITexture* hudTextures[MAX_HUD+2] = {0,0,0,0,0,0,0,0,0};
+video::ITexture* hudMapTextures[HUD_MAPS] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+video::ITexture* hudUserOnMapTexture = 0;
 
 #define SAVE_TMP_FILE "savegames/tmp_state.txt"
 
@@ -298,7 +305,7 @@ void startGame(int stageNum, SState* state)
     device->getCursorControl()->setVisible(false);
         
     str = L"Loading: 0%";
-    MessageText::addText(str.c_str(), 1, true);
+    MessageText::addText(str.c_str(), 1, true, false);
 
     loading = 1;
 //    if (useScreenRTT && useBgImageToRender)
@@ -337,7 +344,7 @@ void startGame(int stageNum, SState* state)
                                 skydome, shadowMap, stageNum, terrainPool);
 
     str = L"Loading: 50%";
-    MessageText::addText(str.c_str(), 1, true);
+    MessageText::addText(str.c_str(), 1, true, false);
 
     if (/*stages[stageNum]->stagePart <= 1 && */startNewGame != 1)
     {
@@ -364,7 +371,7 @@ void startGame(int stageNum, SState* state)
     }
     
     str = L"Loading: 95%";
-    MessageText::addText(str.c_str(), 1, true);
+    MessageText::addText(str.c_str(), 1, true, false);
     
     car = vehiclePool->getVehicle(carType);
     assert(car);
@@ -378,7 +385,12 @@ void startGame(int stageNum, SState* state)
                   shadowMap,
                   bigTerrain->getWaterHeight(),
                   true,
-                  savedCarDirt);
+                  savedCarDirt,
+                  car_pressure_multi,
+                  car_ss_multi,
+                  car_sd_multi,
+                  car_sl_multi
+                  );
     car->setAutoGear(gear_type=='a');
 
     //NewtonUpdate(nWorld, 0.015f);
@@ -425,9 +437,9 @@ void startGame(int stageNum, SState* state)
     {
         raceEngine = loadedRaceEngine;
         assert(raceEngine);
-        loadedRaceEngine = 0;
         raceEngine->refreshBigTerrain(bigTerrain);
     }
+    loadedRaceEngine = 0;
 //#endif
 
     if (useScreenRTT && useBgImageToRender)
@@ -678,7 +690,9 @@ bool saveGame(const c8* name)
     ret = fprintf(f, "carpos: %f %f %f\ncarrot: %f %f %f\ncurrent_time: %u\ncps: %d\npenality: %u\n" \
                      "started: %u\nended: %u\ncpsize: %u\ntime_offset: %d\n" \
                      "current_stage: %d\nglobal_time: %u\ncar_type: %d\nview_num: %d\n" \
-                     "car_dirt: %d\ncar_dirt_delta: %d\nuse_dyn_cam: %d\n",
+                     "car_dirt: %d\ncar_dirt_delta: %d\nuse_dyn_cam: %d\n" \
+                     "car_pressure_multi: %f\ncar_ss_multi: %f\n" \
+                     "car_sd_multi: %f\ncar_sl_multi: %f\n",
                 offsetManager->getOffset().X+savedState->carPos.X,
                 savedState->carPos.Y,
                 offsetManager->getOffset().Z+savedState->carPos.Z,
@@ -698,9 +712,13 @@ bool saveGame(const c8* name)
                 savedState->view_num,
                 savedState->savedCarDirt,
                 savedState->car_dirt_delta,
-                savedState->useDynCam
+                savedState->useDynCam,
+                savedState->car_pressure_multi,
+                savedState->car_ss_multi,
+                savedState->car_sd_multi,
+                savedState->car_sl_multi
             );
-    if ( ret < 20 )
+    if ( ret < 24 )
     {
         printf("error writing %s ret %d errno %d\n", name, ret, errno);
         fclose(f);
@@ -780,7 +798,9 @@ bool loadGame(const c8* name)
     ret = fscanf(f, "carpos: %f %f %f\ncarrot: %f %f %f\ncurrent_time: %u\ncps: %d\npenality: %u\n" \
                      "started: %u\nended: %u\ncpsize: %u\ntime_offset: %d\n" \
                      "current_stage: %d\nglobal_time: %u\ncar_type: %d\nview_num: %d\n" \
-                     "car_dirt: %d\ncar_dirt_delta: %d\nuse_dyn_cam: %d\n",
+                     "car_dirt: %d\ncar_dirt_delta: %d\nuse_dyn_cam: %d\n" \
+                     "car_pressure_multi: %f\ncar_ss_multi: %f\n" \
+                     "car_sd_multi: %f\ncar_sl_multi: %f\n",
                 &savedState->carPos.X,
                 &savedState->carPos.Y,
                 &savedState->carPos.Z,
@@ -800,9 +820,13 @@ bool loadGame(const c8* name)
                 &savedState->view_num,
                 &savedState->savedCarDirt,
                 &savedState->car_dirt_delta,
-                &savedState->useDynCam
+                &savedState->useDynCam,
+                &savedState->car_pressure_multi,
+                &savedState->car_ss_multi,
+                &savedState->car_sd_multi,
+                &savedState->car_sl_multi
             );
-    if ( ret < 20 )
+    if ( ret < 24 )
     {
         printf("error reading %s ret %d errno %d\n", name, ret, errno);
         fclose(f);
@@ -851,14 +875,15 @@ bool loadGame(const c8* name)
 
     dprintf(printf("load game - load raceEngine: %d\n", useRaceEngine);)
     
-    if (useRaceEngine)
+    if (!useRaceEngine || !loadedRaceEngine->load(f, smgr, env))
     {
-        if (!loadedRaceEngine->load(f, smgr, env))
-        {
-            printf("error reading %s ret %d errno %d\n", name, ret, errno);
-            fclose(f);
-            return false;
-        }
+        printf("error reading %s ret %d errno %d\n", name, ret, errno);
+        fclose(f);
+        delete savedState;
+        savedState = 0;
+        delete loadedRaceEngine;
+        loadedRaceEngine = 0;
+        return false;
     }
         
     fclose(f);
@@ -959,6 +984,10 @@ void saveStateInternal()
         savedState->savedCarDirt = savedCarDirt = car->getDirt();
         savedState->car_dirt_delta = car_dirt_delta;
         savedState->useDynCam = useDynCam;
+        savedState->car_pressure_multi = car_pressure_multi;
+        savedState->car_ss_multi = car_ss_multi;
+        savedState->car_sd_multi = car_sd_multi;
+        savedState->car_sl_multi = car_sl_multi;
     }
 }
 
@@ -979,6 +1008,10 @@ bool restoreStateInternal(int newStartNewGame)
         savedCarDirt = savedState->savedCarDirt;
         car_dirt_delta = savedState->car_dirt_delta;
         useDynCam = savedState->useDynCam;
+        car_pressure_multi = savedState->car_pressure_multi;
+        car_ss_multi = savedState->car_ss_multi;
+        car_sd_multi = savedState->car_sd_multi;
+        car_sl_multi = savedState->car_sl_multi;
         
         //viewpos_cur = viewpos[view_num];
         //viewdest_cur = viewdest[view_num];

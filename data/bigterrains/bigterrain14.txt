@@ -1,14 +1,14 @@
 128 x 20.000000
-data/bigterrains/heightmaps/stage14_hm.hmbin
-data/bigterrains/densitymaps/stage14_dm.png
-data/bigterrains/texturemaps/stage14_tm.png
+data/bigterrains/heightmaps/stage1_hm.hmbin
+data/bigterrains/densitymaps/stage1_dm.png
+data/bigterrains/texturemaps/stage1_tm.png
 data/bigterrains/textures/dirt_09.jpg
-data/bigterrains/textures/grass_01.jpg
+data/bigterrains/textures/grass_02.jpg
 data/bigterrains/textures/dirt_03.jpg
 data/bigterrains/textures/dirt_04.jpg
 data/bigterrains/textures/concrete_03.jpg
 data/skys/fairday.jpg
-data/roads/roads14.txt
+data/roads/roads1.txt
 data/objects/objects14.txt
 data/vehicles/sound/surfaces/gravel.wav
 data/vehicles/sound/puff.wav
@@ -16,12 +16,10 @@ data/vehicles/sound/skids/gravel.wav
 speed: 150.0
 friction_multi: 0.8
 vscale: 0.3
-water_height: 30.5
-start_pos: 15080.0 17080.0
-start_offset: 20.0 0.0
-start_rot: 0.0 180.0 0.0
-cp_pos: 7720.0 10800.0
-cp_pos: 30580.0 3100.0
-cp_pos: 45080.0 11800.0
-cp_pos: 63000.0 12360.0
-end_pos: 96164.0 10015.0
+water_height: 3.5
+start_pos: 4755.0 55900.0
+start_offset: 0.0 20.0
+start_rot: 0.0 90.0 0.0
+cp_pos: 4755.0 55900.0
+cp_pos: 95079.0 7005.0
+end_pos: 95079.0 7005.0

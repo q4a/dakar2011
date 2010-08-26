@@ -61,7 +61,7 @@ public:
        void updateMapsAddToQueue(int new_x, int new_y, int obj_density);
        void checkMapsQueue();
        void checkMapsQueueThread(SMapsQueueElement* mQE);
-       void updateRoads();
+       void updateRoads(int roadToUpdate = -1);
        void addNewRoad(unsigned int type);
        void loadRoads(const char* roadsName);
        void updateObjectWire();
@@ -71,6 +71,8 @@ public:
        
        float getHeight(float x, float y) const;
        float getDensity(float x, float y, int category = -1) const;
+       void zeroDensity(float x, float y);
+       void setRoadOnTextureMap(float x, float y);
        scene::ISceneNode* getTerrain(float x, float y) const;
        SmallTerrain* getSmallTerrain(float x, float y) const;
        float getSmallTerrainSize() const;
@@ -120,9 +122,19 @@ public:
        video::IImage* getHeightMap() {return heightMap;}
 #else
        CHeightmap* getHeightMap() {return heightMap;}
+       void saveHeightMap(const char* hmname, const char *pngname);
+       void setRoadOnHeightMap(float x, float y);
 #endif
+       void saveTextureMap(const char* tmname);
+
        float getVScale() {return vscale;}
        float getWaterHeight() {return waterHeight;}
+       
+       core::position2d<s32>& getMapUp() {return mapUp;}
+       core::position2d<s32>& getMapDown() {return mapDown;}
+       core::dimension2di& getMapSize() {return mapSize;}
+       float getMapScale() { return mapScale;}
+       
 
 private:
        void applyRoadOnHeightMap();
@@ -245,6 +257,11 @@ public:
        float waterHeight;
        unsigned int lastMapsQueueUpdate;
        unsigned int mapsQueueVersion;
+       
+       core::position2d<s32> mapUp;
+       core::position2d<s32> mapDown;
+       core::dimension2di mapSize;
+       float mapScale;
 };
 
 #endif // __BIGTERRAIN_H__

@@ -31,6 +31,8 @@
 # define pdprintf(x)
 #endif /* debug */
 
+#define NEW_ROAD_OFFSET 1
+
 core::array<CRoadType*> CRoadType::roadTypes;
 
 CRoadType::CRoadType(IVideoDriver* p_driver)
@@ -172,7 +174,8 @@ CMyRoad::CMyRoad(ISceneManager* p_smgr, IVideoDriver* p_driver, NewtonWorld *p_n
     nWorld(p_nWorld),
     offsetObject(0),
     type(0),
-    roadType(0)
+    roadType(0),
+    parent(-1)
 {
 }
 
@@ -192,7 +195,9 @@ CMyRoad::~CMyRoad()
     newtonBody = 0;
     if (collision)
     {
+        NewtonWorldCriticalSectionLock(nWorld);
         NewtonReleaseCollision(nWorld, collision);
+        NewtonWorldCriticalSectionUnlock(nWorld);
     }
     collision = 0;
     if (offsetObject)
@@ -207,8 +212,10 @@ CMyRoad::~CMyRoad()
     roadType = 0;
 }
 
-void CMyRoad::addBasePoint(const core::vector3df& newPoint)
+void CMyRoad::addBasePoint(const core::vector3df& newPoint, BigTerrain* p_bigTerrain,
+                           bool addToDensityMap, bool addToRoadMap, bool addToTextureMap)
 {
+    //assert(0);
     if (basePoints.size() > 0)
     {
         vector3df bp = basePoints[basePoints.size() - 1];
@@ -218,10 +225,42 @@ void CMyRoad::addBasePoint(const core::vector3df& newPoint)
         while (cur + 8.f < dist)
         {
             cur += 5.f;
-            basePoints.push_back(bp + dir*(cur/dist));
+            vector3df ap = bp + dir*(cur/dist);
+            basePoints.push_back(ap);
+            if (p_bigTerrain)
+            {
+                if (addToDensityMap)
+                {
+                    p_bigTerrain->zeroDensity(ap.X, ap.Z);
+                }
+                if (addToRoadMap)
+                {
+                    p_bigTerrain->setRoadOnHeightMap(ap.X, ap.Z);
+                }
+                if (addToTextureMap)
+                {
+                    p_bigTerrain->setRoadOnTextureMap(ap.X, ap.Z);
+                }
+            }
         }
     }
     basePoints.push_back(newPoint);
+    //printf("add newPoint\n");
+    if (p_bigTerrain)
+    {
+        if (addToDensityMap)
+        {
+            p_bigTerrain->zeroDensity(newPoint.X, newPoint.Z);
+        }
+        if (addToRoadMap)
+        {
+            p_bigTerrain->setRoadOnHeightMap(newPoint.X, newPoint.Z);
+        }
+        if (addToTextureMap)
+        {
+            p_bigTerrain->setRoadOnTextureMap(newPoint.X, newPoint.Z);
+        }
+    }
 }
 
 void CMyRoad::setBasePoints(const core::array<core::vector3df> &newBasePoints)
@@ -265,7 +304,9 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     newtonBody = 0;
     if (collision)
     {
+        NewtonWorldCriticalSectionLock(nWorld);
         NewtonReleaseCollision(nWorld, collision);
+        NewtonWorldCriticalSectionUnlock(nWorld);
     }
     collision = 0;
 
@@ -286,6 +327,15 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
 
     float prevHeight = 0.f;
     float prevPrevHeight = 0.f;
+
+#ifdef NEW_ROAD_OFFSET
+    regenerate = 1 - regenerate;
+    for (int i = 0; i < basePoints.size(); i++)
+    {
+        basePoints[i].X -= (offsetManager->getOffset().X/**(float)regenerate*/);
+        basePoints[i].Z -= (offsetManager->getOffset().Z/**(float)regenerate*/);
+    }
+#endif
 
     float ty = 0.f;
     int vertexCount = 0;
@@ -308,9 +358,15 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
         normal.rotateBy(-90.f);
         
         float addHeight = 0.f;
+#ifndef NEW_ROAD_OFFSET
         float h0 = p_smallTerrain->terrain->getHeight((roadType->slicePoints[0].X*normal.X)+basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), (roadType->slicePoints[0].X*normal.Y)+basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
         float hb = p_smallTerrain->terrain->getHeight(basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
         float hl = p_smallTerrain->terrain->getHeight((roadType->slicePoints[roadType->slicePoints.size()-1].X*normal.X)+basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate), (roadType->slicePoints[roadType->slicePoints.size()-1].X*normal.Y)+basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
+#else
+        float h0 = p_smallTerrain->terrain->getHeight((roadType->slicePoints[0].X*normal.X)+basePoints[i].X+(offsetManager->getOffset().X*(float)regenerate), (roadType->slicePoints[0].X*normal.Y)+basePoints[i].Z+(offsetManager->getOffset().Z*(float)regenerate));
+        float hb = p_smallTerrain->terrain->getHeight(basePoints[i].X+(offsetManager->getOffset().X*(float)regenerate), basePoints[i].Z+(offsetManager->getOffset().Z*(float)regenerate));
+        float hl = p_smallTerrain->terrain->getHeight((roadType->slicePoints[roadType->slicePoints.size()-1].X*normal.X)+basePoints[i].X+(offsetManager->getOffset().X*(float)regenerate), (roadType->slicePoints[roadType->slicePoints.size()-1].X*normal.Y)+basePoints[i].Z+(offsetManager->getOffset().Z*(float)regenerate));
+#endif
         addHeight = hb;
         if (h0 > hb && h0 > hl) addHeight = h0;
         if (hl > h0 && hl > hb) addHeight = hl;
@@ -328,14 +384,14 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
         for (int j = 0; j < roadType->slicePoints.size(); j++)
         {
             video::S3DVertex vtx;
-            if (j == 0 && roadType->slicePoints.size() > 3)
+            if (j == 0 && /*roadType->slicePoints.size() > 3*/roadType->friction_multi > 0.01f)
             {
                 vtx.Pos = vector3df(((roadType->slicePoints[j+1].X-((roadType->slicePoints[j+1].X-roadType->slicePoints[j].X)*10.f))*normal.X)+basePoints[i].X,
                                     (roadType->slicePoints[j].Y*10.f)+basePoints[i].Y+addHeight,
                                     ((roadType->slicePoints[j+1].X-((roadType->slicePoints[j+1].X-roadType->slicePoints[j].X)*10.f))*normal.Y)+basePoints[i].Z);
             }
             else
-            if (j == roadType->slicePoints.size()-1 && roadType->slicePoints.size() > 3)
+            if (j == roadType->slicePoints.size()-1 && /*roadType->slicePoints.size() > 3*/roadType->friction_multi > 0.01f)
             {
                 vtx.Pos = vector3df(((roadType->slicePoints[j-1].X+((roadType->slicePoints[j].X-roadType->slicePoints[j-1].X)*10.f))*normal.X)+basePoints[i].X,
                                     (roadType->slicePoints[j].Y*10.f)+basePoints[i].Y+addHeight,
@@ -358,6 +414,20 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
                         if (hl > 0.01f)
                             vtx.Pos.Y = roadType->slicePoints[j].Y+basePoints[i].Y+hl;
                     }
+                }
+                else
+                {
+#ifndef NEW_ROAD_OFFSET
+                    float hc = p_smallTerrain->terrain->getHeight(
+                        (roadType->slicePoints[j].X*normal.X)+basePoints[i].X-(offsetManager->getOffset().X*(float)regenerate),
+                        (roadType->slicePoints[j].X*normal.Y)+basePoints[i].Z-(offsetManager->getOffset().Z*(float)regenerate));
+#else
+                    float hc = p_smallTerrain->terrain->getHeight(
+                        (roadType->slicePoints[j].X*normal.X)+basePoints[i].X+(offsetManager->getOffset().X*(float)regenerate),
+                        (roadType->slicePoints[j].X*normal.Y)+basePoints[i].Z+(offsetManager->getOffset().Z*(float)regenerate));
+#endif
+                    if (hc > 0.01f)
+                        vtx.Pos.Y = roadType->slicePoints[j].Y+basePoints[i].Y+hc;
                 }
             }
             vtx.TCoords = vector2df(tx, ty);
@@ -432,6 +502,7 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     if (roadType->friction_multi > 0.01f)
     {
         dprintf(printf("road build begin %d\n", animatedMesh->getMeshBufferCount()));
+        NewtonWorldCriticalSectionLock(nWorld);
         collision = NewtonCreateTreeCollision(nWorld, roadID/*, NULL*/);
         NewtonTreeCollisionBeginBuild(collision);
         {
@@ -515,7 +586,7 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     		//mb->drop();
         }
         dprintf(printf("collisionendbuild\n"));
-        NewtonWorldCriticalSectionLock(nWorld);
+        //NewtonWorldCriticalSectionLock(nWorld);
         NewtonTreeCollisionEndBuild(collision, 0);
         NewtonWorldCriticalSectionUnlock(nWorld);
         dprintf(printf("road build end\n"));
@@ -527,6 +598,12 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     }
 #endif // 0 or 1
 ////////////////////////
+#ifdef NEW_ROAD_OFFSET
+    vector3df rpos = roadNode->getPosition();
+    rpos.X += (offsetManager->getOffset().X/**(float)regenerate*/);
+    rpos.Z += (offsetManager->getOffset().Z/**(float)regenerate*/);
+    roadNode->setPosition(rpos);
+#endif
     if (offsetObject)
     {
         offsetObject->setNode(roadNode);
@@ -543,7 +620,8 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
 }
 
 bool CMyRoad::loadRoads(const char* name, core::array<CMyRoad*> &roadList,
-                        ISceneManager* p_smgr, IVideoDriver* p_driver, NewtonWorld *p_nWorld)
+                        ISceneManager* p_smgr, IVideoDriver* p_driver,
+                        NewtonWorld *p_nWorld, BigTerrain* p_bigTerrain)
 {
     FILE* f;
     int ret = 0;
@@ -570,7 +648,7 @@ bool CMyRoad::loadRoads(const char* name, core::array<CMyRoad*> &roadList,
     for (int i = 0; i < numOfRoads; i++)
     {
         CMyRoad* road = new CMyRoad(p_smgr, p_driver, p_nWorld);
-        if (road->load(f))
+        if (road->load(f, p_bigTerrain))
         {
             roadList.push_back(road);
             // road->generateRoadNode();
@@ -626,7 +704,7 @@ bool CMyRoad::saveRoads(const char* name, core::array<CMyRoad*> &roadList)
     return false;
 }
     
-bool CMyRoad::load(FILE* f)
+bool CMyRoad::load(FILE* f, BigTerrain* p_bigTerrain)
 {
     int ret = 0;
     unsigned int num;
@@ -658,7 +736,7 @@ bool CMyRoad::load(FILE* f)
             return false;
         }
         /*basePoints.push_back*/
-        addBasePoint(vector3df(f1, 0.f, f2));
+        addBasePoint(vector3df(f1, 0.f, f2), p_bigTerrain, true, false, false);
     }
     
     return true;

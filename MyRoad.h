@@ -64,19 +64,23 @@ public:
     ~CMyRoad();
     
     static bool loadRoads(const char* name, core::array<CMyRoad*> &roadList,
-                          ISceneManager* p_smgr, IVideoDriver* p_driver, NewtonWorld *p_nWorld);
+                          ISceneManager* p_smgr, IVideoDriver* p_driver,
+                          NewtonWorld *p_nWorld, BigTerrain* p_bigTerrain);
     static bool saveRoads(const char* name, core::array<CMyRoad*> &roadList);
     
-    bool load(FILE* f);
+    bool load(FILE* f, BigTerrain* p_bigTerrain);
     bool save(FILE* f);
     
-    void addBasePoint(const core::vector3df& newPoint);
+    void addBasePoint(const core::vector3df& newPoint, BigTerrain* p_bigTerrain,
+                      bool addToDensityMap, bool addToRoadMap, bool addToTextureMap);
 
     void setBasePoints(const core::array<core::vector3df> &newBasePoints);
     void setType(unsigned int newType);
+    void setParent(int newParent) {parent = newParent;}
 
     core::array<core::vector3df>& getBasePoints() {return basePoints;}
     unsigned int getType() {return type;}
+    int getParent() {return parent;}
     
     ISceneNode* generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int regenerate, video::ITexture* p_shadowMap);
     
@@ -97,6 +101,8 @@ private:
 
     unsigned int type;
     CRoadType* roadType;
+
+    int parent;
 };
 
 #endif // __MYROAD_H__

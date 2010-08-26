@@ -11,6 +11,8 @@ iti: data/itiner/itiner_cross_ahead.png 28179.525391 121896.578125
 iti: data/itiner/itiner_t_left_with_edge.png 24877.386719 126496.445313
 iti: data/itiner/itiner_edge_right.png 24574.199219 125866.929688
 iti: data/itiner/itiner_cross_right.png 10683.201172 126215.750000
+iti: data/itiner/itiner_rcross_ahead.png 18095.435547 95018.804688
+iti: data/itiner/itiner_cross_ahead.png 16417.892578 105006.585938
 fix: data/objects/ai_point.mso 13797.264648 85089.953125
 fix: data/objects/ai_point.mso 13860.948242 84808.226563
 fix: data/objects/ai_point.mso 13934.452148 84539.226563

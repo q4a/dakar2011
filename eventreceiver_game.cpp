@@ -215,7 +215,11 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 car->setControl();
              return true;
 */
+
         case irr::KEY_TAB:
+             //hudMap->setVisible(false);
+             showMap = false;
+             /*
              if (bigTerrain && !bigTerrain->getTimeEnded())
              {
                 showCompass = !showCompass;
@@ -230,8 +234,10 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                     compassArrow->setVisible(false);
                 }
              }
+             */
              return true;
              break;
+
         case irr::KEY_UP:
              if (fpsCam) return false;
 		case irr::KEY_KEY_W:
@@ -369,33 +375,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                  car->setHandBrakes(0.f);
              return true;
 		case irr::KEY_KEY_M:
-             MessageText::addText(0, 15);
+             //MessageText::addText(0, 15);
+		    ((eventreceiver_menu*)other)->openMessageWindow();
              return true;
 		case irr::KEY_KEY_P:
              printPoolStat();
              return true;
-		case irr::KEY_KEY_O:
-		case irr::KEY_KEY_I:
-            {
-                if (car)
-                {
-                    int g = car->getGear();
-                    car->updateGear(g+1);
-                }
-                return true;
-                break;
-            }
-		case irr::KEY_KEY_K:
-		case irr::KEY_KEY_L:
-            {
-                if (car)
-                {
-                    int g = car->getGear();
-                    car->updateGear(g-1);
-                }
-                return true;
-                break;
-            }
 #ifdef USE_EDITOR
 		case irr::KEY_KEY_0:
 		case irr::KEY_KEY_1:
@@ -409,6 +394,42 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 {
                     if (car)
                         car->updateGear(event.KeyInput.Key-irr::KEY_KEY_0);
+                    return true;
+                }
+                else
+                {
+                    return actionEditor(event.KeyInput.Key);
+                }
+                break;
+            }
+		case irr::KEY_KEY_O:
+		case irr::KEY_KEY_I:
+            {
+                if (!editorMode)
+                {
+                    if (car)
+                    {
+                        int g = car->getGear();
+                        car->updateGear(g+1);
+                    }
+                    return true;
+                }
+                else
+                {
+                    return actionEditor(event.KeyInput.Key);
+                }
+                break;
+            }
+		case irr::KEY_KEY_K:
+		case irr::KEY_KEY_L:
+            {
+                if (!editorMode)
+                {
+                    if (car)
+                    {
+                        int g = car->getGear();
+                        car->updateGear(g-1);
+                    }
                     return true;
                 }
                 else
@@ -441,6 +462,28 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
             {
                 if (car)
                     car->updateGear(event.KeyInput.Key-irr::KEY_KEY_0);
+                return true;
+                break;
+            }
+		case irr::KEY_KEY_O:
+		case irr::KEY_KEY_I:
+            {
+                if (car)
+                {
+                    int g = car->getGear();
+                    car->updateGear(g+1);
+                }
+                return true;
+                break;
+            }
+		case irr::KEY_KEY_K:
+		case irr::KEY_KEY_L:
+            {
+                if (car)
+                {
+                    int g = car->getGear();
+                    car->updateGear(g-1);
+                }
                 return true;
                 break;
             }
@@ -505,6 +548,11 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
              if (car)
                  car->setHandBrakes(1.f);
              return true;
+        case irr::KEY_TAB:
+             showMap = true;
+             //hudMap->setVisible(true);
+             return true;
+             break;
 		default:
 			break;
         }
@@ -809,6 +857,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
             joy_repair_car_p = 0;
 
 // show compass
+/*
         if (joy_show_compass != -1 && JoystickState.IsButtonPressed(joy_show_compass))
         {
             if (joy_show_compass_p==0)
@@ -832,7 +881,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
         }
         else
             joy_show_compass_p = 0;
-
+*/
 // change view            
         if (joy_change_view != -1 && JoystickState.IsButtonPressed(joy_change_view))
         {

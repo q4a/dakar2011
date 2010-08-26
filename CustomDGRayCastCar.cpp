@@ -502,6 +502,16 @@ void CustomDGRayCastCar::AddSingleSuspensionTire (
 	m_tiresCount ++;
 }
 
+void CustomDGRayCastCar::SetTireMassAndRadius(int index, float new_mass, float new_radius)
+{
+	m_tires[index].m_radius = new_radius;
+	m_tires[index].m_mass = new_mass;	
+	m_tires[index].m_massInv = 1.0f / m_tires[index].m_mass;	
+	m_tires[index].m_Ixx = new_mass * new_radius * new_radius / 2.0f;
+	m_tires[index].m_IxxInv = 1.0f / m_tires[index].m_Ixx;
+	SetTireMaxRPS(index, 150.0f / new_radius);
+}
+
 void CustomDGRayCastCar::SetVarTireMovePointForceFront (int index, dFloat distance)
 {
 	m_tires[index].m_MovePointForceFront = distance;

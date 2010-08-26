@@ -85,6 +85,7 @@ public:
 	int GetVehicleOnAir() const;
 	int GetTireOnAir(int index) const;
 	Tire& GetTire (int index) const;
+	void SetTireMassAndRadius(int index, float new_mass, float new_radius);
 	dFloat GetParametricPosition (int index) const;
 
 	virtual void SetBrake (dFloat torque);

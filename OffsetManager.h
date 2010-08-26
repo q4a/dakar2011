@@ -105,6 +105,8 @@ public:
     
     void update(const irr::core::vector3df& offset, const irr::core::vector3df& loffset);
     
+    irr::core::vector3df& getPos() {return pos;}
+    
 private:
     friend class OffsetManager;
     irr::scene::ISceneNode* node;

@@ -109,7 +109,7 @@ bool irr::video::COpenGLDriver::setActiveTexture(u32 stage, const video::ITextur
 	}
 	else
 	{
-		if (texture->getDriverType() != EDT_OPENGL)
+		if (texture->getDriverType() != EDT_OPENGL && texture->getDriverType() != EDT_OPENGL3)
 		{
 			glDisable(GL_TEXTURE_2D);
 			printf("Fatal Error: Tried to set a texture not owned by this driver.");
@@ -903,7 +903,8 @@ namespace IrrCg
     // Constructor.
     ICgProgrammingServices::ICgProgrammingServices(irr::IrrlichtDevice* Device, bool RegisterStates, bool ManageTextureParameters, CGenum ParameterSettingMode) : CgServices(0)
     {
-        if(Device->getVideoDriver()->getDriverType() == irr::video::EDT_OPENGL)
+        if(Device->getVideoDriver()->getDriverType() == irr::video::EDT_OPENGL /*||
+           Device->getVideoDriver()->getDriverType() == irr::video::EDT_OPENGL3*/)
         {
             #ifdef IrrCgOGL
             CgServices = new ICgOGLServices(Device);

@@ -18,6 +18,7 @@
 #include "multiplayer.h"
 #include "my_shaders.h"
 #include <assert.h>
+#include "NewtonRaceCar.h"
 
 #ifdef __linux__
 #include "linux_includes.h"
@@ -36,6 +37,10 @@ enum
 	GUI_ID_VIEW_OBJ_DENSITY_SCROLL_BAR,
 	GUI_ID_VIEW_GRA_DENSITY_SCROLL_BAR,
 	GUI_ID_GRAVITY_SCROLL_BAR,
+	GUI_ID_PRESSURE_MULTI_SCROLL_BAR,
+	GUI_ID_SS_MULTI_SCROLL_BAR,
+	GUI_ID_SD_MULTI_SCROLL_BAR,
+	GUI_ID_SL_MULTI_SCROLL_BAR,
 	GUI_ID_DEAD_ZONE_SCROLL_BAR,
 	GUI_ID_CHOOSE_CAR_BUTTON,
 	GUI_ID_APPLY_CAR_BUTTON,
@@ -82,6 +87,7 @@ enum
 	GUI_ID_STATE_BUTTON,
 	GUI_ID_EXIT_BUTTON,
 	GUI_ID_LEPORGET_BUTTON,
+    GUI_ID_MESSAGECLEAR_BUTTON,
 	GUI_ID_DRIVERTYPE_CBOX,
 	GUI_ID_RESOLUTION_CBOX,
 	GUI_ID_DISPLAY_BITS_CBOX,
@@ -100,6 +106,7 @@ enum
 	GUI_ID_HELP_WINDOW,
 	GUI_ID_STATE_WINDOW,
 	GUI_ID_MAIN_WINDOW,
+	GUI_ID_MESSAGE_WINDOW,
 	GUI_ID_HELP_BOX,
 	GUI_ID_HELP_SCROLL,
 	GUI_ID_HELP_TAB,
@@ -109,7 +116,10 @@ enum
 	GUI_ID_STATEGLOBAL_BOX,
 	GUI_ID_STATEGLOBAL_SCROLL,
 	GUI_ID_STATEGLOBAL_TAB,
-	GUI_ID_STATE_TABCONTROL
+	GUI_ID_STATE_TABCONTROL,
+	GUI_ID_MESSAGE_BOX,
+	//GUI_ID_MESSAGE_SCROLL,
+	GUI_ID_MESSAGE_TAB
 };
 
 #define JOY_HELPER_NUM 24
@@ -141,13 +151,14 @@ eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
                     ) :
         eventreceiver(pdevice, skybox, skydome, pdriver, psmgr, penv, pnWorld, psoundEngine),
 		optionsWindowOpened(false), mainWindowOpened(false), helpWindowOpened(false), stateWindowOpened(false),
-        selectionWindowOpened(false),
+        selectionWindowOpened(false), messageWindowOpened(false), 
         window(0), joys_cbox(0), firstJoyState(false), activeElements(), activeElement(0),
         tabControl(0), lastParent(0), saveSettingsButton(0), closeOptionsButton(0),
         skipHover(true), car_selector_rtt(0), car_to_draw(0), joyHelper(0),
         enterPressed(-1),
         helpBox(0), helpScroll(0), helpBase(40),
         stateBox(0), stateScroll(0), stateBase(40),
+        messageBox(0), //messageScroll(0), messageBase(40),
         stateGlobalBox(0), stateGlobalScroll(0), stateGlobalBase(40)
 {
     openSound = soundEngine->play2D("data/menu_sounds/open_window.wav", false, true, true);
@@ -747,6 +758,98 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
     					
     				    break;	
     				}
+    				case GUI_ID_PRESSURE_MULTI_SCROLL_BAR:
+    				{
+    					s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+    					
+    					car_pressure_multi = (float)pos/100.f;
+                        
+                        if (car)
+                        {
+                            car->setPressure(car_pressure_multi);
+                        }
+                        
+                        float realPressure = TYRE_PRESSURE_GET_FROM_MULTI(car_pressure_multi);
+                        int cph = (int)(realPressure*100.f) / 100;
+                        int cpl = (int)(realPressure*100.f) % 100;
+
+                    	core::stringw str = L" ";
+                    	str += cph;
+                    	str += ".";
+                    	str += cpl;
+                    	pressure_multi_text->setText(str.c_str());
+    					
+    				    break;	
+    				}
+    				case GUI_ID_SS_MULTI_SCROLL_BAR:
+    				{
+    					s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+    					
+    					car_ss_multi = (float)pos/100.f;
+                        
+                        if (car)
+                        {
+                            car->setSuspensionSpring(car_ss_multi);
+                        }
+                        
+                        float reals = SUSPENSION_SPRING_GET_FROM_MULTI(car_ss_multi);
+                        int csh = (int)(reals*100.f) / 100;
+                        int csl = (int)(reals*100.f) % 100;
+
+                    	core::stringw str = L" ";
+                    	str += csh;
+                    	str += ".";
+                    	str += csl;
+                    	ss_multi_text->setText(str.c_str());
+    					
+    				    break;	
+    				}
+    				case GUI_ID_SD_MULTI_SCROLL_BAR:
+    				{
+    					s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+    					
+    					car_sd_multi = (float)pos/100.f;
+                        
+                        if (car)
+                        {
+                            car->setSuspensionDamper(car_sd_multi);
+                        }
+                        
+                        float reals = SUSPENSION_DAMPER_GET_FROM_MULTI(car_sd_multi);
+                        int csh = (int)(reals*100.f) / 100;
+                        int csl = (int)(reals*100.f) % 100;
+
+                    	core::stringw str = L" ";
+                    	str += csh;
+                    	str += ".";
+                    	str += csl;
+                    	sd_multi_text->setText(str.c_str());
+    					
+    				    break;	
+    				}
+    				case GUI_ID_SL_MULTI_SCROLL_BAR:
+    				{
+    					s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+    					
+    					car_sl_multi = (float)pos/100.f;
+                        
+                        if (car)
+                        {
+                            car->setSuspensionLength(car_sl_multi);
+                        }
+                        
+                        float reals = SUSPENSION_LENGTH_GET_FROM_MULTI(car_sl_multi);
+                        int csh = (int)(reals*100.f) / 100;
+                        int csl = (int)(reals*100.f) % 100;
+
+                    	core::stringw str = L" ";
+                    	str += csh;
+                    	str += ".";
+                    	str += csl;
+                    	sl_multi_text->setText(str.c_str());
+    					
+    				    break;	
+    				}
     				case GUI_ID_OV_SCROLL_BAR:
     				{
         				s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
@@ -820,6 +923,16 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         helpBox->setRelativePosition(rect);
                         break;
                     }
+                    /*
+    				case GUI_ID_MESSAGE_SCROLL:
+    				{
+                        core::rect<s32> rect = messageBox->getRelativePosition();
+                        rect.UpperLeftCorner.Y = messageBase - messageScroll->getPos();
+                        rect.LowerRightCorner.Y = messageBase - messageScroll->getPos() + messageBox->getTextHeight();
+                        messageBox->setRelativePosition(rect);
+                        break;
+                    }
+                    */
     				case GUI_ID_STATE_SCROLL:
     				{
                         core::rect<s32> rect = stateBox->getRelativePosition();
@@ -1066,6 +1179,12 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         refreshStateWindow(false); // false - no need the leporget button again
                         return true;
                         break;
+    				case GUI_ID_MESSAGECLEAR_BUTTON:
+                        playSound(clickSound);
+                        MessageText::messageHistory.clear();
+                        messageBox->clear();
+                        return true;
+                        break;
     				case GUI_ID_BACK_BUTTON:
                         {
                             IGUIWindow* pwindow = (IGUIWindow*)event.GUIEvent.Caller->getParent();
@@ -1281,6 +1400,11 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                 driverType = video::EDT_OPENGL;
                                 break;
                             case 3:
+                                /*
+                                driverType = video::EDT_OPENGL3;
+                                break;
+                            case 4:
+                                */
                                 driverType = video::EDT_SOFTWARE;
                                 break;
                         }
@@ -1671,9 +1795,13 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                     case GUI_ID_USE_SCREEN_RTT:
                         {
                             playSound(clickSound);
+                            //printf("erm 1\n");
                             useScreenRTT = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
+                            //printf("erm 2\n");
                             depth_effect = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
+                            //printf("erm 3 useScreenRTT: %u, depth_effect: %u\n", useScreenRTT, depth_effect);
                             recreateRTTs(driver);
+                            //printf("erm 4\n");
                             return true;
                             break;
                         }
@@ -1753,6 +1881,10 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             closeWindow(helpWindow);
                             return true;
                             break;
+                    case GUI_ID_MESSAGE_WINDOW:
+                            closeWindow(messageWindow);
+                            return true;
+                            break;
                     case GUI_ID_STATE_WINDOW:
                             closeWindow(stateWindow);
                             return true;
@@ -1787,6 +1919,9 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
 			case EGET_ELEMENT_FOCUSED:
                 if (id==GUI_ID_HELP_BOX || id==GUI_ID_HELP_WINDOW)
                     env->setFocus(helpScroll);
+
+                //if (id==GUI_ID_MESSAGE_BOX || id==GUI_ID_MESSAGE_WINDOW)
+                //    env->setFocus(messageScroll);
                 
                 if (id==GUI_ID_STATE_BOX)
                     env->setFocus(stateScroll);
@@ -2018,6 +2153,18 @@ void eventreceiver_menu::closeWindow(IGUIElement* cw, bool noact)
         helpBox = 0;
         helpScroll = 0;
         if (window==cw) window = helpWindowP;
+    }
+    else
+    if (cw == messageWindow)
+    {
+        //printf("hc\n");
+        messageWindowOpened = false;
+        messageBox->clear();
+        messageWindow->remove();
+        messageWindow = 0;
+        messageBox = 0;
+        //messageScroll = 0;
+        if (window==cw) window = messageWindowP;
     }
     else
     if (cw == stateWindow)
@@ -2432,7 +2579,7 @@ void eventreceiver_menu::openOptionsWindow()
     IGUITab* gameTab = tabControl->addTab(L"Game");
     IGUITab* graphicTab = tabControl->addTab(L"Graphic");
     IGUITab* graphic2Tab = tabControl->addTab(L"Graphic2");
-    IGUITab* networkTab = tabControl->addTab(L"Network");
+    //IGUITab* networkTab = tabControl->addTab(L"Network");
     IGUITab* joyTab = tabControl->addTab(L"Controller");
 
 // ------------------------
@@ -2578,6 +2725,110 @@ void eventreceiver_menu::openOptionsWindow()
 	str = L" ";
 	str += (int)gravity;
 	gravity_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+
+
+	line += 40;
+	env->addStaticText(L"Car settings (will be saved at save game)",
+		rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+
+    line += 25;
+	env->addStaticText(L"Tyre pressure",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            gameTab, GUI_ID_PRESSURE_MULTI_SCROLL_BAR);
+	scrollbar->setMax(100);
+    scrollbar->setSmallStep(1);
+    scrollbar->setLargeStep(5);
+	// set scrollbar position to alpha value of an arbitrary element
+	scrollbar->setPos((int)(car_pressure_multi*100.f));
+	str = L" ";
+    str += ((int)(TYRE_PRESSURE_GET_FROM_MULTI(car_pressure_multi)*100.f) / 100);
+    str += ".";
+    str += ((int)(TYRE_PRESSURE_GET_FROM_MULTI(car_pressure_multi)*100.f) % 100);
+	pressure_multi_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+    
+    line += 20;
+	env->addStaticText(L"Susp. const.",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            gameTab, GUI_ID_SS_MULTI_SCROLL_BAR);
+	scrollbar->setMax(100);
+    scrollbar->setSmallStep(1);
+    scrollbar->setLargeStep(5);
+	// set scrollbar position to alpha value of an arbitrary element
+	scrollbar->setPos((int)(car_ss_multi*100.f));
+	str = L" ";
+    str += ((int)(SUSPENSION_SPRING_GET_FROM_MULTI(car_ss_multi)*100.f) / 100);
+    str += ".";
+    str += ((int)(SUSPENSION_SPRING_GET_FROM_MULTI(car_ss_multi)*100.f) % 100);
+	ss_multi_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+    
+    line += 20;
+	env->addStaticText(L"Susp. damper",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            gameTab, GUI_ID_SD_MULTI_SCROLL_BAR);
+	scrollbar->setMax(100);
+    scrollbar->setSmallStep(1);
+    scrollbar->setLargeStep(5);
+	// set scrollbar position to alpha value of an arbitrary element
+	scrollbar->setPos((int)(car_sd_multi*100.f));
+	str = L" ";
+    str += ((int)(SUSPENSION_DAMPER_GET_FROM_MULTI(car_sd_multi)*100.f) / 100);
+    str += ".";
+    str += ((int)(SUSPENSION_DAMPER_GET_FROM_MULTI(car_sd_multi)*100.f) % 100);
+	sd_multi_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+    
+    line += 20;
+	env->addStaticText(L"Susp. length",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            gameTab, GUI_ID_SL_MULTI_SCROLL_BAR);
+	scrollbar->setMax(100);
+    scrollbar->setSmallStep(1);
+    scrollbar->setLargeStep(5);
+	// set scrollbar position to alpha value of an arbitrary element
+	scrollbar->setPos((int)(car_sl_multi*100.f));
+	str = L" ";
+    str += ((int)(SUSPENSION_LENGTH_GET_FROM_MULTI(car_sl_multi)*100.f) / 100);
+    str += ".";
+    str += ((int)(SUSPENSION_LENGTH_GET_FROM_MULTI(car_sl_multi)*100.f) % 100);
+	sl_multi_text = env->addStaticText(str.c_str(),
 		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
 		false, // border?
 		false, // wordwrap?
@@ -2760,6 +3011,8 @@ void eventreceiver_menu::openOptionsWindow()
     if (driverType == video::EDT_DIRECT3D8) driverType_cbox->setSelected(1);
     driverType_cbox->addItem(L"OpenGL");
     if (driverType == video::EDT_OPENGL) driverType_cbox->setSelected(2);
+    //driverType_cbox->addItem(L"OpenGL 3.0");
+    //if (driverType == video::EDT_OPENGL3) driverType_cbox->setSelected(3);
     driverType_cbox->addItem(L"Software");
     if (driverType == video::EDT_BURNINGSVIDEO) driverType_cbox->setSelected(3);
         
@@ -2894,7 +3147,7 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		graphic2Tab, GUI_ID_VSYNC, L"Hello5");
 
-    if (ableToUseShaders)
+    if (ableToUseShaders && driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
     {
         line += 20;
 		env->addStaticText(L"Shadows",
@@ -2912,21 +3165,23 @@ void eventreceiver_menu::openOptionsWindow()
 			graphic2Tab);
     }
 
-    line += 20;
-	env->addStaticText(L"Stencil Shadow",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(stencil_shadows,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_STENCIL_SHADOWS, L"Hello15");
-	env->addStaticText(L"(Works without shaders, but give some performace drop)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-
+    //if (driver->queryFeature(video::EVDF_STENCIL_BUFFER))
+    //{
+        line += 20;
+    	env->addStaticText(L"Stencil Shadow",
+    		rect<s32>(indist,line,indist+firsttextlen,line+16),
+    		false, // border?
+    		false, // wordwrap?
+    		graphic2Tab);
+    	env->addCheckBox(stencil_shadows,
+    		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+    		graphic2Tab, GUI_ID_STENCIL_SHADOWS, L"Hello15");
+    	env->addStaticText(L"(Works without shaders, but give some performace drop)",
+    		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
+    		false, // border?
+    		false, // wordwrap?
+    		graphic2Tab);
+    //}
 /*
     line += 20;
 	env->addStaticText(L"High precision fpu",
@@ -3009,7 +3264,7 @@ void eventreceiver_menu::openOptionsWindow()
     LOD_distance_cbox->addItem(L"Hight (33)");
     if (LOD_distance==33) LOD_distance_cbox->setSelected(2);
 
-    if (ableToUseShaders)
+    if (ableToUseShaders && driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
     {
         line += 20;
 		env->addStaticText(L"Shadow detail",
@@ -3104,66 +3359,75 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // wordwrap?
 		graphic2Tab);
 */
-    line += 30;
-	env->addStaticText(L"RTT - Post effects",
-		rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-    line += 25;
-    if (ableToUseShaders)
+    if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET) &&
+        driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
+#ifdef USE_MRT
+        && driverType != video::EDT_DIRECT3D9
+#endif
+       )
     {
-	    env->addStaticText(L"Use post effects",
-		    rect<s32>(indist,line,indist+firsttextlen,line+16),
+        line += 30;
+    	env->addStaticText(L"RTT - Post effects",
+    		rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
     		false, // border?
-	    	false, // wordwrap?
-		    graphic2Tab);
-    	env->addCheckBox(useScreenRTT,
-	    	rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		    graphic2Tab, GUI_ID_USE_SCREEN_RTT, L"Hello16");
-    	env->addStaticText(L"(For some special effects.)",
-	    	rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		    false, // border?
     		false, // wordwrap?
-	    	graphic2Tab);
-/*
-    line += 20;
-	env->addStaticText(L"Depth effect",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(depth_effect,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_USE_DEPTH_RTT, L"Hello18");
-	env->addStaticText(L"(Only works with screen RTT.)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-*/
-        line += 20;
-    	env->addStaticText(L"ATI card",
-	    	rect<s32>(indist,line,indist+firsttextlen,line+16),
-    		false, // border?
-		    false, // wordwrap?
-	    	graphic2Tab);
-    	env->addCheckBox(shitATI,
-	    	rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-    		graphic2Tab, GUI_ID_SHIT_ATI, L"Hello17");
-	    env->addStaticText(L"(If you have some extereme slowness with post effects, turn this on.)",
-    		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		    false, // border?
-	    	false, // wordwrap?
     		graphic2Tab);
-    }
-    else
-    {
-    	env->addStaticText(L"Your graphic card does not support shader model 2.0.",
-	    	rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
+        line += 25;
+        if (ableToUseShaders)
+        {
+    	    env->addStaticText(L"Use post effects",
+    		    rect<s32>(indist,line,indist+firsttextlen,line+16),
+        		false, // border?
+    	    	false, // wordwrap?
+    		    graphic2Tab);
+        	env->addCheckBox(useScreenRTT,
+    	    	rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+    		    graphic2Tab, GUI_ID_USE_SCREEN_RTT, L"Hello16");
+        	env->addStaticText(L"(For some special effects.)",
+    	    	rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
+    		    false, // border?
+        		false, // wordwrap?
+    	    	graphic2Tab);
+    /*
+        line += 20;
+    	env->addStaticText(L"Depth effect",
+    		rect<s32>(indist,line,indist+firsttextlen,line+16),
     		false, // border?
-		    false, // wordwrap?
-	    	graphic2Tab);
+    		false, // wordwrap?
+    		graphic2Tab);
+    	env->addCheckBox(depth_effect,
+    		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+    		graphic2Tab, GUI_ID_USE_DEPTH_RTT, L"Hello18");
+    	env->addStaticText(L"(Only works with screen RTT.)",
+    		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
+    		false, // border?
+    		false, // wordwrap?
+    		graphic2Tab);
+    
+            line += 20;
+        	env->addStaticText(L"ATI card",
+    	    	rect<s32>(indist,line,indist+firsttextlen,line+16),
+        		false, // border?
+    		    false, // wordwrap?
+    	    	graphic2Tab);
+        	env->addCheckBox(shitATI,
+    	    	rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+        		graphic2Tab, GUI_ID_SHIT_ATI, L"Hello17");
+    	    env->addStaticText(L"(If you have some extereme slowness with post effects, turn this on.)",
+        		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
+    		    false, // border?
+    	    	false, // wordwrap?
+        		graphic2Tab);
+    */
+        }
+        else
+        {
+        	env->addStaticText(L"Your graphic card does not support shader model 2.0.",
+    	    	rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
+        		false, // border?
+    		    false, // wordwrap?
+    	    	graphic2Tab);
+        }
     }
 /*
     line += 20;
@@ -3184,6 +3448,7 @@ void eventreceiver_menu::openOptionsWindow()
 // ------------------------
 //  Network tab
 // ------------------------
+/*
     line = startLine;
 	env->addStaticText(L"Server (addr./port)",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -3238,7 +3503,7 @@ void eventreceiver_menu::openOptionsWindow()
 		networkTab, GUI_ID_TRACE_NET, L"Hello30");
 
     if (line>maxLine) maxLine = line;
-
+*/
 // ------------------------
 //  joy tab
 // ------------------------
@@ -3489,7 +3754,8 @@ void eventreceiver_menu::openHelpWindow()
 		rect<s32>(0,0,screenSize.Width - (indist+outdist*2+sw), helpHeight),
 		false, // border?
 		true, // wordwrap?
-		tab
+		tab,
+		GUI_ID_HELP_BOX
         );
     //box->setWordWrap(true);
     //box->setMultiLine(true);
@@ -3520,7 +3786,7 @@ void eventreceiver_menu::openHelpWindow()
         L"R   - reset car\n" \
         L"T   - repair car\n" \
         L"F   - toggle view (free or behind car)\n" \
-        L"M   - Display last message for 15 seconds\n" \
+        L"M   - Display last message history\n" \
         L"\n" \
         L"W, S   - Accelerate, brake the car\n" \
         L"A, D   - Turn left, right the car\n" \
@@ -3612,6 +3878,63 @@ void eventreceiver_menu::openHelpWindow()
 		rect<s32>(0,helpBase,screenSize.Width - (indist+outdist*2+sw), helpBase + helpBox->getTextHeight()));
     
     //printf("he w %d %d %d %p\n", mainWindowOpened, optionsWindowOpened, helpWindowOpened, window);
+    refreshActiveElements();
+}	
+
+void eventreceiver_menu::openMessageWindow()
+{
+    const int outdist = 50;
+    const int indist = 40;
+    const int sw = 20;// scrollwidth
+    const int messageHeight = screenSize.Height - (indist+outdist*2) - indist - 20;
+    
+    //printf("hb w %d %d %d %p\n", mainWindowOpened, optionsWindowOpened, helpWindowOpened, window);
+
+    if (messageWindowOpened || loading > 0) return;
+    playSound(openSound);
+
+    messageWindowOpened = true;
+    if (inGame == 0)
+    {
+        other = (eventreceiver*)device->getEventReceiver();
+       	device->setEventReceiver(this);
+        pauseGame();
+    }
+    inGame++;
+
+    messageWindowP = window;
+    
+    window = messageWindow = env->addWindow(
+		rect<s32>(outdist, outdist, screenSize.Width - outdist, screenSize.Height - outdist),
+		false, // modal?
+		L"  Message", 0, GUI_ID_MESSAGE_WINDOW);
+    env->setFocus(window);
+
+    IGUITab* tab = env->addTab(
+		rect<s32>(indist,indist,screenSize.Width - (indist+outdist*2+sw), indist + messageHeight),
+		window,
+		GUI_ID_MESSAGE_TAB
+		);
+    messageBox = env->addListBox(
+		rect<s32>(0,0,screenSize.Width - (indist+outdist*2+sw), messageHeight),
+		tab, // parent
+		GUI_ID_MESSAGE_BOX
+        );
+    messageBox->setDrawBackground(false);
+
+    for (core::list<core::stringw>::ConstIterator it = MessageText::messageHistory.begin();
+         it != MessageText::messageHistory.end();
+         it++)
+    {
+        messageBox->addItem(it->c_str());
+    }
+
+    env->addButton(
+        rect<s32>(screenSize.Width - (140+outdist*2),screenSize.Height - (47+outdist*2),screenSize.Width - (25+outdist*2),screenSize.Height - (15+outdist*2)),
+        window, GUI_ID_MESSAGECLEAR_BUTTON,
+        L"Clear", 0/*L"Close options window"*/);
+    env->setFocus(messageBox);
+
     refreshActiveElements();
 }	
 
@@ -4034,6 +4357,8 @@ void eventreceiver_menu::refreshActiveElements()
     else
     {
         if (window == helpWindow)
+            activeElements.delList();
+        if (window == messageWindow)
             activeElements.delList();
         if (window == stateWindow)
             activeElements.delList();

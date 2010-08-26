@@ -70,6 +70,8 @@ public:
 
     void openHelpWindow();
 
+    void openMessageWindow();
+
     void openStateWindow();
 
     void render(/*irr::video::IVideoDriver* driver*/);
@@ -96,14 +98,20 @@ private:
     IGUIElement* selectionWindow;
     IGUIElement* optionsWindow;
     IGUIElement* helpWindow;
+    IGUIElement* messageWindow;
     IGUIElement* stateWindow;
     IGUIElement* mainWindowP;
     IGUIElement* selectionWindowP;
     IGUIElement* optionsWindowP;
     IGUIElement* helpWindowP;
+    IGUIElement* messageWindowP;
     IGUIElement* stateWindowP;
 	gui::IGUIStaticText* ov_limit_text;
 	gui::IGUIStaticText* gravity_text;
+	gui::IGUIStaticText* pressure_multi_text;
+	gui::IGUIStaticText* ss_multi_text;
+	gui::IGUIStaticText* sd_multi_text;
+	gui::IGUIStaticText* sl_multi_text;
 	gui::IGUIStaticText* view_distance_text;
 	gui::IGUIStaticText* transp_text;
 	gui::IGUIEditBox* carfilename_text; // not used yet
@@ -132,9 +140,12 @@ private:
     gui::IGUIStaticText* stateBox;
     gui::IGUIStaticText* stateGlobalBox;
     gui::IGUIScrollBar* helpScroll;
+    //gui::IGUIScrollBar* messageScroll;
     gui::IGUIScrollBar* stateScroll;
     gui::IGUIScrollBar* stateGlobalScroll;
+    gui::IGUIListBox* messageBox;
     int helpBase;
+    //int messageBase;
     int stateBase;
     int stateGlobalBase;
 #ifdef USE_MY_SOUNDENGINE
@@ -148,6 +159,7 @@ private:
 #endif
 	bool optionsWindowOpened;
 	bool helpWindowOpened;
+	bool messageWindowOpened;
 	bool stateWindowOpened;
 	bool mainWindowOpened;
 	bool selectionWindowOpened;

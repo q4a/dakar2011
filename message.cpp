@@ -16,6 +16,7 @@
 gui::IGUIStaticText* MessageText::messageText = 0;
 u32 MessageText::timeout = 0;
 IrrlichtDevice* MessageText::device = 0;
+core::list<core::stringw> MessageText::messageHistory;
 
 #ifdef IRRLICHT_SDK_15
 void MessageText::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<s32> screenSize)
@@ -33,12 +34,42 @@ void MessageText::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dime
     device = pdevice;
 }
 
-void MessageText::addText(const wchar_t* text, u32 timeoutSec, bool renderRefresh)
+void MessageText::addText(const wchar_t* text, u32 timeoutSec, bool renderRefresh, bool addToHistory)
 {
     core::rect<int> messageRect = messageText->getRelativePosition();
     timeout = device->getTimer()->getTime()+timeoutSec*1000;
     if (text)
+    {
         messageText->setText(text);
+        if (addToHistory)
+        {
+            core::stringw ins(text);
+            core::list<core::stringw> insList;
+            u32 ret = ins.split(insList, L"\n");
+            messageHistory.push_front(core::stringw(L"---------------------------"));
+            if (ret == 0)
+            {
+                messageHistory.push_front(ins);
+            }
+            else
+            {
+                core::list<core::stringw>::ConstIterator it = insList.getLast();
+                while (true)
+                {
+                    messageHistory.push_front(*it);
+                    if (it == insList.begin()) break;
+                    it--;
+                }
+            }
+            
+            
+            /*
+            core::stringw ins(text);
+            ins.replace(L'\n', L'|');
+            messageHistory.push_front(ins);
+            */
+        }
+    }
     messageRect.LowerRightCorner.Y = messageRect.UpperLeftCorner.Y + messageText->getTextHeight();
     messageText->setRelativePosition(messageRect);
     messageText->setVisible(true);

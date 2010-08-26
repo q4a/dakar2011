@@ -18,18 +18,24 @@
 #ifdef USE_EDITOR
 static gui::IGUIStaticText* editorText = 0;
 static int currentRoad = 0;
-static int currentRoadType = 0;
+static int currentRoadType = 3;
 static int currentObj = 0;
 static int currentItiner = ITINER_POOLID_OFFSET;
 static char tmpRoadFileName[256] = "data/editor/tmproads.txt";
 static char tmpObjFileName[256] = "data/editor/tmpobjects.txt";
+static char tmpHMFileName[256] = "data/editor/stage_hm.hmbin";
+static char tmpTMFileName[256] = "data/editor/stage_tm.png";
+static char tmpHMPNGFileName[256] = "data/editor/stage_hm.png";
+
+static bool addToHeightMap = false;
+static bool addToTextureMap = false;
 #endif // USE_EDITOR
 
 void initEditor(IGUIEnvironment* env)
 {
 #ifdef USE_EDITOR
     editorText = env->addStaticText(L"POS: ",
-                        core::rect<int>(10,110,300,600),
+                        core::rect<int>(10,110,300,680),
                         false/*info_bg*/, true, 0, -1, true);
     editorText->setVisible(false);
 #endif // USE_EDITOR
@@ -70,6 +76,11 @@ void updateEditor()
     str += getItinerNameFromId(currentItiner);
     str += L"\nFix objs: ";
     str += bigTerrain->getObjectWrappers().size();
+    str += L"\nI - add road to HM: ";
+    str += addToHeightMap?L"true":L"false";
+    str += L"\nO - add road to TM: ";
+    str += addToTextureMap?L"true":L"false";
+    str += L"\nK - save HM/TM";
     editorText->setText(str.c_str());
 #endif // USE_EDITOR
 }
@@ -85,12 +96,13 @@ bool actionEditor(int key)
                 printf("add new base point\n");
                 if (currentRoad >= 0 && currentRoad <= (int)bigTerrain->getRoadList().size() - 1)
                 {
-                    bigTerrain->getRoadList()[currentRoad]->addBasePoint(vector3df(
-                                                                        offsetManager->getOffset().X+camera->getPosition().X,
-                                                                        0.f,
-                                                                        offsetManager->getOffset().Z+camera->getPosition().Z
-                                                                        ));
-                    bigTerrain->updateRoads();
+                    bigTerrain->getRoadList()[currentRoad]->addBasePoint(
+                            vector3df(offsetManager->getOffset().X+camera->getPosition().X,
+                                      0.f,
+                                      offsetManager->getOffset().Z+camera->getPosition().Z),
+                            bigTerrain, false, addToHeightMap, addToTextureMap
+                        );
+                    bigTerrain->updateRoads(currentRoad);
                 }
                 break;
             }
@@ -274,6 +286,22 @@ bool actionEditor(int key)
                     delete bigTerrain->getObjectWrappers()[nearestInd];
                     bigTerrain->getObjectWrappers().erase(nearestInd);
                 }
+                break;
+            }
+		case irr::KEY_KEY_I:
+            {
+                addToHeightMap = !addToHeightMap;
+                break;
+            }
+		case irr::KEY_KEY_O:
+            {
+                addToTextureMap = !addToTextureMap;
+                break;
+            }
+		case irr::KEY_KEY_K:
+            {
+                bigTerrain->saveHeightMap(tmpHMFileName, tmpHMPNGFileName);
+                bigTerrain->saveTextureMap(tmpTMFileName);
                 break;
             }
         default:

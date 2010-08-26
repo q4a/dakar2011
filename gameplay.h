@@ -98,9 +98,11 @@ extern gui::IGUIStaticText* versionText;
 extern gui::IGUIImage* bgImage;
 extern gui::IGUIImage* hudImage;
 extern gui::IGUIImage* hudCompassImage;
+extern gui::IGUIImage* hudMap;
 extern gui::IGUIImage* hudInfo;
 extern gui::IGUIImage* crossImage;
 extern bool showCompass;
+extern bool showMap;
 extern scene::IAnimatedMeshSceneNode* compassArrow;
 extern scene::ISceneNode* skydome;
 extern scene::IBillboardSceneNode* sunSphere;
@@ -125,11 +127,7 @@ extern bool useDynCam;
 extern bool dynCamReset;
 
 
-#ifdef IRRLICHT_SDK_15
-extern core::dimension2d<s32> screenSize;
-#else
 extern core::dimension2d<u32> screenSize;
-#endif
 #define MAX_SCREENRTT 3
 extern video::ITexture* screenRTT[MAX_SCREENRTT];
 extern int currentScreenRTT;
@@ -138,6 +136,7 @@ extern video::ITexture* bgImageTexture;
 extern video::ITexture* blurmap;
 extern video::ITexture* blurmapSide;
 extern video::ITexture* motiondir_map[view_multi];
+extern core::array<video::IRenderTarget> mrtList;
 //extern video::ITexture* motiondir_mapSide;
 
 #define MAX_BGIMAGE 10
@@ -148,6 +147,10 @@ extern video::ITexture* bgImagesTextures[MAX_BGIMAGE+1];
 
 #define MAX_HUD 7
 extern video::ITexture* hudTextures[MAX_HUD+2];
+#define HUD_MAPS 14
+extern video::ITexture* hudMapTextures[HUD_MAPS];
+extern video::ITexture* hudUserOnMapTexture;
+
 
 extern matrix4 cLightDest_loc;
 extern matrix4 cLightPos_loc;
@@ -183,6 +186,11 @@ extern TerrainPool* terrainPool;
 
 extern OffsetManager* offsetManager;
 
+extern float car_pressure_multi;
+extern float car_ss_multi;
+extern float car_sd_multi;
+extern float car_sl_multi;
+
 /*struct SRaceEngineState
 {
     u32 currentTime;
@@ -211,6 +219,10 @@ struct SState
     int savedCarDirt;
     int car_dirt_delta;
     bool useDynCam;
+    float car_pressure_multi;
+    float car_ss_multi;
+    float car_sd_multi;
+    float car_sl_multi;
 //    bool raceEngineExists;
 };
 

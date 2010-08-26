@@ -59,6 +59,43 @@ using namespace gui;
 #define GRAVITY    gravity
 //-40.0f
 
+#define TYRE_RADIUS_MIN 0.7f
+#define TYRE_RADIUS_MAX 1.0f
+#define TYRE_RADIUS_MULTI_DEFAULT 0.5f
+#define TYRE_RADIUS_GET_FROM_MULTI(x) (TYRE_RADIUS_MIN+(TYRE_RADIUS_MAX-TYRE_RADIUS_MIN)*(x))
+
+#define TYRE_MASS_MIN 0.7f
+#define TYRE_MASS_MAX 1.3f
+#define TYRE_MASS_MULTI_DEFAULT 0.5f
+#define TYRE_MASS_GET_FROM_MULTI(x) (TYRE_MASS_MIN+(TYRE_MASS_MAX-TYRE_MASS_MIN)*(x))
+
+#define TYRE_FRICTION_MIN 0.8f
+#define TYRE_FRICTION_MAX 1.2f
+#define TYRE_FRICTION_MULTI_DEFAULT 0.5f
+#define TYRE_FRICTION_GET_FROM_MULTI(x) (TYRE_FRICTION_MIN+(TYRE_FRICTION_MAX-TYRE_FRICTION_MIN)*(x))
+
+
+#define TYRE_PRESSURE_MIN 0.f
+#define TYRE_PRESSURE_MAX 8.f
+#define TYRE_PRESSURE_MULTI_DEFAULT 0.5f
+#define TYRE_PRESSURE_GET_FROM_MULTI(x) (TYRE_PRESSURE_MIN+(TYRE_PRESSURE_MAX-TYRE_PRESSURE_MIN)*(x))
+
+
+#define SUSPENSION_SPRING_MIN 0.4f
+#define SUSPENSION_SPRING_MAX 2.5f
+#define SUSPENSION_SPRING_MULTI_DEFAULT 0.28572f
+#define SUSPENSION_SPRING_GET_FROM_MULTI(x) (SUSPENSION_SPRING_MIN+(SUSPENSION_SPRING_MAX-SUSPENSION_SPRING_MIN)*(x))
+
+#define SUSPENSION_DAMPER_MIN 0.5f
+#define SUSPENSION_DAMPER_MAX 2.0f
+#define SUSPENSION_DAMPER_MULTI_DEFAULT 0.33334f
+#define SUSPENSION_DAMPER_GET_FROM_MULTI(x) (SUSPENSION_DAMPER_MIN+(SUSPENSION_DAMPER_MAX-SUSPENSION_DAMPER_MIN)*(x))
+
+#define SUSPENSION_LENGTH_MIN 0.5f
+#define SUSPENSION_LENGTH_MAX 2.0f
+#define SUSPENSION_LENGTH_MULTI_DEFAULT 0.33334f
+#define SUSPENSION_LENGTH_GET_FROM_MULTI(x) (SUSPENSION_LENGTH_MIN+(SUSPENSION_LENGTH_MAX-SUSPENSION_LENGTH_MIN)*(x))
+
 class OffsetObject;
 
 class NewtonRaceCar
@@ -99,6 +136,8 @@ class NewtonRaceCar
         float suspension_damper;
         bool hitRoad;
         OffsetObject* offsetObject;
+        float suspension_length_orig;
+        float friction_orig;
 	};
 
     struct Smoke
@@ -136,7 +175,11 @@ public:
             video::ITexture* shadowMap,
             const float p_waterHeight,
             bool p_useOffset = true,
-            const int savedCarDirt = 0
+            const int savedCarDirt = 0,
+            float pressure_multi = TYRE_PRESSURE_MULTI_DEFAULT,
+            float ss_multi = SUSPENSION_SPRING_MULTI_DEFAULT,
+            float sd_multi = SUSPENSION_DAMPER_MULTI_DEFAULT,
+            float sl_multi = SUSPENSION_LENGTH_MULTI_DEFAULT
             );
     void deactivate();
                   
@@ -211,12 +254,13 @@ public:
     float getDemage() {return demage;}
     float getDemagePer() //{return 100.f - (demage * 100.f);}
     {
-        float ret = demage * 4;
-        for (int i = 0; i < 4; i++)
+        float ts = m_tires.size()?(float)m_tires.size():2.f;
+        float ret = demage * ts;
+        for (int i = 0; i < m_tires.size(); i++)
         {
             ret += m_tires[i]->connectionStrength;
         }
-        ret = 100.f - (ret * 12.5f);
+        ret = 100.f - (ret * (50.f/ts));
         return ret;        
     }
     
@@ -233,7 +277,7 @@ public:
     
     float getFriction(int num)
     {
-        if (num >= 0 && num < 4)
+        if (num >= 0 && num < m_tires.size())
         {
             return m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_groundFriction;
         }
@@ -242,7 +286,7 @@ public:
 
     unsigned int getHitBody(int num)
     {
-        if (num >= 0 && num < 4)
+        if (num >= 0 && num < m_tires.size())
         {
             return (unsigned int)m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
         }
@@ -251,7 +295,7 @@ public:
 
     unsigned int getHitBodyID(int num)
     {
-        if (num >= 0 && num < 4)
+        if (num >= 0 && num < m_tires.size())
         {
             NewtonBody* hb = m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
             return hb?NewtonBodyGetMaterialGroupID(hb):(unsigned int)-1;
@@ -276,6 +320,11 @@ public:
         }
         return viewdest[num];
     }
+
+    void setPressure(float pressure_multi = TYRE_PRESSURE_MULTI_DEFAULT);
+    void setSuspensionSpring(float ss_multi = SUSPENSION_SPRING_MULTI_DEFAULT);
+    void setSuspensionDamper(float sd_multi = SUSPENSION_DAMPER_MULTI_DEFAULT);
+    void setSuspensionLength(float sl_multi = SUSPENSION_LENGTH_MULTI_DEFAULT);
 
 private:
 	//void Render() const;

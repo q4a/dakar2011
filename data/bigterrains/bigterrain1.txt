@@ -3,7 +3,7 @@ data/bigterrains/heightmaps/stage1_hm.hmbin
 data/bigterrains/densitymaps/stage1_dm.png
 data/bigterrains/texturemaps/stage1_tm.png
 data/bigterrains/textures/dirt_09.jpg
-data/bigterrains/textures/grass_01.jpg
+data/bigterrains/textures/grass_02.jpg
 data/bigterrains/textures/dirt_03.jpg
 data/bigterrains/textures/dirt_04.jpg
 data/bigterrains/textures/concrete_03.jpg
@@ -16,9 +16,10 @@ data/vehicles/sound/skids/gravel.wav
 speed: 150.0
 friction_multi: 0.75
 vscale: 0.3
-water_height: 30.5
-start_pos: 47524.0 10015.0
+water_height: 3.0
+start_pos: 94987.0 7536.0
 start_offset: 20.0 -10.0
-start_rot: 0.0 -160.0 0.0
-cp_pos: 14360.0 12360.0
-end_pos: 6109.0 6530.0
+start_rot: 0.0 -155.0 0.0
+cp_pos: 94987.0 7536.0
+cp_pos: 69768.0 35650.0
+end_pos: 69768.0 35650.0

@@ -881,21 +881,26 @@ void readSettings(const char* fileName)
             if (strcmp(values,"opengl")==0)
                 driverType = video::EDT_OPENGL;
             else
-                if (strcmp(values,"d3d9")==0)
+            /*
+            if (strcmp(values,"opengl3")==0)
+                driverType = video::EDT_OPENGL3;
+            else
+            */
+            if (strcmp(values,"d3d9")==0)
 #ifdef __linux__
-                    driverType = video::EDT_OPENGL;
+                driverType = video::EDT_OPENGL;
 #else
-                    driverType = video::EDT_DIRECT3D9;
+                driverType = video::EDT_DIRECT3D9;
 #endif
-                else
-                    if (strcmp(values,"d3d8")==0)
+            else
+            if (strcmp(values,"d3d8")==0)
 #ifdef __linux__
-                    driverType = video::EDT_OPENGL;
+                driverType = video::EDT_OPENGL;
 #else
-                        driverType = video::EDT_DIRECT3D8;
+                driverType = video::EDT_DIRECT3D8;
 #endif
-                    else
-                        driverType = video::EDT_BURNINGSVIDEO;//EDT_SOFTWARE;
+            else
+                driverType = video::EDT_BURNINGSVIDEO;//EDT_SOFTWARE;
         } else
         if (strcmp(key,"smokes")==0)
         {
@@ -1131,6 +1136,13 @@ bool writeSettings(const char* fileName)
         ret = fprintf(f, "driver_type: opengl\n");
         if ( ret <=0 ) {fclose(f); return false;}
     } else
+    /*
+    if (driverType == video::EDT_OPENGL3)
+    {
+        ret = fprintf(f, "driver_type: opengl3\n");
+        if ( ret <=0 ) {fclose(f); return false;}
+    } else
+    */
     if (driverType == video::EDT_DIRECT3D9)
     {
         ret = fprintf(f, "driver_type: d3d9\n");

@@ -1,0 +1,31 @@
+128 x 20.000000
+data/bigterrains/heightmaps/stage10_hm.hmbin
+data/bigterrains/densitymaps/stage10_dm.png
+data/bigterrains/texturemaps/stage10_tm.png
+data/bigterrains/textures/dirt_17.jpg
+data/bigterrains/textures/sand_15.jpg
+data/bigterrains/textures/grass_06.jpg
+data/bigterrains/textures/dirt_15.jpg
+data/bigterrains/textures/concrete_03.jpg
+data/skys/fairday.jpg
+data/roads/roads10.txt
+data/objects/objects12.txt
+data/vehicles/sound/surfaces/sand.wav
+data/vehicles/sound/puff.wav
+data/vehicles/sound/skids/sand.wav
+speed: 150.0
+friction_multi: 0.8
+vscale: 0.3
+water_height: 3.5
+start_pos: 72047.0 94964.0
+start_offset: 0.0 20.0
+start_rot: 0.0 90.0 0.0
+cp_pos: 68181.0 90416.0
+cp_pos: 62714.0 77202.0
+cp_pos: 55642.0 64609.0
+cp_pos: 47673.0 47673.0
+cp_pos: 46868.0 40285.0
+cp_pos: 42993.0 29858.0
+cp_pos: 42253.0 20725.0
+cp_pos: 47826.0 11348.0
+end_pos: 50605.0 2842.0

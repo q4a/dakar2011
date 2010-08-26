@@ -262,7 +262,7 @@ bool ableToUseShaders = true;
                 services->EnableTextureSM(pshadowMap, shadowMap); \
             pshadowParam = cgGetNamedParameter(Pixel, "shadowParam"); \
             if (pshadowParam) \
-                if(driverType == video::EDT_OPENGL) \
+                if(driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/) \
                     services->setParameter1f(pshadowParam, -1.f); \
                 else \
                     services->setParameter1f(pshadowParam, 1.f); \
@@ -1220,26 +1220,29 @@ void setupShaders2 (IrrlichtDevice* device,
     core::string<c16> smoke_psFileName; // filename for the pixel shader
 #define NULLSTRING ""
 #endif
-*/
-    dprintf(printf("T&L: %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL)));
-    dprintf(printf("Multitexturing: %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE)));
-    dprintf(printf("Stencil buffer: %d\n", driver->queryFeature(video::EVDF_STENCIL_BUFFER)));
-    dprintf(printf("Vertex shader 1.1: %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_1_1)));
-    dprintf(printf("Vertex shader 2.0: %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0)));
-    dprintf(printf("Vertex shader 3.0: %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0)));
-    dprintf(printf("Pixel shader 1.1: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_1)));
-    dprintf(printf("Pixel shader 1.2: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_2)));
-    dprintf(printf("Pixel shader 1.3: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_3)));
-    dprintf(printf("Pixel shader 1.4: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_4)));
-    dprintf(printf("Pixel shader 2.0: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0)));
-    dprintf(printf("Pixel shader 3.0: %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0)));
-    dprintf(printf("ARB vertex program: %d\n", driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1)));
-    dprintf(printf("ARB fragment program: %d\n", driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)));
-    dprintf(printf("GLSL: %d\n", driver->queryFeature(video::EVDF_ARB_GLSL)));
-    dprintf(printf("HLSL: %d\n", driver->queryFeature(video::EVDF_HLSL)));
 
+    dprintf(printf("T&L:                  %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL)));
+    dprintf(printf("Multitexturing:       %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE)));
+    dprintf(printf("Stencil buffer:       %d\n", driver->queryFeature(video::EVDF_STENCIL_BUFFER)));
+    dprintf(printf("Vertex shader 1.1:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_1_1)));
+    dprintf(printf("Vertex shader 2.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0)));
+    dprintf(printf("Vertex shader 3.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0)));
+    dprintf(printf("Pixel shader 1.1:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_1)));
+    dprintf(printf("Pixel shader 1.2:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_2)));
+    dprintf(printf("Pixel shader 1.3:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_3)));
+    dprintf(printf("Pixel shader 1.4:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_4)));
+    dprintf(printf("Pixel shader 2.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0)));
+    dprintf(printf("Pixel shader 3.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0)));
+    dprintf(printf("ARB vertex program:   %d\n", driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1)));
+    dprintf(printf("ARB fragment program: %d\n", driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)));
+    dprintf(printf("GLSL:                 %d\n", driver->queryFeature(video::EVDF_ARB_GLSL)));
+    dprintf(printf("HLSL:                 %d\n", driver->queryFeature(video::EVDF_HLSL)));
+    dprintf(printf("MRT:                  %d\n", driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)));
+    dprintf(printf("Non square textures:  %d\n", driver->queryFeature(video::EVDF_TEXTURE_NSQUARE)));
+    dprintf(printf("Non POT:              %d\n", driver->queryFeature(video::EVDF_TEXTURE_NPOT)));
+*/
 	if (((driverType == video::EDT_DIRECT3D9 && driver->queryFeature(video::EVDF_HLSL)) ||
-		 (driverType == video::EDT_OPENGL && driver->queryFeature(video::EVDF_ARB_GLSL))) &&
+		 ((driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/) && driver->queryFeature(video::EVDF_ARB_GLSL))) &&
          (driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) || driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)) && 
          (driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0) || driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1))  
          && usehls)
@@ -1303,7 +1306,14 @@ void setupShaders2 (IrrlichtDevice* device,
 			"because of missing driver/hardware support.\n"));
         useShaders = useCgShaders = useAdvCgShaders = false;
 	}
-	
+	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
+	if (driverType == video::EDT_DIRECT3D9)
+	{
+	    light_2tex_2_psFileName = "data/shaders/cg/light_2tex_2_d3d9.cg";
+        light_2tex_2_vsFileName = light_2tex_2_psFileName;
+    	light_tex_s_car_fileName = "data/shaders/cg/light_tex_s_car_d3d9.cg";
+    }
+
 	if (0 && useAdvCgShaders)
 	{
         if (driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0) &&
@@ -1333,17 +1343,10 @@ void setupShaders2 (IrrlichtDevice* device,
 //        driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
 //        driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
 
-#ifdef IRRLICHT_SDK_15
-        shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<s32>(shadow_map_size,shadow_map_size), "RTT1")
-                             : 0;
-        shadowMapCar = shadows ? driver->addRenderTargetTexture(core::dimension2d<s32>(shadow_map_size,shadow_map_size), "RTT1")
-                             : 0;
-#else
         shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
                              : 0;
         shadowMapCar = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
                              : 0;
-#endif                             
         dprintf(printf("shadow has mip-maps: %s\n", (shadowMap && shadowMap->hasMipMaps())?"yes":"no"));
 
 //        driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
@@ -1392,113 +1395,134 @@ void setupShaders2 (IrrlichtDevice* device,
 
 			// create material from high level shaders (hlsl or glsl)
 
+        dprintf(printf("reading shader file: %s\n", light_tex_vsFileName);)
 		myMaterialType_light_tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_tex_vsFileName, "main_v", "arbvp1", vs_version,
 			light_tex_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_tex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 //		printf("myMaterialType_light_tex %u\n", myMaterialType_light_tex );
 
+        dprintf(printf("reading shader file: %s\n", light_tex_wfar_vsFileName);)
 		myMaterialType_light_tex_wfar = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_tex_wfar_vsFileName, "main_v", "arbvp1", vs_version,
 			light_tex_wfar_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_tex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
+        dprintf(printf("reading shader file: %s\n", light_tex_s_fileName);)
 		myMaterialType_light_tex_s = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_tex_s_fileName, "main_v", "arbvp1", vs_version,
 			light_tex_s_fileName, "main_f", "arbfp1", ps_version,
 			mc_light_tex_s, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", light_tex_s_car_fileName);)
 		myMaterialType_light_tex_s_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_tex_s_car_fileName, "main_v", "arbvp1", vs_version,
 			light_tex_s_car_fileName, "main_f", "arbfp1", ps_version,
 			mc_light_tex_s_car, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", light_tex_s_car_tyre_fileName);)
 		myMaterialType_light_tex_s_car_tyre = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_tex_s_car_tyre_fileName, "main_v", "arbvp1", vs_version,
 			light_tex_s_car_tyre_fileName, "main_f", "arbfp1", ps_version,
 			mc_light_tex_s_car_tyre, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", light_notex_vsFileName);)
 		myMaterialType_light_notex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_notex_vsFileName, "main_v", "arbvp1", vs_version,
 			light_notex_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_notex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", light_notex_wfar_vsFileName);)
 		myMaterialType_light_notex_wfar = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_notex_wfar_vsFileName, "main_v", "arbvp1", vs_version,
 			light_notex_wfar_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_notex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
+        dprintf(printf("reading shader file: %s\n", light_notex_car_vsFileName);)
 		myMaterialType_light_notex_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_notex_car_vsFileName, "main_v", "arbvp1", vs_version,
 			light_notex_car_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_notex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
+        dprintf(printf("reading shader file: %s\n", light_2tex_vsFileName);)
 		myMaterialType_light_2tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_2tex_vsFileName, "main_v", "arbvp1", vs_version,
 			light_2tex_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_2tex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
+        dprintf(printf("reading shader file: %s\n", light_2tex_2_vsFileName);)
 		myMaterialType_light_2tex_2 = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			light_2tex_2_vsFileName, "main_v", "arbvp1", vs_version,
 			light_2tex_2_psFileName, "main_f", "arbfp1", ps_version,
 			mc_light_2tex_2, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
+        dprintf(printf("reading shader file: %s\n", ocean_vsFileName);)
 		myMaterialType_ocean = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			ocean_vsFileName, "main_v", "arbvp1", vs_version,
 			ocean_psFileName, "main_f", "arbfp1", ps_version,
 			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", ocean_fix_vsFileName);)
 		myMaterialType_ocean_fix = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			ocean_fix_vsFileName, "main_v", "arbvp1", vs_version,
 			ocean_fix_psFileName, "main_f", "arbfp1", ps_version,
 			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", smoke_fileName);)
 		myMaterialType_smoke = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			smoke_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			smoke_fileName, "main_f", "arbfp1", ps_version,
 			mc_tr_light, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", transp_fileName);)
 		myMaterialType_transp = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			transp_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			transp_fileName, "main_f", "arbfp1", ps_version,
 			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", transp_road_fileName);)
 		myMaterialType_transp_road = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			transp_road_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			transp_road_fileName, "main_f", "arbfp1", ps_version,
 			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL/*video::EMT_SOLID*/);
 
+        dprintf(printf("reading shader file: %s\n", transp_stat_fileName);)
 		myMaterialType_transp_stat = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			transp_stat_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			transp_stat_fileName, "main_f", "arbfp1", ps_version,
 			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
+        dprintf(printf("reading shader file: %s\n", tex_fileName);)
 		myMaterialType_tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			tex_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			tex_fileName, "main_f", "arbfp1", ps_version,
 			mc_tex, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", shadow_fileName);)
 		myMaterialType_shadow = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			shadow_fileName, "main_v", "arbvp1", vs_version,
 			//0, 0, 0, 0,
 			shadow_fileName, "main_f", "arbfp1", ps_version,
 			mc_shadow, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", screenRTT_fileName);)
 		myMaterialType_screenRTT = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			screenRTT_fileName, "main_v", "arbvp1", /*"vs_2_0"*/vs_version,
 			screenRTT_fileName, "main_f", "arbfp1", /*"ps_2_0"*/ps_version,
 			mc_screenRTT, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", depth_fileName);)
 		myMaterialType_depth = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			depth_fileName, "main_v", "arbvp1", vs_version,
 			depth_fileName, "main_f", "arbfp1", ps_version,
 			mc_depth, video::EMT_SOLID);
 
+        dprintf(printf("reading shader file: %s\n", depthSun_fileName);)
 		myMaterialType_depthSun = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
 			depthSun_fileName, "main_v", "arbvp1", vs_version,
 			depthSun_fileName, "main_f", "arbfp1", ps_version,
@@ -1543,12 +1567,20 @@ void deleteCgShaders(IVideoDriver* driver)
 
 void recreateRTTs(IVideoDriver* driver)
 {
-    if (!driver->queryFeature(video::EVDF_RENDER_TO_TARGET)/* || !useCgShaders*/)
+    if (!driver->queryFeature(video::EVDF_RENDER_TO_TARGET)/* || !useCgShaders*/
+    	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
+#ifdef USE_MRT
+        || driverType == video::EDT_DIRECT3D9
+#endif
+       )
     {
         printf("Render to texture is not supported: automatically turn off RTT and shadows\n");
         useScreenRTT = false;
-        shadows = false;
         depth_effect = false;
+        if (!driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
+        {
+            shadows = false;
+        }
         return;
     }
 
@@ -1569,51 +1601,67 @@ void recreateRTTs(IVideoDriver* driver)
         depthRTT = 0;
     }
     
+    // TODO: how can i remove each IRenderTarget? Now we only clear the list.
+    mrtList.clear();
+    
+    /*
+    if (shadowMap)
+    {
+        driver->removeTexture(shadowMap);
+        shadowMap = shadowMapGame = 0;
+    }
+    
+    if (shadowMapCar)
+    {
+        driver->removeTexture(shadowMapCar);
+        shadowMapCar = 0;
+    }
+    */
     if (shitATI)
     {
         while (atiRes < screenSize.Width) atiRes *= 2;
         dprintf(printf("Resolution for ATI: %u\n", atiRes));
     }
+
     if (useScreenRTT)
     {
     	bool tempTexFlagMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
 	    bool tempTexFlag32 = driver->getTextureCreationFlag(ETCF_ALWAYS_32_BIT);
+#if 0
 	    for (int i = 0; i<MAX_SCREENRTT; i++)
 	    {
-            screenRTT[i] = driver->addRenderTargetTexture(
-              //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
-#ifdef IRRLICHT_SDK_15
-              shitATI ? dimension2d<s32>(atiRes, atiRes) : screenSize);
-#else
-              shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
-#endif
+            screenRTT[i] = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
         }
+#endif
+        assert(MAX_SCREENRTT==3);
+
+        screenRTT[0] = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
+        screenRTT[1] = driver->addRenderTargetTexture(dimension2d<u32>(32, 32));
+        screenRTT[2] = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
+
+#ifdef USE_MRT
+        depthRTT = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
+#else
+        depthRTT = driver->addRenderTargetTexture(dimension2d<u32>(512, 512));
+#endif
+
 	    driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
 	    driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
+	    
+#ifdef USE_MRT
+	    mrtList.push_back(video::IRenderTarget(screenRTT[0]));
+	    mrtList.push_back(video::IRenderTarget(depthRTT));
+#endif
+	    
 	    depth_effect = true;
     }
     else
     {
         for (int i = 0; i < MAX_SCREENRTT; i++) screenRTT[i] = 0;
+        depthRTT = 0;
 	    depth_effect = false;
     }
 
-    if (depth_effect)
-    {
-    	bool tempTexFlagMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
-	    bool tempTexFlag32 = driver->getTextureCreationFlag(ETCF_ALWAYS_32_BIT);
-        depthRTT = driver->addRenderTargetTexture(
-              //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
-#ifdef IRRLICHT_SDK_15
-              /*shitATI ? dimension2d<s32>(atiRes, atiRes) : screenSize*/dimension2d<s32>(512, 512));
-#else
-              /*shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize*/dimension2d<u32>(512, 512));
-#endif
-	    driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
-	    driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
-    }
-    else
-        depthRTT = 0;
     if (!useScreenRTT || !depth_effect)
     {
         for (int i = 0; i<depthNodes.size();i++)
@@ -1621,4 +1669,18 @@ void recreateRTTs(IVideoDriver* driver)
             depthNodes[i]->setVisible(true);
         }
     }
+    /*
+    if (shadows)
+    {
+        shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
+                             : 0;
+        shadowMapCar = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
+                                 : 0;
+        shadowMapMenu = driver->getTexture("data/menu_textures/menu_shadow.png");
+    }
+    else
+    {
+        shadowMap = shadowMapGame = shadowMapMenu = 0;
+    }
+    */
 }

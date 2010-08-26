@@ -16,12 +16,10 @@ data/vehicles/sound/skids/gravel.wav
 speed: 150.0
 friction_multi: 0.8
 vscale: 0.3
-water_height: 30.5
-start_pos: 98781.0 12415.0
-start_offset: 20.0 0.0
-start_rot: 0.0 -180.0 0.0
-cp_pos: 81542.0 9268.0
-cp_pos: 69981.0 10112.0
-cp_pos: 54987.0 4534.0
-cp_pos: 40584.0 4273.0
-end_pos: 2784.0 10700.0
+water_height: 3.5
+start_pos: 36490.0 4518.0
+start_offset: 0.0 -20.0
+start_rot: 0.0 -90.0 0.0
+cp_pos: 36490.0 4518.0
+cp_pos: 12225.0 112413.0
+end_pos: 12225.0 112413.0

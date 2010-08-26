@@ -25,6 +25,17 @@ iti: data/itiner/itiner_gap.png 29397.253906 28705.527344
 iti: data/itiner/itiner_cross_ahead.png 25428.248047 29106.296875
 iti: data/itiner/itiner_cross_ahead.png 10818.322266 15206.082031
 iti: data/itiner/itiner_t_left.png 7842.839355 5342.880371
+iti: data/itiner/itiner_lcross_ahead.png 9706.874023 123753.109375
+iti: data/itiner/itiner_rcross_ahead.png 9788.312500 121609.132813
+iti: data/itiner/itiner_lcross_left.png 24912.750000 94260.945313
+iti: data/itiner/itiner_cross_ahead.png 31601.617188 76172.187500
+iti: data/itiner/itiner_cross_ahead.png 21980.832031 61640.847656
+iti: data/itiner/itiner_t_left.png 19181.140625 53479.835938
+iti: data/itiner/itiner_lcross_ahead.png 28390.230469 68788.007813
+iti: data/itiner/itiner_cross_ahead.png 28706.902344 38359.425781
+iti: data/itiner/itiner_cross_ahead.png 32605.966797 32646.525391
+iti: data/itiner/itiner_y_right.png 19851.257813 26077.888672
+iti: data/itiner/itiner_lcross_left.png 9856.910156 9884.118164
 fix: data/objects/ai_point.mso 10176.011719 127888.664063
 fix: data/objects/ai_point.mso 10197.037109 127780.703125
 fix: data/objects/ai_point.mso 10208.449219 127344.789063

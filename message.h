@@ -30,7 +30,7 @@ public:
 #else
     static void init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<u32> screenSize);  
 #endif
-    static void addText(const wchar_t* text, u32 timeoutSec, bool renderRefresh = false);
+    static void addText(const wchar_t* text, u32 timeoutSec, bool renderRefresh = false, bool addToHistory = true);
     static void updateText(int p_tick);
     static void refresh();
     static void hide();
@@ -38,6 +38,7 @@ public:
     static gui::IGUIStaticText* messageText;
     static u32 timeout;
     static IrrlichtDevice* device;
+    static core::list<core::stringw> messageHistory;
 };
 
 #endif // __MESSAGETEXT_H__
