@@ -8,6 +8,8 @@
 *                                                               *
 ****************************************************************/
 
+#ifdef USE_EDITOR
+
 #include "editor.h"
 #include "MyRoad.h"
 #include "BigTerrain.h"
@@ -15,7 +17,6 @@
 #include "pools.h"
 #include "wrappers.h"
 
-#ifdef USE_EDITOR
 static gui::IGUIStaticText* editorText = 0;
 static int currentRoad = 0;
 static int currentRoadType = 3;
@@ -29,28 +30,22 @@ static char tmpHMPNGFileName[256] = "data/editor/stage_hm.png";
 
 static bool addToHeightMap = false;
 static bool addToTextureMap = false;
-#endif // USE_EDITOR
 
 void initEditor(IGUIEnvironment* env)
 {
-#ifdef USE_EDITOR
     editorText = env->addStaticText(L"POS: ",
                         core::rect<int>(10,110,300,680),
                         false/*info_bg*/, true, 0, -1, true);
     editorText->setVisible(false);
-#endif // USE_EDITOR
 }
 
 void editorSetVisible(bool vis)
 {
-#ifdef USE_EDITOR
     editorText->setVisible(vis);
-#endif // USE_EDITOR
 }
 
 void updateEditor()
 {
-#ifdef USE_EDITOR
     core::stringw str;
     str = L"Help:\n0 - addPoint to road (LMB)\n1 - prev road\n2 - next road\n3 - new road\n4 - save roads\n5 - load roads\nF7 - remove last point\nN - next road type\n\n";
     str += L"6 - add new obj (RMB)\n7 - prev obj\n8 - next obj\n9 - refresh object wire\nU - save obj\nF8 - remove last obj\n\n";
@@ -82,12 +77,10 @@ void updateEditor()
     str += addToTextureMap?L"true":L"false";
     str += L"\nK - save HM/TM";
     editorText->setText(str.c_str());
-#endif // USE_EDITOR
 }
 
 bool actionEditor(int key)
 {
-#ifdef USE_EDITOR
     if (!editorMode) return false;
     switch (key)
     {
@@ -308,14 +301,6 @@ bool actionEditor(int key)
             break;
     }
     return true;
-#else
-    return false;
-#endif // USE_EDITOR
 }
-/*
-void initEditor()
-{
-#ifdef USE_EDITOR
+
 #endif // USE_EDITOR
-}
-*/

@@ -41,7 +41,7 @@ struct fragment
 
 struct pixel
 {
-	float4 color : COLOR;
+	float4 color : COLOR0;
 };
 
 pixel main_f( fragment IN,

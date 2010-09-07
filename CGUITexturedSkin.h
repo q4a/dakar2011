@@ -147,11 +147,8 @@ public:
 															 bool drawTitleBar,
 															 irr::video::SColor titleBarColor,
 															 const irr::core::rect< irr::s32 > &rect,
-															 const irr::core::rect< irr::s32 > *clip=0
-#ifdef IRRLICHT_SDK_17
-                                                             , core::rect<s32>* checkClientArea=0
-#endif
-                                                             );
+															 const irr::core::rect< irr::s32 > *clip=0,
+                                                             core::rect<s32>* checkClientArea=0);
 
 	virtual irr::video::SColor getColor(EGUI_DEFAULT_COLOR color) const;
 	virtual void setColor(EGUI_DEFAULT_COLOR which, irr::video::SColor newColor);

@@ -45,7 +45,7 @@ void main_v( float4 vPosition 	: POSITION,
 void main_f( float4 color	: COLOR,
 	     float2 Uv		: TEXCOORD0,
 	     uniform sampler2D tex0 : register(s0),
-             out float4 oColor	: COLOR,
+             out float4 oColor	: COLOR0,
              uniform float param)
 {
     	float4 col = tex2D( tex0, Uv);

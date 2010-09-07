@@ -1,7 +1,7 @@
 128 x 20.000000
-data/bigterrains/heightmaps/stage2_hm_old.hmbin
-data/bigterrains/densitymaps/stage2_dm_old.png
-data/bigterrains/texturemaps/stage2_tm_old.png
+data/bigterrains/heightmaps/stage2_old_hm.hmbin
+data/bigterrains/densitymaps/stage2_old_dm.png
+data/bigterrains/texturemaps/stage2_old_tm.png
 data/bigterrains/textures/dirt_09.jpg
 data/bigterrains/textures/grass_01.jpg
 data/bigterrains/textures/dirt_03.jpg
@@ -24,3 +24,6 @@ cp_pos: 45080.0 11800.0
 cp_pos: 30580.0 3100.0
 cp_pos: 7720.0 10800.0
 end_pos: 15080.0 17080.0
+map_up: 394 703
+map_down: 703 929
+map_texture: data/bigterrains/maps/map.png

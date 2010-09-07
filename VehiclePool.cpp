@@ -108,6 +108,7 @@ CVehiclePool::CVehiclePool(IrrlichtDevice* p_device,
                                                 vname, vfname, vehicleTypes.size());
             
             vehicleTypes.push_back(vt);
+            MessageText::refresh();
         }
         fclose(f);
     } while (0);

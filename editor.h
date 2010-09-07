@@ -8,6 +8,8 @@
 *                                                               *
 ****************************************************************/
 
+#ifdef USE_EDITOR
+
 #ifndef __EDITOR_H__
 #define __EDITOR_H__
 
@@ -28,3 +30,4 @@ void updateEditor();
 bool actionEditor(int key);
 
 #endif // __EDITOR_H__
+#endif // USE_EDITOR

@@ -47,17 +47,14 @@ extern core::vector3df terrainScale;//(30.0f, 1.0f, 30.0f);	// scale
 BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p_smgr,
                        IVideoDriver* p_driver, NewtonWorld* p_nWorld,
                        u32 pstageTime, u32 pgtime, scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap,
-                       int p_stageNum,
-                       TerrainPool* p_terrainPool)
+                       int p_stageNum)
            : nWorld(p_nWorld), map(0), max_x(0), max_y(0), last_x(-1), last_y(-1),
              ov_last_x(-1), ov_last_y(-1),
-             stHeightmapSize(0), tScale(0.f), /*roadMeshes(0),*/ roadWrappers_old(), /*numOfRoads(0),*/
-             /*objectMeshes(0),*/ objectWrappers(),/* numOfObjects(0),*/
+             stHeightmapSize(0), tScale(0.f),
+             objectWrappers(),
              ov_limit(objectVisibilityLimit),
-             /*numOfGrasses(0), grassWrappers(),*/
              startGate(0), startOffsetObject(0), endGate(0), endOffsetObject(0),
              device(p_device), smgr(p_smgr), driver(p_driver),
-             //startTime(0), endTime(0),
              timeStarted(false), timeEnded(false), lastTick(0), currentTime(0),
              cps(0), penality(0),
              stageTime(pstageTime), stageLength(0.f), gtime(pgtime),
@@ -67,9 +64,9 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
              cpPos(), cpTime(), cpTimed(), cpGate(), cpOffsetObject(),
              objectReps(), stageNum(p_stageNum), smallTerrainsForUpdate(), smallTerrainsForUpdateLock(), mapLock(),
              roadList(), activeItinerPoints(), aiPoints(), speed(60.0f), skydome(p_skydome),
-             m_terrainPool(p_terrainPool), vscale(VSCALE), waterHeight(WATER_HEIGHT),
+             vscale(VSCALE), waterHeight(WATER_HEIGHT),
              lastMapsQueueUpdate(0), mapsQueueVersion(0),
-             mapScale(0.f)
+             mapScaleX(0.f), mapScaleY(0.f), mapTexture(0)
              /*,
              bodyl(0), collisionl(0),
              bodyr(0), collisionr(0),
@@ -86,14 +83,13 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     c8 densityMapName[256];
     c8 textureMapName[256];
     c8 textureName[256];
+    c8 mapTextureName[256];
     
     c8 dummyStr[256];
     float f1, f2;
 
     c8 roadfileName[256];
     c8 objectfileName[256];
-    //c8 grassfileName[256];
-    //c8 treefileName[256];
     c8 skyDomeFileName[256];
     core::stringw str;
     
@@ -321,7 +317,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     // read skydome texture
     ret = fscanf(f, "%s\n%s\n%s\n",
                  skyDomeFileName,
-                 roadfileName, objectfileName/*, grassfileName, treefileName*/);
+                 roadfileName, objectfileName);
     if (ret < 3)
     {
         printf("error reading %s ret %d errno %d\n", name, ret, errno);
@@ -436,8 +432,8 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
         }
     }
 
-    ret = fscanf(f, "map_up: %d %d\nmap_down: %d %d\n", &mapUp.X, &mapUp.Y, &mapDown.X, &mapDown.Y);
-    if ( ret < 4 )
+    ret = fscanf(f, "map_up: %d %d\nmap_down: %d %d\nmap_texture: %s\n", &mapUp.X, &mapUp.Y, &mapDown.X, &mapDown.Y, mapTextureName);
+    if ( ret < 5 )
     {
         printf("error reading %s ret %d errno %d\n", name, ret, errno);
         fclose(f);
@@ -445,67 +441,30 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     }
     mapSize = mapDown - mapUp;
 #ifdef USE_IMAGE_HM
-    mapScale = (float)mapSize.Height/(float)getHeightMap()->getDimension().Height;
+    mapScaleX = (float)mapSize.Width/(float)getHeightMap()->getDimension().Width;
+    mapScaleY = (float)mapSize.Height/(float)getHeightMap()->getDimension().Height;
 #else
-    mapScale = (float)mapSize.Height/(float)getHeightMap()->getYSize();
+    mapScaleX = (float)mapSize.Width/(float)getHeightMap()->getXSize();
+    mapScaleY = (float)mapSize.Height/(float)getHeightMap()->getYSize();
 #endif
-    dprintf(printf("mapUp: %d, %d, mapDown: %d, %d, mapScale: %f\n", mapUp.X, mapUp.Y, mapDown.X, mapDown.Y, mapScale);)
-    printf("mapUp: %d, %d, mapDown: %d, %d, mapScale: %f\n", mapUp.X, mapUp.Y, mapDown.X, mapDown.Y, mapScale);
-    
+    dprintf(printf("mapUp: %d, %d, mapDown: %d, %d, mapScale: %f, %f, mapTextureName: %s\n", mapUp.X, mapUp.Y, mapDown.X, mapDown.Y, mapScaleX, mapScaleY, mapTextureName);)
+    mapTexture = driver->getTexture(mapTextureName);
+    //assert(0);
 
     fclose(f);
     
-    // comment this out if you want to generate, the newton cache for all the map
-    //doCache();
-
-/*
-    str = L"Loading: 0%";
-    MessageText::addText(str.c_str(), 1, true, false);
-
-    for (int y = 0; y < max_y;y++)
-    {
-        for (int x = 0; x < max_x;x++)
-        {
-               
-            dprintf(printf("------------- x: %d, y: %d (%d) ---------------\n", x ,y, x + (y*max_x)));
-            map[x + (max_x*y)] =
-               new SmallTerrain(
-               heightmapName, terrainTextureName, detailmapName,
-               terrainTexture0Name, terrainTexture1Name, terrainTexture2Name, terrainTexture3Name,
-               smgr, driver, pnWorld, x, y, max_x, max_y, stHeightmapSize, tScale, shadowMap, stageNum);
-        
-            str = L"Loading: ";
-            str += (((1 + x + (max_x*y))*70)/(max_x*max_y));
-            str += "%";
-            MessageText::addText(str.c_str(), 1, true, false);
-        }
-    }
-    dprintf(printf("-------------------[ end ]-------------------\n"));
-*/
     objectWire = new CObjectWire((float)max_x*SMALLTERRAIN_SIZE, (float)max_y*SMALLTERRAIN_SIZE);
 
     str = L"Loading: 40%";
     MessageText::addText(str.c_str(), 1, true, false);
 
     //driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
-    //loadRoads_old(roadfileName, smgr, driver, core::vector3df(0.f, 0.f, 0.f));
     CMyRoad::loadRoads(roadfileName, roadList, smgr, driver, nWorld, this);
     //driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
     
     str = L"Loading: 45%";
     MessageText::addText(str.c_str(), 1, true, false);
-/*    
-    if (use_high_poly_objects)
-    {
-        char baseName[256];
-        char extName[10];
-        strcpy(baseName, objectfileName);
-        baseName[strlen(objectfileName)-4] = '\0';
-        strcpy(extName, objectfileName + (strlen(objectfileName)-4));
-        dprintf(printf("object name base: %s, ext: %s\n", baseName, extName));
-        strcpy(objectfileName, baseName); strcat(objectfileName, "_high"); strcat(objectfileName, extName);
-    }
-*/
+
     if (!use_mipmaps)
 	    driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
     loadObjects(objectfileName, smgr, driver);
@@ -516,37 +475,6 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
 
     str = L"Loading: 48%";
     MessageText::addText(str.c_str(), 1, true, false);
-  
-  /* 
-    if (!use_mipmaps)
-    	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
-    loadGrasses(grassfileName, smgr, driver, core::vector3df(0.f, 0.f, 0.f));
-    if (!use_mipmaps)
-    	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
-
-    str = L"Loading: 85%";
-    MessageText::addText(str.c_str(), 1, true, false);
-
-    if (!use_mipmaps)
-    	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
-    loadTrees(treefileName, smgr, driver, core::vector3df(0.f, 0.f, 0.f));
-    if (!use_mipmaps)
-    	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
-
-    str = L"Loading: 91%";
-    MessageText::addText(str.c_str(), 1, true, false);
-
-    
-    dprintf(printf("add objects to small terrains\n"));
-    for (int i = 0; i<numOfObjects;i++)
-    {
-        core::vector3df pos;
-        pos = objectWrappers[i]->getPosition();
-        objectWire->addObject(pos, objectWrappers[i]);
-        //getSmallTerrain(pos.X, pos.Z)->addObject(objectWrappers[i]);
-        if (i % 1000 == 0) MessageText::addText(0, 1, true, false);
-    }
-*/
 
     dprintf(printf("add start pos\n"));
     // handle start and end gates
@@ -648,14 +576,6 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     
     float boxP0[3];
     float boxP1[3];
-    /*
-    boxP0[0] = 0.f;
-    boxP0[1] = -100.f;
-    boxP0[2] = 0.f;
-    boxP1[0] = (float)max_x*SMALLTERRAIN_SIZE;
-    boxP1[1] = 5000.f;
-    boxP1[2] = (float)max_y*SMALLTERRAIN_SIZE;
-    */
     boxP0[0] = -1.1f*SMALLTERRAIN_SIZE;
     boxP0[1] = -100.f;
     boxP0[2] = -1.1f*SMALLTERRAIN_SIZE;
@@ -663,17 +583,6 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
     boxP1[1] = 7000.f;
     boxP1[2] = 2.1f*SMALLTERRAIN_SIZE;
     dprintf(printf("nWorld bbox: %f %f %f\n", boxP1[0], boxP1[1], boxP1[2]);)
-    //*(int*)1 = 1;
-/*
-    matrix4 bounding; 
-    
-    collision = NewtonCreateBox(nWorld, box.X, box.Y, box.Z, treeID, NULL);
-    body = NewtonCreateBody(nWorld, collision);
-    NewtonBodySetMaterialGroupID(body, treeID);
-    NewtonBodyGetMatrix (body, bounding.pointer());
-    bounging
-    NewtonBodySetMatrix (body, bounding.pointer()); 
-*/   
     
     NewtonSetWorldSize (nWorld, (float*)boxP0, (float*)boxP1);
 
@@ -697,7 +606,7 @@ BigTerrain::BigTerrain(const c8* name, IrrlichtDevice* p_device,ISceneManager* p
            stHeightmapSize, tScale,                           
            this->stageNum,
            this,
-           objectReps, 0, roadList, m_terrainPool);
+           objectReps, 0, roadList);
     }
     
     myMessage(1, "%d small terrains are created. Now free them.\nMemory: %u", smallMapsCnt, getUsedMemory()/(1024));
@@ -731,9 +640,7 @@ BigTerrain::~BigTerrain()
         delete [] map;
         map = 0;
     }
-    destroyRoads_old();
     destroyObjects();
-    //destroyGrasses();
     
     printf("delete objectWire\n");
     if (objectWire)
@@ -1123,10 +1030,6 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             //endTime = device->getTimer()->getTime() + penality;
             currentTime += penality;
             timeEnded = true;
-            showCompass = false;
-            hudCompassImage->setVisible(false);
-            compassText->setVisible(false);
-            compassArrow->setVisible(false);
             u32 diffTime = currentTime; //endTime - startTime;
             endGate->setVisible(false);
             offsetManager->removeObject(endOffsetObject);
@@ -1225,8 +1128,6 @@ void BigTerrain::updateTime(u32 ptick)
     if (ctick != lastTick)
     {
         currentTime++;
-        //if (showCompass)
-        //    addPenality(1);
         lastTick = ctick;
     }
 }
@@ -1347,174 +1248,6 @@ float BigTerrain::getSmallTerrainSize() const
 float BigTerrain::getTerrainSize() const
 {
     return SMALLTERRAIN_SIZE*max_x;
-}
-
-void BigTerrain::loadRoads_old(const c8* name, ISceneManager* smgr, IVideoDriver* driver,
-                               const vector3df& loc)
-{
-    FILE* f;
-    int numOfRoads = 0;
-    c8 meshName[256];
-    c8 textureName[256];
-    float dummy1, dummy2, dummy3;
-    unsigned int numOfVertices, numOfPols;
-    float x,y,z,tu,tv;
-    int ret;
-    s32 verInd;
-    video::S3DVertex vtx;
-    vtx.Color.set(255,255,255,255);
-    vtx.Normal.set(0,1,0);
-
-    dprintf(printf("Read old roads: %s\n", name));
-    dprintf(printf("roads offset: %f %f %f\n", loc.X, loc.Y, loc.Z));
-    
-    f = fopen(name, "r");
-    
-    if (!f)
-    {
-        printf("road file unable to open: %s\n", name);
-        return;
-    }
-    
-    ret = fscanf(f, "%u\n", &numOfRoads);
-    
-    if (!numOfRoads || ret <=0 )
-    {
-        printf("error reading %s ret %d errno %d\n", name, ret, errno);
-        fclose(f);
-        return;
-    }
-
-    dprintf(printf("%u old road(s) found\n", numOfRoads));
-    
-    //roadMeshes = new IAnimatedMesh*[numOfRoads];
-    //roadNodes = new ISceneNode*[numOfRoads];
-    //roadWrappers = new SRoadWrapper*[numOfRoads];
-    roadWrappers_old.clear();
-    
-    for (int i = 0;i < numOfRoads;i++)
-    {
-	    SMeshBuffer* buffer = new SMeshBuffer();
-	    SMesh* mesh = new SMesh();
-	    
-	    roadWrappers_old.push_back(new SRoadWrapper_old());
-	    
-        ret = fscanf(f, "%s\n%s\n%f\n%u\n", meshName, textureName, &dummy1, &numOfVertices);
-        if (ret <= 0)
-        {
-           printf("error reading %s ret %d errno %d\n", name, ret, errno);
-           fclose(f);
-           return;
-        }
-
-        for (int ind = 0; ind < numOfVertices; ind++)
-        {
-            ret = fscanf(f, "%f %f %f %f %f %f %f %f\n", &x, &y, &z, &tu, &tv, &dummy1, &dummy2, &dummy3);
-            if (ret <= 0)
-            {
-               printf("error reading %s ret %d errno %d\n", name, ret, errno);
-               fclose(f);
-               return;
-            }
-            vtx.Pos.X = x;            
-            vtx.Pos.Z = z;
-            vtx.Pos.Y = getHeight(x + loc.X, z + loc.Z) + 0.05f;
-            if (fabsf(vtx.Pos.Y) > 2000.f) vtx.Pos.Y = 0.0f;
-            vtx.TCoords.X = tu;
-            vtx.TCoords.Y = tv*0.05f;
-            buffer->Vertices.push_back(vtx);
-            //getSmallTerrain(x + loc.X, z + loc.Z)->addRoad_old(roadWrappers_old[i]);
-            if (ind % 1000 == 0) MessageText::addText(0, 1, true);
-        }
-        ret = fscanf(f, "%u\n", &numOfPols);
-        if (ret <= 0)
-        {
-           printf("error reading %s ret %d errno %d\n", name, ret, errno);
-           fclose(f);
-           return;
-        }
-        for (int ind = 0; ind < numOfPols; ind++)
-        {
-            ret = fscanf(f, "%u\n", &verInd);
-            if (ret <= 0)
-            {
-               printf("error reading %s ret %d errno %d\n", name, ret, errno);
-               fclose(f);
-               return;
-            }
-            if (verInd > numOfVertices)
-            {
-               printf("!!!!! verInd > numOfVertices: %d > %u\n", verInd, numOfVertices);
-            }
-            buffer->Indices.push_back(verInd);
-        }
-
-	    for (s32 ind=0; ind<(s32)buffer->Indices.size(); ind+=3)
-	    {
-		    core::plane3d<f32> p(
-			                   buffer->Vertices[buffer->Indices[ind+0]].Pos,
-			                   buffer->Vertices[buffer->Indices[ind+1]].Pos,
-			                   buffer->Vertices[buffer->Indices[ind+2]].Pos);
-            p.Normal.normalize();
-
-		    buffer->Vertices[buffer->Indices[ind+0]].Normal = p.Normal;
-		    buffer->Vertices[buffer->Indices[ind+1]].Normal = p.Normal;
-		    buffer->Vertices[buffer->Indices[ind+2]].Normal = p.Normal;
-       }
-       
-       buffer->recalculateBoundingBox();
-
-	   SAnimatedMesh* animatedMesh = new SAnimatedMesh();
-	   mesh->addMeshBuffer(buffer);
-	   mesh->recalculateBoundingBox();
-	   animatedMesh->addMesh(mesh);
-	   animatedMesh->recalculateBoundingBox();
-
-	   mesh->drop();
-	   buffer->drop();
-	   
-	   //roadMeshes[i] = animatedMesh;
-       roadWrappers_old[i]->roadNode = smgr->addAnimatedMeshSceneNode(animatedMesh);
-       roadWrappers_old[i]->roadNode->getMaterial(0).MaterialTypeParam = 0.1f;
-////       roadWrappers[i]->roadNode->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
-       if (useShaders)
-           roadWrappers_old[i]->roadNode->setMaterialFlag(video::EMF_LIGHTING, false);
-       else
-           roadWrappers_old[i]->roadNode->setMaterialFlag(video::EMF_LIGHTING, globalLight);
-/*
-       if (globalLight)
-       {
-	       roadWrappers[i]->roadNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
-       }
-*/
-       if (useShaders && useCgShaders)
-        roadWrappers_old[i]->roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
-       else
-        roadWrappers_old[i]->roadNode->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-//       roadWrappers[i]->roadNode->setMaterialType(video::EMT_SOLID);
-//       roadWrappers[i]->roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_smoke);
-	   roadWrappers_old[i]->roadNode->setMaterialTexture(0, driver->getTexture(textureName));
-	   //roadWrappers[i]->roadNode->setMaterialTexture(1, driver->getTexture("data/roads/sand_road_hm.bmp"));
-	   roadWrappers_old[i]->roadNode->setVisible(false);
-	   roadWrappers_old[i]->roadNode->setPosition(loc);
-	   //roadWrappers[i]->roadNode->setMaterialType(video::EMT_PARALLAX_MAP_SOLID );
-//       roadWrappers[i]->roadNode->setMaterialType(video::EMT_PARALLAX_MAP_TRANSPARENT_VERTEX_ALPHA);
-    }
-    
-    fclose(f);
-    
-}
-
-void BigTerrain::destroyRoads_old()
-{
-    printf("Destroy big old roads #%d\n", roadWrappers_old.size());
-    for (int i = 0; i < roadWrappers_old.size();i++)
-    {
-//       roadMeshes[i]->drop();
-       roadWrappers_old[i]->roadNode->remove();
-       delete roadWrappers_old[i];       
-    }
-    roadWrappers_old.clear();
 }
 
 void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* driver)
@@ -1752,7 +1485,7 @@ void BigTerrain::updateMaps(int new_x, int new_y, int obj_density, bool showPerc
                            stHeightmapSize, tScale,                           
                            this->stageNum,
                            this,
-                           objectReps, obj_density, roadList, m_terrainPool,
+                           objectReps, obj_density, roadList,
                            vscale, waterHeight);
                 }
                 smallTerrainsForUpdateLock.lock();
@@ -1919,7 +1652,7 @@ void BigTerrain::checkMapsQueueThread(SMapsQueueElement* mQE)
                        stHeightmapSize, tScale,
                        this->stageNum,
                        this,
-                       objectReps, obj_density, roadList, m_terrainPool,
+                       objectReps, obj_density, roadList,
                        vscale, waterHeight);
                 dprintf(printf("new map(%d, %d): %p\n", x, y, map[x + (max_x*y)]);)
                 smallTerrainsForUpdateLock.lock();
@@ -2522,7 +2255,7 @@ void BigTerrain::doCache()
                        stHeightmapSize, tScale,                           
                        this->stageNum,
                        this,
-                       objectReps, 0, roadList, m_terrainPool,
+                       objectReps, 0, roadList,
                        vscale, waterHeight);
             delete st;
 

@@ -1,0 +1,142 @@
+#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+	     float2 Uv0     : TEXCOORD0,
+	     float2 Uv1     : TEXCOORD1,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+             out float2 oUv0: TEXCOORD0,
+             out float2 oUv1: TEXCOORD1,
+             out float3 objPos: TEXCOORD2,
+             out float3 oNormal: TEXCOORD3,
+             out float4 oTexCoordProj	: TEXCOORD4,
+//             out float4 oTexCoordProj2	: TEXCOORD5,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld,
+             uniform float4x4 mInvWorld,
+//             uniform float4x4 mTransWorld,
+             uniform float4x4 mTextureMatrix,
+//             uniform float4x4 mTextureMatrixCar,
+             uniform float3 mLightColor,
+             uniform float3 mLightPos,
+             uniform float3 eyePosition,
+             uniform float shininess
+)
+{
+  //coll_effect(coll_tick, vPosition);
+  oPosition = mul(mWorldViewProj, vPosition);
+  oUv0 = Uv0;
+  oUv1 = Uv1;
+//  oUv1.x = Uv1.x/128.0;
+//  oUv1.y = Uv1.y/128.0;
+  oNormal = vNormal;
+  //objPos = vPosition;
+  objPos = mul(mWorld, vPosition).xyz;
+
+  oTexCoordProj = mul(mTextureMatrix, vPosition);
+  oTexCoordProj.xy = float2(oTexCoordProj.x, -oTexCoordProj.y) * 0.5;
+// no need for non d3d calculate shadow
+  oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);
+
+//  oTexCoordProj2 = mul(mTextureMatrixCar, vPosition);
+//  oTexCoordProj2.xy = float2(oTexCoordProj2.x, -oTexCoordProj2.y) * 0.5;
+// no need for non d3d calculate shadow
+//  oTexCoordProj2.xy = oTexCoordProj2.xy / oTexCoordProj2.w + float2(0.5, 0.5);
+
+  float3 normal = mul(float4(vNormal,0.0), mInvWorld).xyz;
+
+  // renormalize normal 
+  normal = normalize(normal);
+
+  // position in world coodinates
+//  float3 worldpos = mul(mTransWorld, vPosition);
+  float3 worldpos = objPos;
+
+  // calculate light vector, vtxpos - lightpos
+  float3 L = normalize(mLightPos - float3(0.0, 0.0, 0.0));
+
+  // calculate light color
+  float3 tmp = mLightColor * max(dot(normal, L), 0.0);
+
+  color = float4(tmp.x, tmp.y, tmp.z, 1.0);
+}
+
+void main_f( float4 position 	: POSITION,
+             float4 color	: COLOR,
+	     float2 Uv0		: TEXCOORD0,
+	     float2 Uv1		: TEXCOORD1,
+             float3 objPos	: TEXCOORD2,
+             float3 normal	: TEXCOORD3,
+             float4 texCoordProj	: TEXCOORD4,
+//             float4 texCoordProj2	: TEXCOORD5,
+	     uniform sampler2D tex0 : register(s0),
+	     uniform sampler2D tex1 : register(s1),
+	     uniform sampler2D tex2 : register(s2),
+	     uniform sampler2D tex3 : register(s3),
+	     uniform sampler2D tex4 : register(s4),
+	     uniform sampler2D tex5 : register(s5),
+	     uniform sampler2D tex6 : register(s6),
+	     uniform sampler2D shadowMap : register(s7),
+//	     uniform sampler2D shadowMapCar : register(s3),
+             uniform float3 clightPos,
+             uniform float3 clightDir,
+	     uniform float3 eyePositionF,
+             uniform float clight,
+             uniform float day_multi,
+             uniform float shadowParam,
+             uniform float shadowRes,
+             out float4 oColor	: COLOR0,
+             out float4 oColord	: COLOR1
+)
+{
+  float4 col0 = tex2D(tex0, Uv0);  // sample color map
+  float2 Uv1_ = Uv0*128.0; // frac(Uv0*128.0);
+  float4 col1 = tex2D(tex1, Uv1_);  // tex0
+  float4 col2 = tex2D(tex2, Uv1_);  // tex1
+  float4 col3 = tex2D(tex3, Uv1_);  // tex2
+  float4 col4 = tex2D(tex4, Uv1_);  // tex3
+  float4 col5 = tex2D(tex5, Uv1_);  // tex4
+  float4 col6 = tex2D(tex6, Uv1_);  // tex5
+  float4 shadowCoeff = calculate_shadow_ter(texCoordProj, shadowMap, shadowParam, shadowRes, day_multi);
+//  float4 shadowCoeff2 = calculate_shadow_ter(texCoordProj2, shadowMapCar, shadowParam, shadowRes/2);
+  float3 diffuseLight = float3(0.0, 0.0, 0.0);
+  float4 multip = calc_multip(color, 0.35);
+
+
+  const float col1p = col0.r * col0.a; // red
+  const float col2p = col0.g * col0.a; // green
+  const float col3p = col0.b * col0.a; // blue
+  const float col4p = (1 - (col0.r + col0.g + col0.b)) * col0.a; // black
+  const float col5p = (1 - col0.a); // alpha
+
+//  const float col1p = (col0.r) * (1 - col0.g) * (1 - col0.b); // red
+//  const float col2p = (1 - col0.r) * (col0.g) * (1 - col0.b); // green
+//  const float col3p = (1 - col0.r) * (1 - col0.g) * (col0.b); // blue
+//  const float col4p = (col0.r) * (col0.g) * (1 - col0.b); // yellow    = red + green
+//  const float col5p = (col0.r) * (1 - col0.g) * (col0.b); // purple    = red + blue
+//  const float col6p = (1 - col0.r) * (col0.g) * (col0.b); // lblue = green + blue
+
+//  float4 col = (col1 * col0.r + col2 * col0.g + col3 * col0.b);
+  float4 col = (col1 * col1p) + (col2 * col2p) + (col3 * col3p) +
+               (col4 * col4p)  + (col5 * col5p);// + (col6 * col6p);
+  //float4 col = col1;
+  col *= multip;
+  //color + multip;
+
+  oColor = col * 1.5;
+  // * 1.5;
+
+  spotAttenLighting(clightPos, clightDir, objPos, normal, day_multi, diffuseLight);
+  if (clight>0.0) oColor.xyz = oColor.xyz * diffuseLight;
+
+
+  // fog stuff  
+  //add_fog(eyePositionF, objPos, oColor);
+
+  oColor = day_effect(oColor, position, day_multi);
+  oColord = float4(0, 0, 1.0, 1.0);
+  add_shadow(oColor, shadowCoeff /* shadowCoeff2*/);
+}

@@ -412,11 +412,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -465,11 +461,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -521,11 +513,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -574,11 +562,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -623,11 +607,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -674,11 +654,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -729,11 +705,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -786,11 +758,7 @@ public:
     {
     }
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
         ADD_WORLD_VIEW_PROJ_V
@@ -827,11 +795,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -870,11 +834,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -926,11 +886,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -980,11 +936,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -1021,11 +973,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -1061,11 +1009,7 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
 	    // Vertex Shader
 	    ADD_WORLD_VIEW_PROJ_V
@@ -1105,33 +1049,8 @@ public:
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
 
-#ifdef IRR_CG_8
     virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-#else
-	virtual void OnSetConstants(ICgServices* services,CGprogram Vertex,CGprogram Pixel,const SMaterial& Material)
-#endif
 	{
-        /*
-        if (Material.getTexture(0))
-        {
-            tex0 = cgGetNamedParameter(Pixel, "tex0");
-            if (tex0)
-                services->EnableTexture(tex0, Material.getTexture(0));
-        }
-        if (Material.getTexture(1))
-        {
-            tex1 = cgGetNamedParameter(Pixel, "tex1");
-            if (tex1)
-                services->EnableTexture(tex1, Material.getTexture(1));
-        }
-        if (Material.getTexture(2))
-        {
-            tex2 = cgGetNamedParameter(Pixel, "tex2");
-            if (tex2)
-                services->EnableTexture(tex2, Material.getTexture(2));
-        }
-        printf("s %p\n", Material.getTexture(2));
-        */
         ADD_TEXTURE0
         ADD_TEXTURE1
         ADD_TEXTURE2
@@ -1163,7 +1082,6 @@ void setupShaders2 (IrrlichtDevice* device,
 {
 #ifndef DISABLE_CG_SHADERS 
 
-//#ifdef IRRLICHT_SDK_15
 	const c8* light_tex_vsFileName; // filename for the vertex shader
 	const c8* light_tex_psFileName; // filename for the pixel shader
 	const c8* light_tex_s_fileName; // filename for the vertex shader
@@ -1205,42 +1123,7 @@ void setupShaders2 (IrrlichtDevice* device,
     const c8* screenRTT_fileName;
     const c8* vs_version;
     const c8* ps_version;
-/*
-#define NULLSTRING 0    
-#else
-	core::string<c16> light_tex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_tex_psFileName; // filename for the pixel shader
 
-	core::string<c16> light_notex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_notex_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_2tex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_2tex_psFileName; // filename for the pixel shader
-
-    core::string<c16> smoke_psFileName; // filename for the pixel shader
-#define NULLSTRING ""
-#endif
-
-    dprintf(printf("T&L:                  %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL)));
-    dprintf(printf("Multitexturing:       %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE)));
-    dprintf(printf("Stencil buffer:       %d\n", driver->queryFeature(video::EVDF_STENCIL_BUFFER)));
-    dprintf(printf("Vertex shader 1.1:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_1_1)));
-    dprintf(printf("Vertex shader 2.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0)));
-    dprintf(printf("Vertex shader 3.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0)));
-    dprintf(printf("Pixel shader 1.1:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_1)));
-    dprintf(printf("Pixel shader 1.2:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_2)));
-    dprintf(printf("Pixel shader 1.3:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_3)));
-    dprintf(printf("Pixel shader 1.4:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_4)));
-    dprintf(printf("Pixel shader 2.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0)));
-    dprintf(printf("Pixel shader 3.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0)));
-    dprintf(printf("ARB vertex program:   %d\n", driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1)));
-    dprintf(printf("ARB fragment program: %d\n", driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)));
-    dprintf(printf("GLSL:                 %d\n", driver->queryFeature(video::EVDF_ARB_GLSL)));
-    dprintf(printf("HLSL:                 %d\n", driver->queryFeature(video::EVDF_HLSL)));
-    dprintf(printf("MRT:                  %d\n", driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)));
-    dprintf(printf("Non square textures:  %d\n", driver->queryFeature(video::EVDF_TEXTURE_NSQUARE)));
-    dprintf(printf("Non POT:              %d\n", driver->queryFeature(video::EVDF_TEXTURE_NPOT)));
-*/
 	if (((driverType == video::EDT_DIRECT3D9 && driver->queryFeature(video::EVDF_HLSL)) ||
 		 ((driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/) && driver->queryFeature(video::EVDF_ARB_GLSL))) &&
          (driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) || driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)) && 
@@ -1256,38 +1139,65 @@ void setupShaders2 (IrrlichtDevice* device,
         return;
     }
     if (!useCgShaders) return;
-    
-	light_tex_psFileName = "data/shaders/cg/light_tex.cg";
+#ifdef USE_MRT
+#define CG_DIR "data/shaders/cg_mrt/"
+#else
+#define CG_DIR "data/shaders/cg/"
+#endif
+	light_tex_psFileName = CG_DIR \
+        "light_tex.cg";
 	light_tex_vsFileName = light_tex_psFileName; // both shaders are in the same file
-	light_tex_s_fileName = "data/shaders/cg/light_tex_s.cg";
-	light_tex_s_car_fileName = "data/shaders/cg/light_tex_s_car.cg";
-	light_tex_s_car_tyre_fileName = "data/shaders/cg/light_tex_s_car_tyre.cg";
-	light_tex_wfar_psFileName = "data/shaders/cg/light_tex_wfar.cg";
+	light_tex_s_fileName = CG_DIR \
+        "light_tex_s.cg";
+	light_tex_s_car_fileName = CG_DIR \
+        "light_tex_s_car.cg";
+	light_tex_s_car_tyre_fileName = CG_DIR \
+        "light_tex_s_car_tyre.cg";
+	light_tex_wfar_psFileName = CG_DIR \
+        "light_tex_wfar.cg";
 	light_tex_wfar_vsFileName = light_tex_psFileName; // both shaders are in the same file
-	light_notex_psFileName = "data/shaders/cg/light_notex.cg";
+	light_notex_psFileName = CG_DIR \
+        "light_notex.cg";
 	light_notex_vsFileName = light_notex_psFileName;
-	light_notex_wfar_psFileName = "data/shaders/cg/light_notex_wfar.cg";
+	light_notex_wfar_psFileName = CG_DIR \
+        "light_notex_wfar.cg";
 	light_notex_wfar_vsFileName = light_notex_psFileName;
-	light_notex_car_psFileName = "data/shaders/cg/light_notex_car.cg";
+	light_notex_car_psFileName = CG_DIR \
+        "light_notex_car.cg";
 	light_notex_car_vsFileName = light_notex_psFileName;
-	smoke_fileName = "data/shaders/cg/smoke.cg";
-	light_2tex_psFileName = "data/shaders/cg/light_2tex.cg";
+	smoke_fileName = CG_DIR \
+        "smoke.cg";
+	light_2tex_psFileName = CG_DIR \
+        "light_2tex.cg";
 	light_2tex_vsFileName = light_2tex_psFileName;
-	light_2tex_2_psFileName = "data/shaders/cg/light_2tex_2.cg";
+	light_2tex_2_psFileName = CG_DIR \
+        "light_2tex_2.cg";
 	light_2tex_2_vsFileName = light_2tex_2_psFileName;
-	ocean_psFileName = "data/shaders/cg/ocean.cg";
+	ocean_psFileName = CG_DIR \
+        "ocean.cg";
 	ocean_vsFileName = ocean_psFileName;
-	ocean_fix_psFileName = "data/shaders/cg/ocean_fix.cg";
+	ocean_fix_psFileName = CG_DIR \
+        "ocean_fix.cg";
 	ocean_fix_vsFileName = ocean_fix_psFileName;
-	transp_fileName = "data/shaders/cg/transp_obj.cg";
-	transp_road_fileName = "data/shaders/cg/transp_road.cg";
-	transp_stat_fileName = "data/shaders/cg/transp_stat.cg";
-	light_transp_fileName = "data/shaders/cg/light_transp.cg";
-	tex_fileName = "data/shaders/cg/tex.cg";
-	shadow_fileName = "data/shaders/cg/shadow.cg";
-	depth_fileName = "data/shaders/cg/depth.cg";
-	depthSun_fileName = "data/shaders/cg/depth_sun.cg";
-	screenRTT_fileName = "data/shaders/cg/screen_rtt.cg";
+	transp_fileName = CG_DIR \
+        "transp_obj.cg";
+	transp_road_fileName = CG_DIR \
+        "transp_road.cg";
+	transp_stat_fileName = CG_DIR \
+        "transp_stat.cg";
+	light_transp_fileName = CG_DIR \
+        "light_transp.cg";
+	tex_fileName = CG_DIR \
+        "tex.cg";
+	shadow_fileName = CG_DIR \
+        "shadow.cg";
+	depth_fileName = CG_DIR \
+        "depth.cg";
+	depthSun_fileName = CG_DIR \
+        "depth_sun.cg";
+	screenRTT_fileName = CG_DIR \
+        "screen_rtt.cg";
+
 	vs_version = "vs_2_0";
 	ps_version = "ps_2_0";
 
@@ -1307,13 +1217,14 @@ void setupShaders2 (IrrlichtDevice* device,
         useShaders = useCgShaders = useAdvCgShaders = false;
 	}
 	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
+#ifdef USE_MRT
 	if (driverType == video::EDT_DIRECT3D9)
 	{
-	    light_2tex_2_psFileName = "data/shaders/cg/light_2tex_2_d3d9.cg";
+	    light_2tex_2_psFileName = "data/shaders/cg_mrt/light_2tex_2_d3d9.cg";
         light_2tex_2_vsFileName = light_2tex_2_psFileName;
-    	light_tex_s_car_fileName = "data/shaders/cg/light_tex_s_car_d3d9.cg";
+    	light_tex_s_car_fileName = "data/shaders/cg_mrt/light_tex_s_car_d3d9.cg";
     }
-
+#endif
 	if (0 && useAdvCgShaders)
 	{
         if (driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0) &&
@@ -1570,6 +1481,7 @@ void recreateRTTs(IVideoDriver* driver)
     if (!driver->queryFeature(video::EVDF_RENDER_TO_TARGET)/* || !useCgShaders*/
     	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
 #ifdef USE_MRT
+        || !driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
         || driverType == video::EDT_DIRECT3D9
 #endif
        )

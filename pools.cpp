@@ -18,6 +18,7 @@
 #include "my_shaders.h"
 #include "Materials.h"
 #include "gameplay.h"
+#include "message.h"
 
 #include "CTreeGenerator.h"
 #include "CBillboardGroupSceneNode.h"
@@ -70,7 +71,7 @@ struct ObjectWrapper
 {
 public:
     ObjectWrapper(NewtonWorld* pnWorld)
-        :objectNode(0), farObjectNode(0), visible(true), fvisible(true), nWorld(pnWorld), body(0),
+        :objectNode(0), visible(true), fvisible(true), nWorld(pnWorld), body(0),
          collision(0), addShadow(false), shadowNode(0), type(NONE), offsetObject(0)
      {}
     ~ObjectWrapper()
@@ -86,8 +87,6 @@ public:
     	   NewtonReleaseCollision(nWorld, collision);
     	   collision = 0;
         }
-        if (farObjectNode)
-            farObjectNode->remove();
     }
     
     void setVisible(bool pvisible)
@@ -176,24 +175,6 @@ public:
         }
     }
     
-    void setFarVisible(bool pvisible)
-    {
-        if (pvisible==fvisible) return;
-        fvisible = pvisible;
-        if (farObjectNode)
-        {
-            farObjectNode->setVisible(fvisible);
-            if (fvisible)
-            {
-                addToObjectNodes(farObjectNode);
-            }
-            else
-            {
-                removeFromObjectNodes(farObjectNode);
-            }
-        }
-    }
-    
     void calculateCollision(const core::vector3df& pbox, const core::vector3df& pofs)
     {
         if (pbox == vector3df(0.0f, 0.0f, 0.0f)) return;
@@ -248,7 +229,6 @@ public:
     
     //IAnimatedMeshSceneNode* objectNode;
     ISceneNode* objectNode;
-    ISceneNode* farObjectNode;
     IShadowVolumeSceneNode* shadowNode;
     bool addShadow;
     PoolObjectType type;
@@ -268,7 +248,6 @@ struct nameNum
     c8 name[256];
     CMyList<ObjectWrapper*> objectPool;
     IAnimatedMesh* objectMesh;
-    IAnimatedMesh* farObjectMesh;
     int category;
 };
 //static CMyList<nameNum*> objectPools;
@@ -282,7 +261,6 @@ struct SItinerNameTexture
 static core::array<SItinerNameTexture*> itinerTypes;
 
 int createObjectPool(const c8* name,
-                    const c8* fname,
                     ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
                     int num, PoolObjectType type,
                     const c8* textureName,
@@ -308,14 +286,14 @@ int createObjectPool(const c8* name,
     {
         nameNum* newElement = new nameNum;
         strcpy(newElement->name, name);
-        newElement->objectMesh = newElement->farObjectMesh = 0;
+        newElement->objectMesh = 0;
         //if (category > 3) category = 3;
         if (category < 0) category = 0;
         newElement->category = category;
         objectPools.push_back(newElement);
         generateElementsToPool(smgr, driver, nWorld,
                             ind, num, type,
-                            textureName, fname,
+                            textureName,
                             rot, sca, box, ofs);
     }
 
@@ -327,7 +305,6 @@ int createObjectPool(const c8* name,
 void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
                             int poolId, int num, PoolObjectType type,
                             const c8* textureName,
-                            const c8* fname,
                             const vector3df& rot,
                             const vector3df& sca,
                             const vector3df& box,
@@ -342,7 +319,6 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
 
     IAnimatedMesh** poolMesh = &objectPools[poolId]->objectMesh;
-    IAnimatedMesh** fPoolMesh = &objectPools[poolId]->farObjectMesh;
     
     if (type==NORMAL) // normal object
     {
@@ -359,36 +335,16 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             }
             
             IAnimatedMeshSceneNode* objectNode = smgr->addAnimatedMeshSceneNode(objectMesh);
-            IAnimatedMeshSceneNode* farObjectNode = 0;
-
-            //printf("check fname: %s\n", fname);
-            if(useObjectLods && strcmp(fname, "null")) // we have a far object
-            {
-                //printf("read fname: %s\n", fname);
-                IAnimatedMesh* farObjectMesh = *fPoolMesh;
-                if (farObjectMesh==0)
-                {
-                    farObjectMesh = readMySimpleObject(fname);
-                    *fPoolMesh = farObjectMesh;
-                }
-                farObjectNode = smgr->addAnimatedMeshSceneNode(farObjectMesh);
-            }
-            //printf("check fname: %s done obj: %p\n", fname, farObjectNode);
 
             ObjectWrapper* objectWrapper = new ObjectWrapper(nWorld);
             objectWrapper->objectNode = objectNode;
-            objectWrapper->farObjectNode = farObjectNode;
             if (useShaders)
             {
                 objectNode->setMaterialFlag(video::EMF_LIGHTING, false);
-                if (farObjectNode)
-                    farObjectNode->setMaterialFlag(video::EMF_LIGHTING, false);
             }
             else
             {
                 objectNode->setMaterialFlag(video::EMF_LIGHTING, globalLight);
-                if (farObjectNode)
-                   farObjectNode->setMaterialFlag(video::EMF_LIGHTING, globalLight);
             }
 //            objectNodes[numOfObjects]->setMaterialFlag(video::EMF_LIGHTING, true);
             if (globalLight)
@@ -396,30 +352,15 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                 //if (stencil_shadows)
                     objectWrapper->shadowNode = objectNode->addShadowVolumeSceneNode();
                 objectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
-                if (farObjectNode)
-                    farObjectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
             }
             if (strcmp(textureName, "null"))
             {
                 objectNode->setMaterialTexture(0, driver->getTexture(textureName));
-                if (farObjectNode)
-                {
-                    objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_wfar);
-                    //farObjectNode->setMaterialTexture(0, driver->getTexture(textureName));
-                    farObjectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex_wfar);
-                }
-                else
-                    objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+                objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
             }
             else
             {
-                if (farObjectNode)
-                {
-                    objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex_wfar);
-                    farObjectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex_wfar);
-                }
-                else
-                    objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex);
+                objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex);
             }
             objectNode->setRotation(rot);
             objectNode->setScale(sca);
@@ -427,7 +368,6 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             //objectWrapper->calculateCollision(box, ofs);
             objectWrapper->calculateCollision(objectMesh, box, sca, name, j);
             objectWrapper->setVisible(false);
-            objectWrapper->setFarVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;
             objectPool.addLast(objectWrapper);
@@ -746,13 +686,11 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             }
             
             IAnimatedMeshSceneNode* objectNode = smgr->addAnimatedMeshSceneNode(objectMesh);
-            IAnimatedMeshSceneNode* farObjectNode = 0;
             
             IBillboardSceneNode* leaf = smgr->addBillboardSceneNode(objectNode, myTreeDesigns[type]->leafSize, myTreeDesigns[type]->leafOffset);
 
             ObjectWrapper* objectWrapper = new ObjectWrapper(nWorld);
             objectWrapper->objectNode = objectNode;
-            objectWrapper->farObjectNode = farObjectNode;
             objectNode->setMaterialFlag(video::EMF_LIGHTING, false);
             leaf->setMaterialFlag(video::EMF_LIGHTING, false);
             leaf->setMaterialFlag(video::EMF_TEXTURE_WRAP, true);
@@ -763,8 +701,6 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                 //if (stencil_shadows)
                     objectWrapper->shadowNode = objectNode->addShadowVolumeSceneNode();
                 objectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
-                if (farObjectNode)
-                    farObjectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
             }
             
             objectNode->setMaterialTexture(0, myTreeDesigns[type]->treeTexture);
@@ -779,7 +715,6 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             //objectWrapper->calculateCollision(box, ofs);
             objectWrapper->calculateCollision(objectMesh, box, sca, name, j);
             objectWrapper->setVisible(false);
-            objectWrapper->setFarVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;
             objectPool.addLast(objectWrapper);
@@ -787,7 +722,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     }
 }
 
-void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
+void* getPoolElement(int poolId, const vector3df& pos)
 {
     if (poolId < 0 || poolId >= objectPools.size()) return 0;
     
@@ -797,46 +732,15 @@ void* getPoolElement(int poolId, const vector3df& pos, bool farObj)
 
     if (objectWrapper)
     {
-        
-        if (objectWrapper->farObjectNode)
-        {
-            objectWrapper->farObjectNode->setPosition(pos);
-        }
-        else
-        {
-            if (farObj)
-            {
-                objectPool.addFirst(objectWrapper);
-                return 0;
-            }
-        }
-
         if (objectWrapper->type==GRASS && (grass_type == GRASS_BILLBOARD || grass_type == GRASS_BILLBOARD_GROUP))
         {
             objectWrapper->objectNode->setPosition(vector3df(pos.X, pos.Y+1.5f, pos.Z));
-            /*
-            switch (grass_type)
-            {
-                case GRASS_GENERATED:
-                    objectWrapper->objectNode->setPosition(vector3df(pos.X, pos.Y-0.3f, pos.Z));
-                    break;
-                case GRASS_BILLBOARD:
-                    objectWrapper->objectNode->setPosition(vector3df(pos.X, pos.Y+1.5f, pos.Z));
-                    break;
-                default:
-                    objectWrapper->objectNode->setPosition(pos);
-                    break;
-            }
-            */
         }
         else
+        {
             objectWrapper->objectNode->setPosition(pos);
-        //objectWrapper->objectNode->updateAbsolutePosition();
-        //printf("obj: %f %f %f\n", objectWrapper->objectNode->getAbsolutePosition().X, 
-        //                          objectWrapper->objectNode->getAbsolutePosition().Y,
-        //                          objectWrapper->objectNode->getAbsolutePosition().Z);
-        objectWrapper->setVisible(!farObj);
-        objectWrapper->setFarVisible(farObj);
+        }
+        objectWrapper->setVisible(true);
     }
     
     return (void*)objectWrapper;
@@ -855,42 +759,7 @@ void putPoolElement(int poolId, void* arg)
     if (objectWrapper)
     {
         objectWrapper->setVisible(false);
-        objectWrapper->setFarVisible(false);
         objectPool.addFirst(objectWrapper);
-    }
-}
-
-void setFarPoolElement(void* arg)
-{
-    ObjectWrapper* objectWrapper = (ObjectWrapper*)arg;
-    
-    if (objectWrapper)
-    {
-        objectWrapper->setVisible(false);
-        objectWrapper->setFarVisible(true);
-    }
-}
-
-bool getFarPoolElement(void* arg)
-{
-    ObjectWrapper* objectWrapper = (ObjectWrapper*)arg;
-    
-    if (objectWrapper && objectWrapper->farObjectNode)
-    {
-        return true;
-    }
-    
-    return false;
-}
-
-void setNearPoolElement(void* arg)
-{
-    ObjectWrapper* objectWrapper = (ObjectWrapper*)arg;
-    
-    if (objectWrapper)
-    {
-        objectWrapper->setVisible(true);
-        objectWrapper->setFarVisible(false);
     }
 }
 
@@ -1057,8 +926,6 @@ void releasePools()
         delThis->objectPool.delList();
         if (delThis->objectMesh)
             delThis->objectMesh->drop();
-        if (delThis->farObjectMesh)
-            delThis->farObjectMesh->drop();
         delete delThis;
     }
     objectPools.clear();
@@ -1104,7 +971,6 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
     FILE* f;
     int ret = 0;
     c8 meshName[256];
-    c8 farMeshName[256];
     c8 textureName[256];
     vector3df rot(0.f,0.f,0.f);
     vector3df sca(1.f,1.f,1.f);
@@ -1131,21 +997,19 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         
         ret = fscanf(f, "nam: %s\n" \
                         "tex: %s\n" \
-                        "far: %s\n" \
                         "rot: %f, %f, %f\n" \
                         "sca: %f, %f, %f\n" \
                         "box: %f, %f, %f\n" \
                         "ofs: %f, %f, %f\n" \
                         "cat: %d\n",
                 meshName, textureName,
-                farMeshName,
                 &rot.X, &rot.Y, &rot.Z,
                 &sca.X, &sca.Y, &sca.Z,
                 &box.X, &box.Y, &box.Z,
                 &ofs.X, &ofs.Y, &ofs.Z,
                 &category
                 );
-        if (ret < 16)
+        if (ret < 15)
         {
             // no more object
             //printf("|%s| |%s|\n", meshName, textureName);
@@ -1154,9 +1018,14 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         
         if (i==0) // ai_point
         {
-            createObjectPool(meshName, farMeshName,
+            createObjectPool(meshName,
                               smgr, driver, nWorld,
-                              object_pool_size*100, NORMAL,
+#ifdef USE_EDITOR
+                              object_pool_size*100,
+#else
+                              1,
+#endif
+                              NORMAL,
                               textureName,
                               rot, sca, box, ofs, category);
         }
@@ -1164,18 +1033,19 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         {
             if (!strstr(meshName, "my_tree"))
                 // normal object, high poly
-                createObjectPool(meshName, farMeshName,
+                createObjectPool(meshName,
                                   smgr, driver, nWorld,
                                   object_pool_size, NORMAL,
                                   textureName,
                                   rot, sca, box, ofs, category);
             else // my tree object, like the grass
-                createObjectPool(meshName, farMeshName,
+                createObjectPool(meshName,
                                   smgr, driver, nWorld,
                                   grass_pool_size, NORMAL,
                                   textureName,
                                   rot, sca, box, ofs, category);
         }
+        MessageText::refresh();
     }
     fclose(f);
 }
@@ -1207,7 +1077,7 @@ void loadGrassTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, N
     while (true)
     {
         ret = fscanf(f, "%s\n%s\ncat: %d\n", objectName, textureName, &category);
-        createObjectPool(objectName, "null",
+        createObjectPool(objectName,
                          smgr, driver, nWorld,
                          grass_pool_size, GRASS,
                          textureName,
@@ -1216,6 +1086,7 @@ void loadGrassTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, N
         {
             break;
         }
+        MessageText::refresh();
     }
     
     fclose(f);
@@ -1299,11 +1170,12 @@ void loadTreeTypes(const c8* treetype,
 
         assert(treeDesigns.size()==i+1);
         
-        createObjectPool(meshName, "null",
+        createObjectPool(meshName,
                           smgr, driver, nWorld,
                           object_pool_size, TREE,
                           (char*)i,
                           rot, sca, box, ofs, category);
+        MessageText::refresh();
     }
     
     fclose(f);
@@ -1391,11 +1263,12 @@ void loadMyTreeTypes(const c8* treetype,
 
         assert(myTreeDesigns.size()==i+1);
         
-        createObjectPool(meshName, "null",
+        createObjectPool(meshName,
                          smgr, driver, nWorld,
                          object_pool_size, MY_TREE,
                          (char*)i,
                          rot, sca, box, ofs, category);
+        MessageText::refresh();
     }
     
     fclose(f);
@@ -1433,6 +1306,7 @@ void loadItinerTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         strcpy(itinerNT->name, textureName);
         itinerNT->texture = driver->getTexture(textureName);
         itinerTypes.push_back(itinerNT);
+        MessageText::refresh();
     }
     fclose(f);
 }

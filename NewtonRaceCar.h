@@ -18,17 +18,8 @@
 #define AFX_NEWTONRACECAR_H__96CF72A9_A2BD_4A11_9F6D_40DD9A3CCC12__INCLUDED_
 
 
-//#include <stdafx.h>
-//#include "OpenGlUtil.h"
-//#define USE_BASICRC
-#ifndef USE_BASICRC
 #define OLD_CDGRCC
-#endif
-#ifdef USE_BASICRC
-#include "CustomMultiBodyVehicle.h"
-#else
 #include "CustomDGRayCastCar.h"
-#endif
 
 #include "irrlicht.h"
 // Irrlicht Namespaces
@@ -333,11 +324,8 @@ private:
 	static void SetTransform (const NewtonBody* body, const float* matrixPtr, int threadIndex);
 	static void offsetObjectCallback(void* userData, const irr::core::vector3df& newPos);
 
-#ifdef USE_BASICRC
-	CustomMultiBodyVehicle* GetJoint() const;
-#else
 	CustomDGRayCastCar* GetJoint() const;
-#endif
+
 	void setMatrix(matrix4& newMatrix);
 	
 	void addSmoke(const float speed, const vector3df &pos, float offset);
@@ -362,11 +350,7 @@ private:
 #endif
 
 	NewtonBody* m_vehicleBody;
-#ifdef USE_BASICRC
-	CustomMultiBodyVehicle* m_vehicleJoint;
-#else
 	CustomDGRayCastCar* m_vehicleJoint;
-#endif
 	Smoke** smokes;
 //public:
 	matrix4 m_matrix;

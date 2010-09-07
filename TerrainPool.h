@@ -32,6 +32,7 @@ using namespace gui;
 #define SMALLTERRAIN_HEIGHTMAP_SIZE 128 //stHeightmapSize
 #define SMALLTERRAIN_SIZE ((float)SMALLTERRAIN_HEIGHTMAP_SIZE*TERRAIN_SCALE)
 
+#if 0
 #define TESSELATION terrain_tesselation
 #define SMALLTERRAIN_HEIGHTMAP_SIZE_T (SMALLTERRAIN_HEIGHTMAP_SIZE*TESSELATION)
 #define TERRAIN_SCALE_T (TERRAIN_SCALE/(float)TESSELATION)
@@ -49,5 +50,5 @@ public:
 private:
     CMyList<scene::ITerrainSceneNode*> terrains;
 };
-
+#endif // 0
 #endif // __TERRAINPOOL_H__

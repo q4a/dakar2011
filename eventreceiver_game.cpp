@@ -36,7 +36,7 @@ int joy_gd = 0;
 int joy_reset_car_p =0;
 int joy_change_view_p = 0;
 int joy_change_light_p = 0;
-int joy_show_compass_p = 0;
+int joy_show_map_p = 0;
 int joy_repair_car_p = 0;
 int joy_menu_p = 0;
 
@@ -169,11 +169,13 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 		    display_extra_info = !display_extra_info;
             fpsText->setVisible(display_extra_info);
             polyText->setVisible(display_extra_info);
+#ifdef USE_EDITOR
             posText->setVisible(display_extra_info);
             if (editorMode)
             {
                 editorSetVisible(display_extra_info);
             }
+#endif // USE_EDITOR
 			return true;
 		case irr::KEY_F3:
 		    draw_hud = !draw_hud;
@@ -217,24 +219,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 */
 
         case irr::KEY_TAB:
-             //hudMap->setVisible(false);
              showMap = false;
-             /*
-             if (bigTerrain && !bigTerrain->getTimeEnded())
-             {
-                showCompass = !showCompass;
-                hudCompassImage->setVisible(showCompass);
-                compassText->setVisible(showCompass);
-                if (showCompass && show_compass_arrow)
-                {
-                    compassArrow->setVisible(showCompass);
-                }
-                else
-                {
-                    compassArrow->setVisible(false);
-                }
-             }
-             */
              return true;
              break;
 
@@ -356,7 +341,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                     matrix4 camtar = car->getMatrix() * viewdest_cur;
                     camera->setPosition(core::vector3df(campos[12],campos[13],campos[14]));
                     camera->setTarget(core::vector3df(camtar[12],camtar[13],camtar[14]));
-	                camera->setFarValue(/*bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI*/DEFAULT_FAR_VALUE);
+	                camera->setFarValue(DEFAULT_FAR_VALUE);
 	                camera->setNearValue(nearValue);
 	                crossImage->setVisible(fpsCam);
                     return true;
@@ -856,32 +841,24 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
         else
             joy_repair_car_p = 0;
 
-// show compass
-/*
-        if (joy_show_compass != -1 && JoystickState.IsButtonPressed(joy_show_compass))
+// show map
+        if (joy_show_map != -1 && JoystickState.IsButtonPressed(joy_show_map))
         {
-            if (joy_show_compass_p==0)
+            if (joy_show_map_p==0)
             {
-                joy_show_compass_p = 1;
-                if (car && bigTerrain && !bigTerrain->getTimeEnded() && inGame == 0)
-                {
-                    showCompass = !showCompass;
-                    hudCompassImage->setVisible(showCompass);
-                    compassText->setVisible(showCompass);
-                    if (showCompass && show_compass_arrow)
-                    {
-                        compassArrow->setVisible(showCompass);
-                    }
-                    else
-                    {
-                        compassArrow->setVisible(false);
-                    }
-                }
+                joy_show_map_p = 1;
+                showMap = true;
             }
         }
         else
-            joy_show_compass_p = 0;
-*/
+        {
+            if (joy_show_map_p==1)
+            {
+                joy_show_map_p = 0;
+                showMap = false;
+            }
+        }
+
 // change view            
         if (joy_change_view != -1 && JoystickState.IsButtonPressed(joy_change_view))
         {

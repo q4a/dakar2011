@@ -106,7 +106,7 @@ void main_f( float4 position 	: POSITION,
              uniform float shadowRes,
              uniform float far_value,
              uniform float car_dirt,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0)
 {
   //Uv.y = Uv.y + (sin((float)tick)*0.01);
   //Uv.x = Uv.x + (cos((float)tick)*0.01);

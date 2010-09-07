@@ -57,7 +57,8 @@ void main_f( float4 position 	: POSITION,
              uniform float day_multi,
              uniform float ov_limit,
              uniform float etick,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0
+)
 {
   float4 col = tex2D (tex0, Uv);
   float3 diffuseLight = float3(0.0, 0.0, 0.0);

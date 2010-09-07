@@ -462,8 +462,9 @@ namespace IrrCg
         }
         cgGLSetMatrixParameterfc(param,Projection.pointer());
     }
-    void ICgOGLServices::setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,irr::core::matrix4 mat )
+    void ICgOGLServices::setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,const irr::core::matrix4& mat )
     {
+        /*
         if(trans == ICGT_MATRIX_TRANSPOSE)
         mat = mat.getTransposed();
         if(trans == ICGT_MATRIX_INVERSE)
@@ -473,6 +474,7 @@ namespace IrrCg
             mat.makeInverse();
             mat = mat.getTransposed();
         }
+        */
         cgGLSetMatrixParameterfc(param,mat.pointer());
     }
     irr::IrrlichtDevice* ICgOGLServices::getDevice()
@@ -832,10 +834,11 @@ namespace IrrCg
         }
         cgD3D9SetUniform(param,Projection.pointer());
     }
-    void ICgD3D9Services::setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,irr::core::matrix4 mat )
+    void ICgD3D9Services::setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,const irr::core::matrix4& mat )
     {
-        mat = mat.getTransposed();
-
+        irr::core::matrix4 mat2;
+        mat.getTransposed(mat2);
+        /*
         if(trans == ICGT_MATRIX_TRANSPOSE)
         mat = mat.getTransposed();
         if(trans == ICGT_MATRIX_INVERSE)
@@ -845,7 +848,8 @@ namespace IrrCg
             mat.makeInverse();
             mat = mat.getTransposed();
         }
-        cgD3D9SetUniform(param,mat.pointer());
+        */
+        cgD3D9SetUniform(param,mat2.pointer());
     }
     irr::IrrlichtDevice* ICgD3D9Services::getDevice()
     {

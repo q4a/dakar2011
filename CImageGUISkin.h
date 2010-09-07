@@ -92,11 +92,8 @@ public:
     virtual core::rect<s32> draw3DWindowBackground(IGUIElement* element,
             bool drawTitleBar, video::SColor titleBarColor,
             const core::rect<s32>& rect,
-            const core::rect<s32>* clip=0
-#ifdef IRRLICHT_SDK_17
-            , core::rect<s32>* checkClientArea=0
-#endif
-            );
+            const core::rect<s32>* clip=0,
+            core::rect<s32>* checkClientArea=0);
 
     virtual void draw3DMenuPane(IGUIElement* element,
             const core::rect<s32>& rect,

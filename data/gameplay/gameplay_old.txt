@@ -1,0 +1,40 @@
+data/bigterrains/bigterrain1_old.txt
+730
+Buenos Aires -> Victoria
+NL
+Difficulty: very easy
+NL
+Type: grass
+EOM
+data/bigterrains/bigterrain2_old.txt
+1060
+Victoria -> Cordoba
+NL
+Difficulty: very easy
+NL
+Type: grass
+EOM
+data/bigterrains/bigterrain3_old.txt
+2240
+Cordoba -> San Miguel de Tucuman
+NL
+Difficulty: medium
+NL
+Type: grass
+EOM
+data/bigterrains/bigterrain9_old.txt
+2910
+Antofagasta -> Copiapo
+NL
+Difficulty: very easy
+NL
+Type: sand with road
+EOM
+data/bigterrains/bigterrain14_old.txt
+1760
+Cordoba -> Buenos Aires
+NL
+Difficulty: very easy
+NL
+Type: grass
+EOM

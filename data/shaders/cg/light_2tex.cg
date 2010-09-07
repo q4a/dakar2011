@@ -104,7 +104,8 @@ void main_f( float4 position 	: POSITION,
              uniform float day_multi,
              uniform float shadowParam,
              uniform float shadowRes,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0
+)
 {
   float4 col0 = tex2D( tex0, Uv0 );  // sample color map
   float4 col1 = tex2D( tex1, Uv1 );  // sample color map

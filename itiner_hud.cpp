@@ -16,11 +16,7 @@ gui::IGUIImage* ItinerHud::itinerHudImage = 0;
 u32 ItinerHud::timeout = 0;
 IrrlichtDevice* ItinerHud::device = 0;
 
-#ifdef IRRLICHT_SDK_15
-void ItinerHud::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<s32> screenSize, int p_hudSize)
-#else
 void ItinerHud::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<u32> screenSize, int p_hudSize)
-#endif
 {
     const int hudSize = p_hudSize / 3;
     const int hudPositionX = screenSize.Width-(hudSize*2)-10;

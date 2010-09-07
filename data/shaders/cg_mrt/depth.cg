@@ -1,0 +1,34 @@
+//#include "common.cg"
+
+void main_v( float4 vPosition 	: POSITION,
+             float3 vNormal	: NORMAL,
+
+             out float4 oPosition	: POSITION,
+             out float4 color	: COLOR,
+             out float3 objPos: TEXCOORD0,
+             out float3 oNormal: TEXCOORD1,
+
+             uniform float4x4 mWorldViewProj,
+             uniform float4x4 mWorld
+)
+{
+  oPosition = mul(mWorldViewProj, vPosition);
+// + float4(normalize(vNormal), 1.0)*0.2
+  oNormal = vNormal;
+  //objPos = vPosition;
+  objPos = mul(mWorld, vPosition).xyz;
+  color = float4(0, 0, 0, 1.0);
+}
+
+void main_f( float4 position 	: POSITION,
+             float4 color	: COLOR,
+             float3 objPos	: TEXCOORD0,
+             float3 normal	: TEXCOORD1,
+//	     uniform float3 eyePositionF,
+//	     uniform float  far_value,
+//             uniform float ov_limit,
+//             uniform float car_speed,
+             out float4 oColor	: COLOR)
+{
+  oColor = float4(0.0,0.0,0.0,1.0);
+}

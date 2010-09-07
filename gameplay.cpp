@@ -59,17 +59,13 @@ gui::IGUIStaticText* posText = 0;
 gui::IGUIStaticText* speedText = 0;
 gui::IGUIStaticText* demageText = 0;
 gui::IGUIStaticText* timeText = 0;
-gui::IGUIStaticText* compassText = 0;
 gui::IGUIStaticText* versionText = 0;
 gui::IGUIImage* bgImage = 0;
 gui::IGUIImage* hudImage = 0;
-gui::IGUIImage* hudCompassImage = 0;
 gui::IGUIImage* hudMap = 0;
 gui::IGUIImage* hudInfo = 0;
 gui::IGUIImage* crossImage = 0;
-bool showCompass = false;
 bool showMap = false;
-scene::IAnimatedMeshSceneNode* compassArrow = 0;
 scene::ISceneNode* skydome = 0;
 scene::IBillboardSceneNode* sunSphere = 0;
 video::ITexture* smokeTexture = 0;
@@ -135,7 +131,6 @@ SCompetitor* playerCompetitor = 0;
 CRaceEngine* raceEngine = 0;
 static CRaceEngine* loadedRaceEngine = 0;
 
-TerrainPool* terrainPool = 0;
 OffsetManager* offsetManager = 0;
 
 float car_pressure_multi = TYRE_PRESSURE_MULTI_DEFAULT;
@@ -192,7 +187,7 @@ video::ITexture* bgImagesTextures[MAX_BGIMAGE+1] =
 };
 
 video::ITexture* hudTextures[MAX_HUD+2] = {0,0,0,0,0,0,0,0,0};
-video::ITexture* hudMapTextures[HUD_MAPS] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+//video::ITexture* hudMapTextures[HUD_MAPS] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 video::ITexture* hudUserOnMapTexture = 0;
 
 #define SAVE_TMP_FILE "savegames/tmp_state.txt"
@@ -308,9 +303,6 @@ void startGame(int stageNum, SState* state)
     MessageText::addText(str.c_str(), 1, true, false);
 
     loading = 1;
-//    if (useScreenRTT && useBgImageToRender)
-//        bgImage->setImage(bgImageTexture);
-//    else
     if (stageNum < 3)
     {
         if (!bgImagesTextures[MAX_BGIMAGE])
@@ -341,7 +333,7 @@ void startGame(int stageNum, SState* state)
     
     bigTerrain = new BigTerrain(stages[stageNum]->name, device, smgr, driver, nWorld,
                                 stages[stageNum]->stageTime, stages[stageNum]->gtime,
-                                skydome, shadowMap, stageNum, terrainPool);
+                                skydome, shadowMap, stageNum);
 
     str = L"Loading: 50%";
     MessageText::addText(str.c_str(), 1, true, false);
@@ -427,11 +419,15 @@ void startGame(int stageNum, SState* state)
         }
         playerCompetitor->lastTime = 0;
         playerCompetitor->lastPenalityTime = 0;
+#ifdef USE_EDITOR
         if (!editorMode)
         {
+#endif
             raceEngine = new CRaceEngine(smgr, env, bigTerrain);
             while (raceEngine && raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtStart));
+#ifdef USE_EDITOR
         }
+#endif
     }
     else
     {
@@ -442,48 +438,31 @@ void startGame(int stageNum, SState* state)
     loadedRaceEngine = 0;
 //#endif
 
-    if (useScreenRTT && useBgImageToRender)
-        bgImage->setImage(screenRTT[currentScreenRTT]);
-    else
-        bgImage->setVisible(false);
+    bgImage->setVisible(false);
     versionText->setVisible(false);
     fpsText->setVisible(display_extra_info);
     polyText->setVisible(display_extra_info);
-    posText->setVisible(display_extra_info);
     timeText->setVisible(true);
     speedText->setVisible(true);
     demageText->setVisible(true);
     hudImage->setVisible(draw_hud);
-    showCompass = false;
-    hudCompassImage->setVisible(showCompass);
-    compassText->setVisible(showCompass);
-    compassArrow->setVisible(showCompass);
+    showMap = false;
     hudInfo->setVisible(info_bg);
     crossImage->setVisible(false);
+#ifdef USE_EDITOR
+    posText->setVisible(display_extra_info);
     if (editorMode)
     {
         editorSetVisible(display_extra_info);
     }
-/*
-    projMat.buildProjectionMatrixOrthoLH(device->getSceneManager()->getActiveCamera()->getFOV(),
-        device->getSceneManager()->getActiveCamera()->getFOV(),
-        device->getSceneManager()->getActiveCamera()->getNearValue(),
-        1900.f //device->getSceneManager()->getActiveCamera()->getFarValue() //2000.0
-    );
-*/
+#endif
     projMat.buildProjectionMatrixPerspectiveFovLH(
         lightCam->getFOV(),
         lightCam->getAspectRatio(),
         lightCam->getNearValue(),
         lightCam->getFarValue()
-        //1900.f/*device->getSceneManager()->getActiveCamera()->getFarValue()*/ //2000.0,  /* Znear and Zfar */
     );
     
-       /*
-        (pos - tar).dotProduct(irr::core::vector3df(1.0f, 0.0f, 1.0f)) == 0.0f ?
-        irr::core::vector3df(0.0f, 0.0f, 1.0f) : irr::core::vector3df(0.0f, 1.0f, 0.0f)); 
-       */
-
     car_dirt_last_tick = lasttick = device->getTimer()->getTime();
     if (!state)
     {
@@ -580,12 +559,9 @@ void endGame()
             matrix4 camtar = car->getMatrix() * viewdest_cur;
             camera->setPosition(core::vector3df(campos[12],campos[13],campos[14]));
             camera->setTarget(core::vector3df(camtar[12],camtar[13],camtar[14]));
-            camera->setFarValue(/*bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI*/DEFAULT_FAR_VALUE);
+            camera->setFarValue(DEFAULT_FAR_VALUE);
             camera->setNearValue(nearValue);
         }
-        //matrix4 mat = car->getMatrix();
-        //mat.setTranslation(core::vector3df(-20000.f,-20000.f,-20000.f));
-        //car->setMatrixWithNB(mat);
         if (startNewGame == 0)
             savedCarDirt = car->getDirt();
         vehiclePool->putVehicle(car);
@@ -601,20 +577,22 @@ void endGame()
     timeText->setVisible(false);
     speedText->setVisible(false);
     demageText->setVisible(false);
-    posText->setVisible(false);
     hudImage->setVisible(false);
-    hudCompassImage->setVisible(false);
-    compassText->setVisible(false);
-    compassArrow->setVisible(false);
     hudInfo->setVisible(false);
     crossImage->setVisible(false);
+    showMap = false;
+#ifdef USE_EDITOR
+    posText->setVisible(false);
     if (editorMode)
     {
         editorSetVisible(false);
     }
+#endif
     
+#ifdef USE_MULTIPLAYER
     if (isMultiplayer)
         leaveStageToServer();
+#endif // USE_MULTIPLAYER
 
     dprintf(printf("offset stuff\n");)
     offsetManager->removeObject(fix_cameraOffsetObject);
@@ -639,7 +617,7 @@ void pauseGame()
         smgr->setActiveCamera(camera);
         camera->setPosition(pos);
         camera->setTarget(tar);
-        camera->setFarValue(/*bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI*/DEFAULT_FAR_VALUE);
+        camera->setFarValue(DEFAULT_FAR_VALUE);
         camera->setNearValue(nearValue);
     }
 }
@@ -660,7 +638,7 @@ void resumeGame()
         smgr->setActiveCamera(camera);
         camera->setPosition(pos);
         camera->setTarget(tar);
-        camera->setFarValue(/*bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI*/DEFAULT_FAR_VALUE);
+        camera->setFarValue(DEFAULT_FAR_VALUE);
         camera->setNearValue(nearValue);
     }
     device->getCursorControl()->setVisible(false);
@@ -1046,145 +1024,4 @@ void releaseGameStuff()
         delete [] stages;
         stages = 0;
     }
-/*
-//camera = 0;
-    if (fix_camera)
-    {
-        printf("1\n");
-        fix_camera->remove();
-        fix_camera = 0;
-    }
-    if (fps_camera)
-    {
-        printf("1\n");
-        fps_camera->remove();
-        fps_camera = 0;
-    }
-    if (car_selector_camera)
-    {
-        printf("1\n");
-        car_selector_camera->remove();
-        car_selector_camera = 0;
-    }
-    if (fpsText)
-    {
-        printf("1\n");
-        fpsText->remove();
-        fpsText = 0;
-    }
-    if (polyText)
-    {
-        printf("1\n");
-        polyText->remove();
-        polyText = 0;
-    }
-    if (posText)
-    {
-        printf("1\n");
-        posText->remove();
-        posText = 0;
-    }
-    if (speedText)
-    {
-        printf("1\n");
-        speedText->remove();
-        speedText = 0;
-    }
-    if (demageText)
-    {
-        printf("1\n");
-        demageText->remove();
-        demageText = 0;
-    }
-    if (timeText)
-    {
-        printf("1\n");
-        timeText->remove();
-        timeText = 0;
-    }
-    if (compassText)
-    {
-        printf("1\n");
-        compassText->remove();
-        compassText = 0;
-    }
-    if (bgImage)
-    {
-        printf("1\n");
-        bgImage->remove();
-        bgImage = 0;
-    }
-    if (hudImage)
-    {
-        printf("1\n");
-        hudImage->remove();
-        hudImage = 0;
-    }
-    if (hudCompassImage)
-    {
-        printf("1\n");
-        hudCompassImage->remove();
-        hudCompassImage = 0;
-    }
-    if (hudInfo)
-    {
-        printf("1\n");
-        hudInfo->remove();
-        hudInfo = 0;
-    }
-    if (compassArrow)
-    {
-        printf("1\n");
-        compassArrow->remove();
-        compassArrow = 0;
-    }
-    if (skydome)
-    {
-        printf("1\n");
-        skydome->remove();
-        skydome = 0;
-    }
-    if (lnode)
-    {
-        printf("1\n");
-        lnode->remove();
-        lnode = 0;
-    }
-    if (lnode_4_shaders)
-    {
-        printf("1\n");
-        lnode_4_shaders->remove();
-        lnode_4_shaders = 0;
-    }
-    if (lightCam)
-    {
-        printf("1\n");
-        lightCam->remove();
-        lightCam = 0;
-    }
-    if (lightCamCar)
-    {
-        printf("1\n");
-        lightCamCar->remove();
-        lightCamCar = 0;
-    }
-    if (screenRTT)
-    {
-        printf("1\n");
-        screenRTT->drop();
-        screenRTT = 0;
-    }
-    if (bgImageTexture)
-    {
-        printf("1\n");
-        bgImageTexture->drop();
-        bgImageTexture = 0;
-    }
-    if (depthRTT)
-    {
-        printf("1\n");
-        depthRTT->drop();
-        depthRTT = 0;
-    }
-*/
 }

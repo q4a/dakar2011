@@ -70,7 +70,6 @@ enum
 	GUI_ID_TRACE_NET,
 	GUI_ID_STEER_LINEAR,
 	GUI_ID_GEAR_TYPE_AUTO,
-	GUI_ID_SHOW_COMPASS_ARROW,
 	GUI_ID_NEW_BUTTON,
 	GUI_ID_SEL_NEW_BUTTON,
 	GUI_ID_SEL_NEXT_BUTTON,
@@ -131,7 +130,7 @@ extern int joy_gd;
 extern int joy_reset_car_p;
 extern int joy_change_view_p;
 extern int joy_change_light_p;
-extern int joy_show_compass_p;
+extern int joy_show_map_p;
 extern int joy_repair_car_p;
 extern int joy_menu_p;
 
@@ -198,7 +197,7 @@ eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
     joyHelper[10] = &joy_reset_car;
     joyHelper[11] = &joy_change_view;
     joyHelper[12] = &joy_change_light;
-    joyHelper[13] = &joy_show_compass;
+    joyHelper[13] = &joy_show_map;
     joyHelper[14] = &joy_repair_car;
     joyHelper[15] = &joy_gear_up;
     joyHelper[16] = &joy_gear_down;
@@ -224,23 +223,11 @@ eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
     bool tempTexFlag32 = driver->getTextureCreationFlag(ETCF_ALWAYS_32_BIT);
     if (driverType == video::EDT_DIRECT3D8)
     {
-        car_selector_rtt = driver->addRenderTargetTexture(
-              //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
-#ifdef IRRLICHT_SDK_15
-              dimension2d<s32>(512, 512));
-#else
-              dimension2d<u32>(512, 512));
-#endif
+        car_selector_rtt = driver->addRenderTargetTexture(dimension2d<u32>(512, 512));
     }
     else
     {
-        car_selector_rtt = driver->addRenderTargetTexture(
-              //!driver->getVendorInfo().equals_ignore_case("NVIDIA Corporation") ? dimension2du(512, 512) :
-#ifdef IRRLICHT_SDK_15
-              dimension2d<s32>(1024, 1024));
-#else
-              dimension2d<u32>(1024, 1024));
-#endif
+        car_selector_rtt = driver->addRenderTargetTexture(dimension2d<u32>(1024, 1024));
     }
     driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
     driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
@@ -862,7 +849,6 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         {
         					dprintf(printf("set OV to %d\n", pos));
         					bigTerrain->setOVLimit(objectVisibilityLimit);
-                            //bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, density_grasses, true);
                         }
     				    break;	
     				}
@@ -881,25 +867,9 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
     				case GUI_ID_VIEW_OBJ_DENSITY_SCROLL_BAR:
     				{
         				density_objects = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
-                        if (bigTerrain)
-                        {
-                            //bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, density_grasses, true);
-                        }
                     	core::stringw str = L" ";
                     	str += density_objects;
                     	obj_density_text->setText(str.c_str());
-    				    break;	
-    				}
-    				case GUI_ID_VIEW_GRA_DENSITY_SCROLL_BAR:
-    				{
-       					density_grasses = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
-                        if (bigTerrain)
-                        {
-                            //bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, density_grasses, true);
-                        }
-                    	core::stringw str = L" ";
-                    	str += density_grasses;
-                    	gra_density_text->setText(str.c_str());
     				    break;	
     				}
     				case GUI_ID_DEAD_ZONE_SCROLL_BAR:
@@ -1106,9 +1076,27 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
     				case GUI_ID_SAVESETTINGS_BUTTON:
                         {
                             // update the server stuffs
-                            core::stringw str = server_name_text->getText();
+                            core::stringw str = player_name_text->getText();
+                            str.replace(L' ', L'_');
                             const wchar_t* orig = str.c_str();
                             size_t origsize = wcslen(orig) + 1;
+                            wcstombs(player_name, orig, origsize);
+
+                            str = team_name_text->getText();
+                            str.replace(L' ', L'_');
+                            orig = str.c_str();
+                            origsize = wcslen(orig) + 1;
+                            wcstombs(team_name, orig, origsize);
+
+                            if (playerCompetitor)
+                            {
+                                strcpy(playerCompetitor->name, player_name);
+                                strcpy(playerCompetitor->teamName, team_name);
+                            }
+#ifdef USE_MULTIPLAYER
+                            str = server_name_text->getText();
+                            orig = str.c_str();
+                            origsize = wcslen(orig) + 1;
                             wcstombs(server_name, orig, origsize);
 
                             char portString[256];
@@ -1124,24 +1112,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             wcstombs(portString, orig, origsize);
                             sscanf(portString, "%d", &send_server_delay);
                             // server stuff update end
-
-                            str = player_name_text->getText();
-                            str.replace(L' ', L'_');
-                            orig = str.c_str();
-                            origsize = wcslen(orig) + 1;
-                            wcstombs(player_name, orig, origsize);
-
-                            str = team_name_text->getText();
-                            str.replace(L' ', L'_');
-                            orig = str.c_str();
-                            origsize = wcslen(orig) + 1;
-                            wcstombs(team_name, orig, origsize);
-
-                            if (playerCompetitor)
-                            {
-                                strcpy(playerCompetitor->name, player_name);
-                                strcpy(playerCompetitor->teamName, team_name);
-                            }
+#endif // USE_MULTIPLAYER
 
                             if (writeSettings("data/settings.txt"))
                                 MessageText::addText(L"Settings saved", 5);
@@ -1254,7 +1225,8 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                      {
                         IGUIButton* button = (IGUIButton*)event.GUIEvent.Caller;
                         playSound(clickSound);
-                        
+
+#ifdef USE_MULTIPLAYER
                         if (isMultiplayer)
                         {
                             disconnectFromServer(true);
@@ -1289,6 +1261,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             
                             button->setText(L"Discon.");
                         }                            
+#endif // USE_MULTIPLAYER
                         return true;
                         break;
                      }
@@ -1415,71 +1388,24 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         playSound(closeSound);
                         
                         s32 pos = resolution_cbox->getSelected();
-#ifdef IRRLICHT_SDK_15
-                        core::dimension2d<s32> res = device->getVideoModeList()->getVideoModeResolution(pos);
-#else
-                        core::dimension2d<u32> res = device->getVideoModeList()->getVideoModeResolution(pos);
-#endif
-                        resolutionX = res.Width;
-                        resolutionY = res.Height;
-                        display_bits = device->getVideoModeList()->getVideoModeDepth(pos);
-                        /*
                         switch (pos)
                         {
                             case 0:
-                                resolutionX = 320;
-                                resolutionY = 240;
+                                auto_resolution = 2;
                                 break;
                             case 1:
-                                resolutionX = 640;
-                                resolutionY = 480;
+                                auto_resolution = 1;
                                 break;
-                            case 2:
-                                resolutionX = 800;
-                                resolutionY = 600;
+                            default:
+                            {
+                                auto_resolution = 0;
+                                core::dimension2d<u32> res = device->getVideoModeList()->getVideoModeResolution(pos);
+                                resolutionX = res.Width;
+                                resolutionY = res.Height;
+                                display_bits = device->getVideoModeList()->getVideoModeDepth(pos);
                                 break;
-                            case 3:
-                                resolutionX = 1024;
-                                resolutionY = 768;
-                                break;
-                            case 4:
-                                resolutionX = 1280;
-                                resolutionY = 1024;
-                                break;
-                            case 5:
-                                resolutionX = 1400;
-                                resolutionY = 1050;
-                                break;
-                            case 6:
-                                resolutionX = 1600;
-                                resolutionY = 1200;
-                                break;
-                            case 7:
-                                resolutionX = 1280;
-                                resolutionY = 720;
-                                break;
-                            case 8:
-                                resolutionX = 1280;
-                                resolutionY = 768;
-                                break;
-                            case 9:
-                                resolutionX = 1280;
-                                resolutionY = 800;
-                                break;
-                            case 10:
-                                resolutionX = 1680;
-                                resolutionY = 1050;
-                                break;
-                            case 11:
-                                resolutionX = 1920;
-                                resolutionY = 1080;
-                                break;
-                            case 12:
-                                resolutionX = 1920;
-                                resolutionY = 1200;
-                                break;
+                            }
                         }
-                        */
                         break;
                     }
                     case GUI_ID_ANTI_ALIASING:
@@ -1506,6 +1432,13 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                 anti_aliasing = 0;
                                 break;
                         }
+                        break;
+                    }
+                    case GUI_ID_AUTO_RES:
+                    {
+                        playSound(closeSound);
+                        
+                        auto_resolution = autores_cbox->getSelected();
                         break;
                     }
                     case GUI_ID_DISPLAY_BITS_CBOX:
@@ -1603,18 +1536,10 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         s32 pos = texturedetail_cbox->getSelected();
                         switch (pos)
                         {
-                            /*
                             case 0:
-                                use_detailed_terrain = false;
-                                use_highres_textures = false;
-                                break;
-                            */
-                            case 0:
-                                use_detailed_terrain = true;
                                 use_highres_textures = false;
                                 break;
                             case 1:
-                                use_detailed_terrain = true;
                                 use_highres_textures = true;
                                 break;
                         }
@@ -1710,6 +1635,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
+                    /*
                     case GUI_ID_AUTO_RES:
                         {
                             playSound(clickSound);
@@ -1717,7 +1643,6 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             return true;
                             break;
                         }
-                    /*
                     case GUI_ID_ANTI_ALIASING:
                         {
                             playSound(clickSound);
@@ -1755,17 +1680,10 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                 driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
                             {
                                 dprintf(printf("shadow map is supported\n"));
-#ifdef IRRLICHT_SDK_15
-                                shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<s32>(shadow_map_size,shadow_map_size), "RTT1")
-                                                     : 0;
-                                shadowMapCar = shadows ? driver->addRenderTargetTexture(core::dimension2d<s32>(shadow_map_size,shadow_map_size), "RTT1")
-                                                     : 0;
-#else
                                 shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
                                                      : 0;
                                 shadowMapCar = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
                                                      : 0;
-#endif
                                 //hudImage->setImage(shadowMap);
                             }
                             return true;
@@ -1849,17 +1767,6 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                 gear_type = 'a';
                             else
                                 gear_type = 'm';
-                            return true;
-                            break;
-                        }
-                    case GUI_ID_SHOW_COMPASS_ARROW:
-                        {
-                            playSound(clickSound);
-                            show_compass_arrow = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
-                            if (showCompass)
-                            {
-                                compassArrow->setVisible(show_compass_arrow);
-                            }
                             return true;
                             break;
                         }
@@ -2113,9 +2020,10 @@ void eventreceiver_menu::closeWindow(IGUIElement* cw, bool noact)
         joy_reset_car_p =1;
         joy_change_view_p = 1;
         joy_change_light_p = 1;
-        joy_show_compass_p = 1;
+        joy_show_map_p = 1;
         joy_repair_car_p = 1;
         joy_menu_p = 1;
+        showMap = false;
         setOtherReceiver();
         resumeGame();
     }
@@ -2610,39 +2518,6 @@ void eventreceiver_menu::openOptionsWindow()
     		gameTab,
             GUI_ID_TEAM_NAME_EBOX);
     }
-/*
-	env->addStaticText(L"Car",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		gameTab);
-	carfilename_cbox = env->addComboBox(
-		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-		gameTab);
-    for (int j = 0; j < carList.length(); j++)
-    {
-        str = carList[j]->carName;
-        str.replace(L'_', L' ');
-        carfilename_cbox->addItem(str.c_str());
-    }
-    carfilename_cbox->setSelected(carType);
-*/
-	/*
-	carfilename_text = env->addEditBox(str.c_str(),
-		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*2+outdist*2+valuelen), line+16),
-		false, // border?
-		window);
-    env->addButton(
-        rect<s32>(screenSize.Width - (indist+outdist*2+valuelen),line,screenSize.Width - (indist+outdist*2+valuelen/2+indist/2),line+16),
-        window, GUI_ID_CHOOSE_CAR_BUTTON,
-        L"..", L"Open a car");
-    */
-/*    env->addButton(
-        rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
-//            rect<s32>(screenSize.Width - (indist+outdist*2+valuelen/2),line,screenSize.Width - (indist+outdist*2),line+16),
-        gameTab, GUI_ID_APPLY_CAR_BUTTON,
-        L"Set", 0);
-*/        
     line += 40;
 	env->addStaticText(L"Draw hud",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2663,21 +2538,6 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		gameTab, GUI_ID_GEAR_TYPE_AUTO, L"Hello12");
 
-/*    line += 20;
-	env->addStaticText(L"Show compass arrow",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		gameTab);
-	env->addCheckBox(show_compass_arrow,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		gameTab, GUI_ID_SHOW_COMPASS_ARROW, L"Hello38");
-	env->addStaticText(L"(If the compass is active.)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		gameTab);
-*/
     line += 20;
 	env->addStaticText(L"Show names",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2953,29 +2813,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		graphicTab);
-/*		
-	line += 20;
-	env->addStaticText(L"Grass density",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphicTab);
-	scrollbar = env->addScrollBar(true,
-			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-            graphicTab, GUI_ID_VIEW_GRA_DENSITY_SCROLL_BAR);
-	//scrollbar->setMin(1);
-	scrollbar->setMax(100);
-    scrollbar->setSmallStep(1);
-    scrollbar->setLargeStep(5);
-	scrollbar->setPos(density_grasses);
-	str = L" ";
-	str += density_grasses;
-	gra_density_text = env->addStaticText(str.c_str(),
-		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
-		false, // border?
-		false, // wordwrap?
-		graphicTab);
-*/
+
     if (line>maxLine) maxLine = line;
 
 // ------------------------
@@ -3026,14 +2864,12 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
 		graphic2Tab,
         GUI_ID_RESOLUTION_CBOX);
+    resolution_cbox->addItem(L"Auto detect - Optimal");
+    resolution_cbox->addItem(L"Auto detect - Highest");
     for(int i=0;i<device->getVideoModeList()->getVideoModeCount();i++)
     {
         str = L"";
-#ifdef IRRLICHT_SDK_15
-        core::dimension2d<s32> res = device->getVideoModeList()->getVideoModeResolution(i);
-#else
         core::dimension2d<u32> res = device->getVideoModeList()->getVideoModeResolution(i);
-#endif
         s32 dep = device->getVideoModeList()->getVideoModeDepth(i);
         str += res.Width;
         str += L"x";
@@ -3041,49 +2877,8 @@ void eventreceiver_menu::openOptionsWindow()
         str += L"x";
         str += dep;
         resolution_cbox->addItem(str.c_str());
-        if (resolutionX==res.Width && resolutionY==res.Height && display_bits==dep) resolution_cbox->setSelected(i);
+        if (auto_resolution==0 && resolutionX==res.Width && resolutionY==res.Height && display_bits==dep) resolution_cbox->setSelected(i+2);
     }
-    /*
-    resolution_cbox->addItem(L"320x240");
-    resolution_cbox->addItem(L"640x480");
-    if (resolutionX==640 && resolutionY==480 ) resolution_cbox->setSelected(1);
-    resolution_cbox->addItem(L"800x600");
-    if (resolutionX==800 && resolutionY==600 ) resolution_cbox->setSelected(2);
-    resolution_cbox->addItem(L"1024x768");
-    if (resolutionX==1024 && resolutionY==768 ) resolution_cbox->setSelected(3);
-    resolution_cbox->addItem(L"1280x1024");
-    if (resolutionX==1280 && resolutionY==1024 ) resolution_cbox->setSelected(4);
-    resolution_cbox->addItem(L"1400x1050");
-    if (resolutionX==1400 && resolutionY==1050 ) resolution_cbox->setSelected(5);
-    resolution_cbox->addItem(L"1600x1200");
-    if (resolutionX==1600 && resolutionY==1200 ) resolution_cbox->setSelected(6);
-    resolution_cbox->addItem(L"1280x720");
-    if (resolutionX==1280 && resolutionY==720 ) resolution_cbox->setSelected(7);
-    resolution_cbox->addItem(L"1280x768");
-    if (resolutionX==1280 && resolutionY==768) resolution_cbox->setSelected(8);
-    resolution_cbox->addItem(L"1280x800");
-    if (resolutionX==1280 && resolutionY==800 ) resolution_cbox->setSelected(9);
-    resolution_cbox->addItem(L"1680x1050");
-    if (resolutionX==1680 && resolutionY==1050 ) resolution_cbox->setSelected(10);
-    resolution_cbox->addItem(L"1920x1080");
-    if (resolutionX==1920 && resolutionY==1080 ) resolution_cbox->setSelected(11);
-    resolution_cbox->addItem(L"1920x1200");
-    if (resolutionX==1920 && resolutionY==1200 ) resolution_cbox->setSelected(12);
-    
-    line += 20;
-	env->addStaticText(L"Display bits",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	display_bits_cbox = env->addComboBox(
-		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-		graphic2Tab,
-        GUI_ID_DISPLAY_BITS_CBOX);
-    display_bits_cbox->addItem(L"16");
-    display_bits_cbox->addItem(L"32");
-    if (display_bits==32) display_bits_cbox->setSelected(1);
-    */
 
     line += 20;
 	env->addStaticText(L"Anti aliasing",
@@ -3106,12 +2901,33 @@ void eventreceiver_menu::openOptionsWindow()
     antialiasing_cbox->addItem(L"16x");
     if (anti_aliasing == 16) antialiasing_cbox->setSelected(4);
 
-	/*
-	env->addCheckBox(anti_aliasing,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_ANTI_ALIASING, L"Hello4");
-    */
+    /*
+    line += 20;
+	env->addStaticText(L"Auto-detection",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		graphic2Tab);
+	autores_cbox = env->addComboBox(
+		rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+		graphic2Tab,
+        GUI_ID_AUTO_RES);
+    autores_cbox->addItem(L"Off");
     
+    autores_cbox->addItem(L"Optimal");
+    autores_cbox->addItem(L"Highest");
+    autores_cbox->setSelected(auto_resolution);
+    */
+    /*
+	env->addCheckBox(auto_resolution,
+		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
+		graphic2Tab, GUI_ID_AUTO_RES, L"Hello42");
+	env->addStaticText(L"(Only works in full screen mode. Automatically detects the display resolution.)",
+		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
+		false, // border?
+		false, // wordwrap?
+		graphic2Tab);
+    */
     line += 20;
 	env->addStaticText(L"Full screen",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -3121,21 +2937,6 @@ void eventreceiver_menu::openOptionsWindow()
 	env->addCheckBox(full_screen,
 		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
 		graphic2Tab, GUI_ID_FULL_SCREEN, L"Hello3");
-
-    line += 20;
-	env->addStaticText(L"Auto-detection",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(auto_resolution,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_AUTO_RES, L"Hello42");
-	env->addStaticText(L"(Only works in full screen mode. Automatically detects the display resolution.)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
 
     line += 20;
 	env->addStaticText(L"Vsync",
@@ -3233,21 +3034,6 @@ void eventreceiver_menu::openOptionsWindow()
     if (globalLight == true && useShaders == true && useCgShaders == true)
         effects_cbox->setSelected(3);
 */
-/*
-	env->addStaticText(L"Shaders",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(useCgShaders,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_USESHADERS, L"Hello9");
-	env->addStaticText(L"(Need for some effects: nicer terrain, car dirt and light)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-*/
     line += 20;
 	env->addStaticText(L"Terrain detail",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -3288,80 +3074,35 @@ void eventreceiver_menu::openOptionsWindow()
         if (shadow_map_size==4096) shadow_map_size_cbox->setSelected(4);
     
         line += 20;
-		env->addStaticText(L"Texture detail",
-			rect<s32>(indist,line,indist+firsttextlen,line+16),
-			false, // border?
-			false, // wordwrap?
-			graphic2Tab);
-		texturedetail_cbox = env->addComboBox(
-			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-			graphic2Tab,
+        env->addStaticText(L"Texture detail",
+            rect<s32>(indist,line,indist+firsttextlen,line+16),
+            false, // border?
+            false, // wordwrap?
+            graphic2Tab);
+        texturedetail_cbox = env->addComboBox(
+            rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            graphic2Tab,
             GUI_ID_TEXTUREDETAIL_CBOX);
-        /*
-        texturedetail_cbox->addItem(L"Low");
-        if (use_detailed_terrain == false)
-            texturedetail_cbox->setSelected(0);
-        */
         texturedetail_cbox->addItem(L"Medium");
-        if (/*use_detailed_terrain == true &&*/ use_highres_textures == false)
-            texturedetail_cbox->setSelected(1);
+        if (use_highres_textures == false)
+            texturedetail_cbox->setSelected(0);
         texturedetail_cbox->addItem(L"High");
-        if (/*use_detailed_terrain == true &&*/ use_highres_textures == true)
-            texturedetail_cbox->setSelected(2);
-        	texturedetail_text = env->addStaticText(L"Only available at medium and high effects detail level",
-               	rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-			    false, // border?
-        		false, // wordwrap?
-		    	graphic2Tab);
+        if (use_highres_textures == true)
+            texturedetail_cbox->setSelected(1);
+    	texturedetail_text = env->addStaticText(L"Only available at medium and high effects detail level",
+            rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            false, // border?
+            false, // wordwrap?
+            graphic2Tab);
         if (useShaders)
             texturedetail_text->setVisible(false);
         else
             texturedetail_cbox->setVisible(false);
     }
-/*
-    line += 20;
-	env->addStaticText(L"Lights",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(globalLight,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_LIGHT, L"Hello7");
 
-    line += 20;
-	env->addStaticText(L"Shaders",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(useShaders,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_USESHADERS, L"Hello9");
-	env->addStaticText(L"(Nicer terrain and light)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-
-    line += 20;
-	env->addStaticText(L"Cg shaders",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(useCgShaders,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_USECGSHADERS, L"Hello10");
-	env->addStaticText(L"(Night, car light, car dirt and shadow effects. Only works with shaders.)",
-		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-*/
-    if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET) &&
-        driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
+    if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET)
 #ifdef USE_MRT
+        && driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
         && driverType != video::EDT_DIRECT3D9
 #endif
        )
@@ -3388,37 +3129,6 @@ void eventreceiver_menu::openOptionsWindow()
     		    false, // border?
         		false, // wordwrap?
     	    	graphic2Tab);
-    /*
-        line += 20;
-    	env->addStaticText(L"Depth effect",
-    		rect<s32>(indist,line,indist+firsttextlen,line+16),
-    		false, // border?
-    		false, // wordwrap?
-    		graphic2Tab);
-    	env->addCheckBox(depth_effect,
-    		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-    		graphic2Tab, GUI_ID_USE_DEPTH_RTT, L"Hello18");
-    	env->addStaticText(L"(Only works with screen RTT.)",
-    		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-    		false, // border?
-    		false, // wordwrap?
-    		graphic2Tab);
-    
-            line += 20;
-        	env->addStaticText(L"ATI card",
-    	    	rect<s32>(indist,line,indist+firsttextlen,line+16),
-        		false, // border?
-    		    false, // wordwrap?
-    	    	graphic2Tab);
-        	env->addCheckBox(shitATI,
-    	    	rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-        		graphic2Tab, GUI_ID_SHIT_ATI, L"Hello17");
-    	    env->addStaticText(L"(If you have some extereme slowness with post effects, turn this on.)",
-        		rect<s32>(indist*3+firsttextlen, line, screenSize.Width - (indist*2+outdist*2), line+16),
-    		    false, // border?
-    	    	false, // wordwrap?
-        		graphic2Tab);
-    */
         }
         else
         {
@@ -3429,26 +3139,16 @@ void eventreceiver_menu::openOptionsWindow()
     	    	graphic2Tab);
         }
     }
-/*
-    line += 20;
-	env->addStaticText(L"Flip vertical",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphic2Tab);
-	env->addCheckBox(flip_vert,
-		rect<s32>(indist*2+firsttextlen, line, indist*2+firsttextlen+16, line+16),
-		graphic2Tab, GUI_ID_FLIP_VERT, L"Hello20");
-*/
 
     line += 10;
 
     if (line>maxLine) maxLine = line;
 
+#ifdef USE_MULTIPLAYER
 // ------------------------
 //  Network tab
 // ------------------------
-/*
+
     line = startLine;
 	env->addStaticText(L"Server (addr./port)",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -3503,7 +3203,8 @@ void eventreceiver_menu::openOptionsWindow()
 		networkTab, GUI_ID_TRACE_NET, L"Hello30");
 
     if (line>maxLine) maxLine = line;
-*/
+#endif // USE_MULTIPLAYER
+
 // ------------------------
 //  joy tab
 // ------------------------
@@ -3626,7 +3327,7 @@ void eventreceiver_menu::openOptionsWindow()
     joy_cbox->addItem(L"reset car");
     joy_cbox->addItem(L"change view");
     joy_cbox->addItem(L"switch car light");
-    joy_cbox->addItem(L"switch compass (doubles the time)");
+    joy_cbox->addItem(L"show map");
     joy_cbox->addItem(L"repair car");
     joy_cbox->addItem(L"gear up");
     joy_cbox->addItem(L"gear down");
@@ -3766,10 +3467,10 @@ void eventreceiver_menu::openHelpWindow()
         L" THE GAME\n" \
         L"-----------\n" \
         L"\n" \
-        L"The Dakar 2010 is a 3D game, where you can drive like in the Dakar rally.\n" \
-        L"There aren't any opponents yet. There are 14 different stages, and each\n" \
-        L"stages have two parts. First part starts morning, the second starts afternoon.\n" \
-        L"If you drive long time it is possible to getting dark (with the high effects)\n" \
+        L"The Dakar 2011 is a 3D game, where you can drive like in the Dakar rally.\n" \
+        L"There are 14 stages you can go through against the time and other opponents.\n" \
+        L"Stages are based on real maps. Each stages start at the morning.\n" \
+        L"If you drive long time it is possible to getting dark (with the high effects).\n" \
         L"\n" \
         L"------\n" \
         L" KEYS\n" \
@@ -3787,6 +3488,7 @@ void eventreceiver_menu::openHelpWindow()
         L"T   - repair car\n" \
         L"F   - toggle view (free or behind car)\n" \
         L"M   - Display last message history\n" \
+        L"TAB - Map\n" \
         L"\n" \
         L"W, S   - Accelerate, brake the car\n" \
         L"A, D   - Turn left, right the car\n" \
@@ -3808,34 +3510,14 @@ void eventreceiver_menu::openHelpWindow()
         L" NAVIGATION\n" \
         L"-------------\n" \
         L"\n" \
-        L"First of all there is no map or GPS system in the game, but there is a\n" \
-        L"compass ('tab' button) which shows the nearest checkpoint. But you should\n" \
-        L"know while the compass is active the time elapses twice faster than it is not\n" \
-        L"active. And maybe the nearest checkpoint is not the next one, you can easily\n" \
-        L"miss the next. Use it warily. It is not mandatory to use the compass (every time)\n" \
-        L"avoid the penality. You can find the checkpoints also by following the road\n" \
-        L"or the path.\n" \
+        L"There are many changes in the navigation since Dakar 2010. The stages\n" \
+        L"of race are on real map, so there is a map that can help you. You can reach\n" \
+        L"the map by the 'tab' key. The red dot shows you where are you. It is not\n" \
+        L"very detailed because the first tool for the navigation is the itinerary\n" \
+        L"system. While you are going on the stage the itinerary tables show you\n" \
+        L"the right direction and the dangerous places.\n" \
         L"\n" \
-        L"There are 3 types of the stages:\n" \
-        L"  - valley style\n" \
-        L"  - valley with road\n" \
-        L"  - open terrain with road\n" \
-        L"\n" \
-        L"The valley style has no road but has a path. The path color is different from the\n" \
-        L"other part of the terrain. The path go along a 'valley', and it is planner then\n" \
-        L"the normal terrain. But it can contains several leaps that make the movement harder.\n" \
-        L"Maybe the valley terrain has a road.\n" \
-        L"\n" \
-        L"The open terrain with road has now path and does not contains special leaps. It\n" \
-        L"has only the natural hard terrain leaps.\n" \
-        L"\n" \
-        L"Generally true for all kind of stages that they can have junctions where you\n" \
-        L"need to decide where to go. Some junctions are easy because a checkpoint inticates\n" \
-        L"the right direction, but several junctions has no indicatior where to go.\n" \
-        L"Some road leads to dead end, but maybe there can be more than one right way.\n" \
-        L"If there is a road which goes two ways without any indication, and after a while\n" \
-        L"they can run into each other again there should be a checkpoint to show that\n" \
-        L"you are still on the right way. Some roads can be easier, some can be faster.\n" \
+        L"The maps are in the game is from http://maps.google.com.\n" \
         L"\n" \
         L"-------------\n" \
         L" ROADBLOCKS\n" \
@@ -4034,19 +3716,107 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
     //box->setTextAlignment(EGUIA_UPPERLEFT ,EGUIA_UPPERLEFT);
 //BigTerrain::addTimeToStr(core::stringw& str, u32 diffTime)
     core::stringw str = L"";
+    float stageLength = bigTerrain->getStageLength();
+    if (bigTerrain)
+    {
+        str += L"Stage length: ";
+        str += (int)stageLength;
+        str += L" m, Stage time: ";
+        str += bigTerrain->getStageTime();
+        str += L" sec\n\n";
+    }
+    core::array<SStarter*> stageStarters;
+    unsigned int startingCD = 0;
+    for (int i = 0; i < raceEngine->getStarters().size(); i++)
+    {
+        int j = 0;
+        // update the player pos
+        if (raceEngine->getStarters()[i]->competitor == playerCompetitor &&
+            bigTerrain && car)
+        {
+            float dist = 100000.f;
+            const vector3df my_pos = car->getMatrix().getTranslation() + offsetManager->getOffset();
+            for (int k = 0; k < bigTerrain->getAIPoints().size(); k++)
+            {
+                float cd = bigTerrain->getAIPoints()[k]->getPosition().getDistanceFrom(my_pos);
+                if (cd < dist)
+                {
+                    dist = cd;
+                    raceEngine->getStarters()[i]->nextPoint = k;
+                }
+            }
+        }
+        while (j < stageStarters.size() &&
+               raceEngine->getStarters()[i]->nextPoint <= stageStarters[j]->nextPoint &&
+               (raceEngine->getStarters()[i]->competitor->lastTime >= stageStarters[j]->competitor->lastTime ||
+                raceEngine->getStarters()[i]->competitor->lastTime == 0
+               )
+              )
+        {
+            j++;
+        }
+        stageStarters.insert(raceEngine->getStarters()[i], j);
+    }
+    for (int i = 0; i < stageStarters.size(); i++)
+    {
+        if (i < 99)
+        {
+            str += L"  ";
+            if (i < 9)
+            {
+                str += L"  ";
+            }
+        }
+        str += (i+1);
+        str += L".     ";
+        bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastTime);
+        str += L"     ";
+        str += stageStarters[i]->competitor->num;
+        str += L"   ";
+        str += stageStarters[i]->competitor->getName();
+        str += L"   ";
+        str += stageStarters[i]->competitor->getCoName();
+        str += L"   ";
+        str += stageStarters[i]->competitor->getTeamName();
+        str += L"   ";
+        if (stageStarters[i]->competitor->lastTime==0)
+        {
+            if (stageStarters[i]->startingCD > 0)
+            {
+                startingCD += stageStarters[i]->startingCD;
+                str += L"Start in ";
+                bigTerrain->addTimeToStr(str, startingCD);
+                str += L" seconds";
+            }
+            else
+            {
+#ifdef SPEED_BASE_AI
+#else
+                if (bigTerrain->getAIPoints().size() != 0)
+                {
+                    str += L"Passed ";
+                    str += ((stageStarters[i]->nextPoint*100) / bigTerrain->getAIPoints().size());
+                    //str += (int)((stageStarters[i]->passedDistance/stageLength)*100.f);
+                    str += L"%";
+                }
+#endif
+            }
+        }
+        else
+        {
+            if (stageStarters[i]->competitor->lastPenalityTime > 0)
+            {
+                str += L"Penality: ";
+                bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastPenalityTime);
+            }
+        }
+        str += L"\n";
+    }
+    /*
     if (raceEngine->getFinishedState().size()==0)
     {
         str = L"There is no result yet. This is the state at the begining of the stage:\n\n";
 // todo comment this out in the real game
-        if (bigTerrain)
-        {
-            str += L"Stage length: ";
-            str += (int)bigTerrain->getStageLength();
-            str += L" m, Stage time: ";
-            str += bigTerrain->getStageTime();
-            str += L" sec\n\n";
-        }
-        core::array<SStarter*> stageStarters;
         for (int i = 0; i < raceEngine->getStarters().size(); i++)
         {
             int j = 0;
@@ -4062,7 +3832,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
                     float cd = bigTerrain->getAIPoints()[k]->getPosition().getDistanceFrom(car->getMatrix().getTranslation());
                     if (cd < dist)
                     {
-                        cd = dist;
+                        dist = cd;
                         raceEngine->getStarters()[i]->nextPoint = k;
                     }
                 }
@@ -4108,6 +3878,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
             str += stageStarters[i]->startingCD;
             str += L"\n";
         }
+        */
 /*
         for (int i = 0; i < raceEngine->getStarters().size(); i++)
         {
@@ -4135,6 +3906,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
             str += L")\n";
         }
 */
+/*
     }
     else
     {
@@ -4167,6 +3939,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
             str += L"\n";
         }
     }
+    */
     stateBox->setText(str.c_str());
     //core::dimension2du textDimension = stateBox->getTextDimension();
     int scrollMax = stateBox->getTextHeight() - stateHeight;
@@ -4223,6 +3996,14 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         {
             str += L"   Penality: ";
             bigTerrain->addTimeToStr(str, CRaceEngine::getRaceState()[i]->globalPenalityTime);
+        }
+        if (CRaceEngine::getRaceState()[i]->lastTime==0)
+        {
+            str += L"   (Not yet finished the current stage.)";
+        }
+        else        
+        {
+            str += L"   (Finished the current stage.)";
         }
         str += L"\n";
     }

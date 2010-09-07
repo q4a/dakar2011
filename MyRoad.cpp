@@ -16,6 +16,7 @@
 #include "BigTerrain.h"
 #include "SmallTerrain.h"
 #include "gameplay.h"
+#include "message.h"
 
 #include "linux_includes.h"
 
@@ -156,6 +157,7 @@ bool CRoadType::loadRoadTypes(const char* name, IVideoDriver* p_driver)
             fclose(f);
             return false;
         }
+        MessageText::refresh();
     }
     
     fclose(f);

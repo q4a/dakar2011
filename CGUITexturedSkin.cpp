@@ -728,10 +728,7 @@ void CGUITexturedSkin::draw3DToolBar(IGUIElement *element, const core::rect<s32>
 }
 
 
-core::rect< s32 > CGUITexturedSkin::draw3DWindowBackground(IGUIElement *element, bool drawTitleBar, video::SColor titleBarColor, const core::rect< s32 > &rect, const core::rect< s32 > *clip
-#ifdef IRRLICHT_SDK_17
-, core::rect<s32>* checkClientArea
-#endif
+core::rect< s32 > CGUITexturedSkin::draw3DWindowBackground(IGUIElement *element, bool drawTitleBar, video::SColor titleBarColor, const core::rect< s32 > &rect, const core::rect< s32 > *clip, core::rect<s32>* checkClientArea
 )
 {
 	// Draw top left corner
@@ -977,11 +974,7 @@ void CGUITexturedSkin::SetSkinAlpha( u32 a )
 		return;
 	}
 
-#ifdef IRRLICHT_SDK_15
-	irr::core::dimension2d<s32> imageSize = pSkinImage->getDimension();
-#else
 	irr::core::dimension2d<u32> imageSize = pSkinImage->getDimension();
-#endif
 	irr::u32 pixelMask = pSkinImage->getRedMask() | pSkinImage->getGreenMask() | pSkinImage->getBlueMask();
 	irr::u32 alphaBits = (a << 24 | a << 16 | a << 8 | a) & pSkinImage->getAlphaMask();
 	irr::u32 imagePitch = pSkinImage->getPitch();

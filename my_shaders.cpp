@@ -9,6 +9,8 @@
 *                                                               *
 ****************************************************************/
 
+#if 0
+
 #include "my_shaders.h"
 #include "settings.h"
 #include "gameplay.h"
@@ -133,50 +135,6 @@ void setupShaders (IrrlichtDevice* device,
                    scene::ILightSceneNode* plnode
                    )
 {
-#ifdef IRRLICHT_SDK_15
-	const c8* light_tex_vsFileName; // filename for the vertex shader
-	const c8* light_tex_psFileName; // filename for the pixel shader
-
-	const c8* light_tex_car_vsFileName; // filename for the vertex shader
-	const c8* light_tex_car_psFileName; // filename for the pixel shader
-
-	const c8* light_notex_vsFileName; // filename for the vertex shader
-	const c8* light_notex_psFileName; // filename for the pixel shader
-
-	const c8* light_notex_car_vsFileName; // filename for the vertex shader
-	const c8* light_notex_car_psFileName; // filename for the pixel shader
-
-	const c8* light_2tex_vsFileName; // filename for the vertex shader
-	const c8* light_2tex_psFileName; // filename for the pixel shader
-
-	const c8* light_2tex_2_vsFileName; // filename for the vertex shader
-	const c8* light_2tex_2_psFileName; // filename for the pixel shader
-
-    const c8* smoke_psFileName; // filename for the pixel shader
-#define NULLSTRING 0    
-#else
-#ifdef __linux___if_old_irrlicht_svn_
-	core::string<c16> light_tex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_tex_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_tex_car_vsFileName; // filename for the vertex shader
-	core::string<c16> light_tex_car_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_notex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_notex_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_notex_car_vsFileName; // filename for the vertex shader
-	core::string<c16> light_notex_car_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_2tex_vsFileName; // filename for the vertex shader
-	core::string<c16> light_2tex_psFileName; // filename for the pixel shader
-
-	core::string<c16> light_2tex_2_vsFileName; // filename for the vertex shader
-	core::string<c16> light_2tex_2_psFileName; // filename for the pixel shader
-
-    core::string<c16> smoke_psFileName; // filename for the pixel shader
-#define NULLSTRING ""
-#else
 	io::path light_tex_vsFileName; // filename for the vertex shader
 	io::path light_tex_psFileName; // filename for the pixel shader
 
@@ -198,8 +156,7 @@ void setupShaders (IrrlichtDevice* device,
     io::path smoke_psFileName; // filename for the pixel shader
     io::path nullpath;
 #define NULLSTRING nullpath
-#endif // __linux__
-#endif // IRRLICHT_SDK_15
+
     dprintf(printf("T&L: %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL)));
     dprintf(printf("Multitexturing: %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE)));
     dprintf(printf("Stencil buffer: %d\n", driver->queryFeature(video::EVDF_STENCIL_BUFFER)));
@@ -332,3 +289,4 @@ void setupShaders (IrrlichtDevice* device,
     
 }
 
+#endif // 0

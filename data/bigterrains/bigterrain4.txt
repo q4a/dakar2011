@@ -7,7 +7,7 @@ data/bigterrains/textures/grass_04.jpg
 data/bigterrains/textures/dirt_11.jpg
 data/bigterrains/textures/dirt_12.jpg
 data/bigterrains/textures/concrete_03.jpg
-data/skys/fairday.jpg
+data/skys/skydome.jpg
 data/roads/roads4.txt
 data/objects/objects4.txt
 data/vehicles/sound/surfaces/gravel.wav
@@ -25,3 +25,6 @@ cp_pos: 10261.0 33716.0
 cp_pos: 15860.0 59160.0
 cp_pos: 21878.0 62904.0
 end_pos: 24430.0 68620.0
+map_up: 328 351
+map_down: 395 508
+map_texture: data/bigterrains/maps/map.png

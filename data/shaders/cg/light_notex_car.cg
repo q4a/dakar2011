@@ -69,7 +69,8 @@ void main_f( float4 color	: COLOR0,
              uniform float day_multi,
              uniform float ov_limit,
              uniform float etick,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0
+)
 {
   float4 col = acolor;  // sample color map
   float4 multip = calc_multip(color, 0.5);

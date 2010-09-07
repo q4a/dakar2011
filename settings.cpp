@@ -37,27 +37,22 @@ int shadow_map_size = 2048;
 bool useShaders = true;
 bool useCgShaders = true;
 bool useAdvCgShaders = true;
-bool use_detailed_terrain = true;
 bool use_highres_textures = true;
 video::E_DRIVER_TYPE driverType = video::EDT_DIRECT3D9;
 bool useSmokes =  true;
-float objectVisibilityLimit = 400.f;
+float objectVisibilityLimit = 512.f;
 float farValue = 2400.f;
 float nearValue = 0.5f;
 bool full_screen = false;
-bool auto_resolution = true;
+int auto_resolution = 2; // 0 - off, 1 - auto, 2 - optimal: 1024 - 1280
 int resolutionX = 800;
 int resolutionY = 600;
 bool start_with_mainmenu = true;
 int LOD_distance = 17;
 int density_objects = 6;
-int density_grasses = 10;
 int object_pool_size = 100;
-int grass_pool_size = 1600;
-int object_multiplier = 5;
-int grass_multiplier = 5;
+int grass_pool_size = 900;
 int grass_type = 0;
-float min_fps = 60.f;
 bool display_extra_info = false;
 bool info_bg = true;
 bool message_bg = true;
@@ -76,7 +71,7 @@ int joy_reset_car = -1;
 int joy_repair_car = -1;
 int joy_change_view = -1;
 int joy_change_light = -1;
-int joy_show_compass = -1;
+int joy_show_map = -1;
 int joy_axis_accel = SEvent::SJoystickEvent::AXIS_Y;
 int joy_axis_steer = SEvent::SJoystickEvent::AXIS_X;
 int joy_axis_clutch = -1;
@@ -101,24 +96,15 @@ int skin_type = 2;
 bool draw_hud = true;
 float hud_speed_multiplier = 2.85f;
 bool trace_net = true;
-bool useBgImageToRender = false;
 bool useScreenRTT = false;
 bool shitATI = false;
 bool flip_vert = false;
 bool depth_effect = false;
-bool useObjectLods = true;
-bool skip_densitymap = true;
-bool use_high_poly_objects = false;
-bool show_compass_arrow = true;
 bool show_reinitialize_button = false;
 bool use_mipmaps = true;
-bool use_openal = false;
 
 bool this_will_display = false;
 int activeJoystick = 0;
-
-bool use_serialized_files = true;
-char serialized_file_path[256] = "data/heightmaps/serialized/";
 
 float obj_wire_size = 128.f;
 float obj_wire_mult = 4.f;
@@ -127,7 +113,6 @@ bool show_names = true;
 
 bool editorMode = false;
 bool followCarlos = false;
-unsigned int terrain_tesselation = 1;
 
 bool use_threads = false;
 bool use_demage = true;
@@ -189,11 +174,6 @@ void readSettings(const char* fileName)
             ret = fscanf(f, "%f\n", &nearValue);
             if ( ret <=0 ) break;
         } else
-        if (strcmp(key,"min_fps")==0)
-        {
-            ret = fscanf(f, "%f\n", &min_fps);
-            if ( ret <=0 ) break;
-        } else
         if (strcmp(key,"gravity")==0)
         {
             ret = fscanf(f, "%f\n", &gravity);
@@ -229,26 +209,12 @@ void readSettings(const char* fileName)
             ret = fscanf(f, "%d\n", &LOD_distance);
             if ( ret <=0 ) break;
         } else
-        if (strcmp(key,"terrain_tesselation")==0)
-        {
-            ret = fscanf(f, "%u\n", &terrain_tesselation);
-            if ( ret <=0 ) break;
-            if (terrain_tesselation == 0) terrain_tesselation = 1;
-            if (terrain_tesselation > 16) terrain_tesselation = 16;
-        } else
         if (strcmp(key,"density_objects")==0)
         {
             ret = fscanf(f, "%d\n", &density_objects);
             if ( ret <=0 ) break;
 	        if (density_objects>100) density_objects = 100;
 	        if (density_objects<0) density_objects = 0;
-        } else
-        if (strcmp(key,"density_grasses")==0)
-        {
-            ret = fscanf(f, "%d\n", &density_grasses);
-            if ( ret <=0 ) break;
-	        if (density_grasses>100) density_grasses = 100;
-	        if (density_grasses<0) density_grasses = 0;
         } else
         if (strcmp(key,"object_pool_size")==0)
         {
@@ -258,16 +224,6 @@ void readSettings(const char* fileName)
         if (strcmp(key,"grass_pool_size")==0)
         {
             ret = fscanf(f, "%d\n", &grass_pool_size);
-            if ( ret <=0 ) break;
-        } else
-        if (strcmp(key,"object_multiplier")==0)
-        {
-            ret = fscanf(f, "%d\n", &object_multiplier);
-            if ( ret <=0 ) break;
-        } else
-        if (strcmp(key,"grass_multiplier")==0)
-        {
-            ret = fscanf(f, "%d\n", &grass_multiplier);
             if ( ret <=0 ) break;
         } else
         if (strcmp(key,"grass_type")==0)
@@ -347,10 +303,10 @@ void readSettings(const char* fileName)
             if (joy_change_light >= SEvent::SJoystickEvent::NUMBER_OF_BUTTONS) joy_change_light = -1;
             if ( ret <=0 ) break;
         } else
-        if (strcmp(key,"joy_show_compass")==0)
+        if (strcmp(key,"joy_show_map")==0)
         {
-            ret = fscanf(f, "%d\n", &joy_show_compass);
-            if (joy_show_compass >= SEvent::SJoystickEvent::NUMBER_OF_BUTTONS) joy_show_compass = -1;
+            ret = fscanf(f, "%d\n", &joy_show_map);
+            if (joy_show_map >= SEvent::SJoystickEvent::NUMBER_OF_BUTTONS) joy_show_map = -1;
             if ( ret <=0 ) break;
         } else
         if (strcmp(key,"joy_gear_up")==0)
@@ -436,6 +392,13 @@ void readSettings(const char* fileName)
             ret = fscanf(f, "%d\n", &skin_type);
             if ( ret <=0 ) break;
         } else
+        if (strcmp(key,"auto_resolution")==0)
+        {
+            ret = fscanf(f, "%d\n", &auto_resolution);
+            if ( ret <=0 ) break;
+            if (auto_resolution < 0) auto_resolution = 0;
+            if (auto_resolution > 2) auto_resolution = 2;
+        } else
         if (strcmp(key,"send_server_delay")==0)
         {
             ret = fscanf(f, "%d\n", &send_server_delay);
@@ -476,15 +439,6 @@ void readSettings(const char* fileName)
             else
                 full_screen = false;
         } else
-        if (strcmp(key,"auto_resolution")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                auto_resolution = true;
-            else
-                auto_resolution = false;
-        } else
         if (strcmp(key,"light")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -521,15 +475,6 @@ void readSettings(const char* fileName)
             else
                 use_mipmaps = false;
         } else
-        if (strcmp(key,"use_openal")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                use_openal = true;
-            else
-                use_openal = false;
-        } else
         if (strcmp(key,"depth_effect")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -538,42 +483,6 @@ void readSettings(const char* fileName)
                 depth_effect = true;
             else
                 depth_effect = false;
-        } else
-        if (strcmp(key,"use_object_lods")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                useObjectLods = true;
-            else
-                useObjectLods = false;
-        } else
-        if (strcmp(key,"skip_densitymap")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                skip_densitymap = true;
-            else
-                skip_densitymap = false;
-        } else
-        if (strcmp(key,"use_high_poly_objects")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                use_high_poly_objects = true;
-            else
-                use_high_poly_objects = false;
-        } else
-        if (strcmp(key,"show_compass_arrow")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                show_compass_arrow = true;
-            else
-                show_compass_arrow = false;
         } else
         if (strcmp(key,"show_reinitialize_button")==0)
         {
@@ -584,15 +493,6 @@ void readSettings(const char* fileName)
             else
                 show_reinitialize_button = false;
         } else
-        if (strcmp(key,"use_bg_image_to_render")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                useBgImageToRender = true;
-            else
-                useBgImageToRender = false;
-        } else
         if (strcmp(key,"use_screen_rtt")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -601,15 +501,6 @@ void readSettings(const char* fileName)
                 useScreenRTT = true;
             else
                 useScreenRTT = false;
-        } else
-        if (strcmp(key,"shit_ati")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                shitATI = true;
-            else
-                shitATI = false;
         } else
         if (strcmp(key,"flip_vert")==0)
         {
@@ -646,15 +537,6 @@ void readSettings(const char* fileName)
                 useAdvCgShaders = true;
             else
                 useAdvCgShaders = false;
-        } else
-        if (strcmp(key,"use_detailed_terrain")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                use_detailed_terrain = true;
-            else
-                use_detailed_terrain = false;
         } else
         if (strcmp(key,"use_highres_textures")==0)
         {
@@ -847,33 +729,6 @@ void readSettings(const char* fileName)
             else
                 trace_net = false;
         } else
-        if (strcmp(key,"use_serialized_files")==0)
-        {
-            ret = fscanf(f, "%s\n", values);
-            if ( ret <=0 ) break;
-            if (strcmp(values,"yes")==0)
-                use_serialized_files = true;
-            else
-                use_serialized_files = false;
-        } else
-        if (strcmp(key,"serialized_file_path")==0)
-        {
-            ret = fscanf(f, "%s\n", serialized_file_path);
-            if ( ret <=0 ) break;
-            int len = strlen(serialized_file_path);
-            if (len)
-            {
-                if (serialized_file_path[len-1] != '/')
-                {
-                    serialized_file_path[len] = '/';
-                    serialized_file_path[len+1] = 0;
-                }
-            }
-            else
-            {
-                strcpy(serialized_file_path, "data/heightmaps/serialized/");
-            }
-        } else
         if (strcmp(key,"driver_type")==0)
         {
             ret = fscanf(f, "%s\n", values);
@@ -951,8 +806,6 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "near_value: %f\n", nearValue);
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "min_fps: %f\n", min_fps);
-    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "gravity: %f\n", gravity);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "hud_speed_multiplier: %f\n", hud_speed_multiplier);
@@ -967,19 +820,11 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "LOD_distance: %d\n", LOD_distance);
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "terrain_tesselation: %u\n", terrain_tesselation);
-    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "density_objects: %d\n", density_objects);
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "density_grasses: %d\n", density_grasses);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "object_pool_size: %d\n", object_pool_size);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "grass_pool_size: %d\n", grass_pool_size);
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "object_multiplier: %d\n", object_multiplier);
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "grass_multiplier: %d\n", grass_multiplier);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "grass_type: %d\n", grass_type);
     if ( ret <=0 ) {fclose(f); return false;}
@@ -1007,7 +852,7 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "joy_change_light: %d\n", joy_change_light);
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "joy_show_compass: %d\n", joy_show_compass);
+    ret = fprintf(f, "joy_show_map: %d\n", joy_show_map);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "joy_gear_up: %d\n", joy_gear_up);
     if ( ret <=0 ) {fclose(f); return false;}
@@ -1049,7 +894,7 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "full_screen: %s\n", full_screen?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "auto_resolution: %s\n", auto_resolution?"yes":"no");
+    ret = fprintf(f, "auto_resolution: %d\n", auto_resolution);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "light: %s\n", globalLight?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
@@ -1059,25 +904,11 @@ bool writeSettings(const char* fileName)
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_mipmaps: %s\n", use_mipmaps?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_openal: %s\n", use_openal?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "depth_effect: %s\n", depth_effect?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_object_lods: %s\n", useObjectLods?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "skip_densitymap: %s\n", skip_densitymap?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_high_poly_objects: %s\n", use_high_poly_objects?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "show_compass_arrow: %s\n", show_compass_arrow?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "show_reinitialize_button: %s\n", show_reinitialize_button?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_bg_image_to_render: %s\n", useBgImageToRender?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_screen_rtt: %s\n", useScreenRTT?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "shit_ati: %s\n", shitATI?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "flip_vert: %s\n", flip_vert?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
@@ -1086,8 +917,6 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "cg_shaders: %s\n", useCgShaders?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "adv_cg_shaders: %s\n", useAdvCgShaders?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_detailed_terrain: %s\n", use_detailed_terrain?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "use_highres_textures: %s\n", use_highres_textures?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
@@ -1126,10 +955,6 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "trace_net: %s\n", trace_net?"yes":"no");
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "smokes: %s\n", useSmokes?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "use_serialized_files: %s\n", use_serialized_files?"yes":"no");
-    if ( ret <=0 ) {fclose(f); return false;}
-    ret = fprintf(f, "serialized_file_path: %s\n", serialized_file_path);
     if ( ret <=0 ) {fclose(f); return false;}
     if (driverType == video::EDT_OPENGL)
     {

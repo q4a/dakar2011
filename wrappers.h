@@ -31,36 +31,6 @@ void removeFromShadowNodes(irr::scene::ISceneNode*);
 
 class BigTerrain;
 
-struct SRoadWrapper_old
-{
-public:
-    SRoadWrapper_old(/*ISceneNode* node*/):roadNode(0/*node*/), /*refCount(0),*/ visCount(0) {}
-    
-    void incVisCount()
-    {
-        if (visCount==0)
-        {
-            //addToShadowNodes(roadNode);
-            roadNode->setVisible(true);
-        }
-        visCount++;
-    }
-
-    void decVisCount()
-    {
-        visCount--;
-        if (visCount==0)
-        {
-            //removeFromShadowNodes(roadNode);
-            roadNode->setVisible(false);
-        }
-    }
-    
-    ISceneNode* roadNode;
-    //int refCount;
-    int visCount;
-};
-
 struct SObjectWrapper
 {
 public:
@@ -71,8 +41,6 @@ public:
     virtual ~SObjectWrapper();
     
     virtual void setVisible(bool pvisible);
-    virtual void setFarVisible();
-    virtual void setNearVisible();
     
     void setPosition(const vector3df& ppos)
     {

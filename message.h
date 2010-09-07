@@ -25,11 +25,7 @@ using namespace gui;
 class MessageText
 {
 public:
-#ifdef IRRLICHT_SDK_15
-    static void init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<s32> screenSize);  
-#else
     static void init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<u32> screenSize);  
-#endif
     static void addText(const wchar_t* text, u32 timeoutSec, bool renderRefresh = false, bool addToHistory = true);
     static void updateText(int p_tick);
     static void refresh();

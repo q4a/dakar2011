@@ -45,7 +45,6 @@ enum GrassType
 #define ITINER_POOLID_OFFSET 1000
 
 int createObjectPool(const c8* name,
-                    const c8* fname,
                     ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
                     int num, PoolObjectType type, // 0 - obj, 1 - grass, 3 - tree
                     const c8* textureName,
@@ -59,7 +58,6 @@ int createObjectPool(const c8* name,
 void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
                             int poolId, int num, PoolObjectType type,
                             const c8* textureName,
-                            const c8* fname,
                             const vector3df& rot,
                             const vector3df& sca,
                             const vector3df& box,
@@ -73,13 +71,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
 
 void putPoolElement(int poolId, void* arg);
 
-void* getPoolElement(int poolId, const vector3df& pos, bool farObj = false);
-
-void setFarPoolElement(void* arg);
-
-bool getFarPoolElement(void* arg);
-
-void setNearPoolElement(void* arg);
+void* getPoolElement(int poolId, const vector3df& pos);
 
 void printPoolStat();
 

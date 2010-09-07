@@ -68,7 +68,8 @@ void main_f( float4 position 	: POSITION,
 	     uniform sampler2D tex1 : register(s1),
              uniform float day_multi,
              uniform float car_dirt,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0
+)
 {
   float4 col = tex2D (tex0, Uv0);
   float dirt = 1.0 - (tex2D(tex1, Uv0)).r;

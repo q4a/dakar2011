@@ -56,7 +56,6 @@
 #define JEEP_SUSPENSION_DAMPER		(6.0f)
 #define JEEP_FRICTION				1.5f
 */
-#define JEEP_USE_CONVEX_CAST		1
 #define CUSTOM_VEHICLE_JOINT_ID		0xF4ED
 
 //#define GRAVITY	   -10.0f
@@ -853,12 +852,7 @@ void NewtonRaceCar::activate(
 	chassisMatrix.m_posit = dVector(0.f, 0.f,0.f,1.f);
 //	chassisMatrix.m_posit = dVector(loc.X, loc.Y,loc.Z,1.f);
 
-#ifdef USE_BASICRC
-//	CustomBasicRayCastCar(int maxTireCount, const dMatrix& chassisMatrix, NewtonBody* carBody, const dVector& gravity = dVector (0.0f, -9.8f, 0.0f, 0.0f));
-	m_vehicleJoint = new CustomMultiBodyVehicle(chassisMatrix.m_front, chassisMatrix.m_up, m_vehicleBody) ;
-#else
 	m_vehicleJoint = new CustomDGRayCastCar(m_tires.size(), chassisMatrix, m_vehicleBody) ;
-#endif
     dprintf(printf("m_vehicleJoint: %p %p\n", m_vehicleJoint, m_vehicleJoint->GetJoint()));
 	
     m_vehicleJoint->SetJointID (CUSTOM_VEHICLE_JOINT_ID);
@@ -1124,14 +1118,12 @@ NewtonRaceCar::RaceCarTire::~RaceCarTire()
 {
    printf("tire drop %d node %p body %p\n", tire_num, m_tireNode, m_newtonBody);
    
-#ifndef USE_BASICRC
    if (m_newtonBody)
    {
        NewtonBodySetDestructorCallback (m_newtonBody, 0);
        NewtonBodySetTransformCallback (m_newtonBody, 0);
        NewtonBodySetForceAndTorqueCallback (m_newtonBody, 0);
    }
-#endif
    if(m_tireNode)
    {
       if (shadowNode)
@@ -1297,11 +1289,11 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
         if ((vehicle->m_torqueReal<-0.001f && speed>0.101f) ||
             (vehicle->m_torqueReal>0.001f && speed<-0.101f))
         {
-            soundSpeed2 = 1.0f;
+            soundSpeed2 = 0.0f;
         }
         else
         {
-            soundSpeed2 = fabsf(vehicle->m_torque)*1.4f + 1.0f;
+            soundSpeed2 = fabsf(vehicle->m_torque)*1.4f + 0.0f;
         }
     else
     if (joy_axis_clutch!=-1)
@@ -1309,14 +1301,14 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
         if ((vehicle->m_torqueReal<-0.001f && speed>0.101f) ||
             (vehicle->m_torqueReal>0.001f && speed<-0.101f))
         {
-            soundSpeed2 = 1.0f;
+            soundSpeed2 = 0.0f;
         }
         else
         {
-            soundSpeed2 = fabsf(vehicle->m_torque)*1.4f + 1.0f;
+            soundSpeed2 = fabsf(vehicle->m_torque)*1.4f + 0.0f;
             if (joy_axis_clutch!=-1)
             {
-                soundSpeed3 = angularVelocity/(vehicle->gearLimits[vehicle->gear-1].high)+1.0f;
+                soundSpeed3 = angularVelocity/(vehicle->gearLimits[vehicle->gear-1].high)+0.0f;
                 soundSpeed2 = soundSpeed3 * (1.f - vehicle->m_clutch) + 
                               soundSpeed2 * vehicle->m_clutch; 
             }
@@ -1324,14 +1316,30 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
     }
     else
     {
-        soundSpeed2 = angularVelocity/(vehicle->gearLimits[vehicle->gear-1].high)+1.0f;
+        soundSpeed2 = angularVelocity/(vehicle->gearLimits[vehicle->gear-1].high)+0.0f;
     }
 
-    if (soundSpeed2>2.4f) soundSpeed2 = 2.4f;
     if (vehicle->engineGoing)
-        vehicle->engineRotate = soundSpeed2;
+    {
+        vehicle->engineRotate = soundSpeed2+1.0f;
+        if (vehicle->engineRotate > 2.4f) vehicle->engineRotate = 2.4f;
+    }
     else
         vehicle->engineRotate = 0.f;
+
+    //soundSpeed2 = 1.0f - (soundSpeed2);
+    //soundSpeed2 *= soundSpeed2*soundSpeed2;
+    //soundSpeed2 = (1.0f - soundSpeed2);
+    //printf("%f\n", soundSpeed2);
+    /*
+    printf("%f %f/%f\n",
+        soundSpeed2,
+        vehicle->m_vehicleJoint->GetTire(0).m_localLongitudinalSpeed,
+        vehicle->m_vehicleJoint->GetTire(0).m_currentSlipVeloc);
+    */
+    soundSpeed2 += 1.0f;
+    
+    if (soundSpeed2>2.4f) soundSpeed2 = 2.4f;
     
     if (vehicle->engineSound && (tick - vehicle->lastSoundUpdateTime > SOUND_UPDATE_INTERVAL))
     {
@@ -1351,7 +1359,6 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
     vehicle->m_matrix.getInverse(invMatrix);
 	matrix4 tireMatrix;
 
-#ifndef USE_BASICRC
     int tireCount = vehicle->m_vehicleJoint->GetTiresCount();
     for (int i = 0; i < tireCount; i ++) {
         const CustomDGRayCastCar::Tire& tire = vehicle->m_vehicleJoint->GetTire(i);
@@ -1365,19 +1372,12 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
 		    tireRecord->setMatrix (tireMatrix);
         }
 	}
-#endif
 	//printf("tire torque %f\n", vehicle->m_vehicleJoint->GetTire(vehicle->m_rearRighTire.tire_num).m_angularVelocity);
     bool onGround = false;
     for (int i = 0; i < vehicle->m_tires.size(); i++)
     {
 #ifdef OLD_CDGRCC
         if (!vehicle->m_vehicleJoint->GetTireOnAir(vehicle->m_tires[i]->tire_num) &&
-#else
-#ifdef USE_BASICRC
-        if (!vehicle->m_vehicleJoint->GetTire(vehicle->m_tires[i]->tire_num)->m_tireIsOnAir &&
-#else
-        if (!vehicle->m_vehicleJoint->GetTire(vehicle->m_tires[i]->tire_num).m_tireIsOnAir &&
-#endif
 #endif
             vehicle->m_tires[i]->connected) // it is on the ground
         {
@@ -1492,14 +1492,6 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
 #ifdef OLD_CDGRCC
             if (!vehicle->m_vehicleJoint->GetTireOnAir(vehicle->smoke_tires[i]->tire_num) &&
                 vehicle->smoke_tires[i]->connected && !vehicle->smoke_tires[i]->hitRoad) // it is on the ground
-#else
-#ifdef USE_BASICRC
-            if (!vehicle->m_vehicleJoint->GetTire(vehicle->smoke_tires[i]->tire_num)->m_tireIsOnAir &&
-                vehicle->smoke_tires[i]->connected) // it is on the ground
-#else
-            if (!vehicle->m_vehicleJoint->GetTire(vehicle->smoke_tires[i]->tire_num).m_tireIsOnAir &&
-                vehicle->smoke_tires[i]->connected) // it is on the ground
-#endif
 #endif
             {
                 if (useSmokes)
@@ -1562,41 +1554,17 @@ void NewtonRaceCar::setSteeringKb(float value)
 
 void NewtonRaceCar::applySteering(float value)
 {
-#ifndef USE_BASICRC
 	dFloat vEngineSteerAngle = m_vehicleJoint->GenerateTiresSteerAngle(value) /* fabsf(value)*/;
 	dFloat vEngineSteerForce = m_vehicleJoint->GenerateTiresSteerForce(vEngineSteerAngle) * fabsf(value);
-#endif
-	//if (vEngineSteerAngle!=0.f || vEngineSteerForce!=0.f)
-	//   printf("ster af %f %f\n", vEngineSteerAngle, vEngineSteerForce);
-	// Set the both generate steer angle and force value's
-	//printf("st_num: %d %f\n", steer_tires.size(), value);
 
 	for (int i = 0; i < steer_tires.size(); i++)
 	{
-#ifdef USE_BASICRC
-    	m_vehicleJoint->ApplyTireSteerAngle(steer_tires[i]->tire_num, value * steer_tires[i]->connectionStrength);
-#else
 #ifdef OLD_CDGRCC
     	m_vehicleJoint->SetCustomTireSteerAngleForce
-#else
-    	m_vehicleJoint->SetTireSteerAngleForce
-#endif
             (steer_tires[i]->tire_num, vEngineSteerAngle * steer_tires[i]->connectionStrength,
                                        vEngineSteerForce * steer_tires[i]->connectionStrength);
 #endif
     }
-/*
-	m_vehicleJoint->SetCustomTireSteerAngleForce( 0, vEngineSteerAngle,
-                                                     vEngineSteerForce);
-	m_vehicleJoint->SetCustomTireSteerAngleForce( 1, vEngineSteerAngle,
-                                                     vEngineSteerForce);
-*/
-/*
-	if (vId==1){
-		m_vehicleJoint->SetCustomTireSteerAngleForce( 2, -vEngineSteerAngle, -(vEngineSteerForce/2) );
-		m_vehicleJoint->SetCustomTireSteerAngleForce( 3, -vEngineSteerAngle, -(vEngineSteerForce/2) );
-	}
-*/
 }
 
 void NewtonRaceCar::setTireTorque(float value)
@@ -1693,19 +1661,11 @@ void NewtonRaceCar::applyTireTorque(float rvalue)
     {
 #ifdef OLD_CDGRCC
         dFloat vEngineBrake = m_vehicleJoint->GenerateTiresBrake(fabsf(rvalue));
-#else
-        dFloat vEngineBrake = fabsf(rvalue)*5000.f;
 #endif
         for (int i = 0; i < steer_tires.size(); i++)
         {
 #ifdef OLD_CDGRCC
             m_vehicleJoint->SetCustomTireBrake
-#else
-#ifdef USE_BASICRC
-            m_vehicleJoint->ApplyTireBrake
-#else
-            m_vehicleJoint->SetTireBrake
-#endif
 #endif
                 (steer_tires[i]->tire_num, vEngineBrake);
         }
@@ -1728,12 +1688,6 @@ void NewtonRaceCar::applyTireTorque(float rvalue)
 //    if (value/torque_multi<0.f && gear!=1 && getSpeed()<0.f) return;
 #ifdef OLD_CDGRCC
 	dFloat vEngineTorque = m_vehicleJoint->GenerateTiresTorque
-#else
-#ifdef USE_BASICRC
-	dFloat vEngineTorque = value*-10000.f;
-#else
-	dFloat vEngineTorque = m_vehicleJoint->GenerateEngineTorque
-#endif
 #endif
         (value) * fabsf(value) * demage;
 	//printf("%f\n", vEngineTorque);
@@ -1742,12 +1696,6 @@ void NewtonRaceCar::applyTireTorque(float rvalue)
 	{
 #ifdef OLD_CDGRCC
         m_vehicleJoint->SetCustomTireTorque
-#else
-#ifdef USE_BASICRC
-        m_vehicleJoint->ApplyTireTorque
-#else
-        m_vehicleJoint->SetTireTorque
-#endif
 #endif
             (torque_tires[i]->tire_num, vEngineTorque * torque_tires[i]->connectionStrength);
     }
@@ -1774,12 +1722,6 @@ void NewtonRaceCar::applyHandBrakes(float value)
 	{
 #ifdef OLD_CDGRCC
     	m_vehicleJoint->SetCustomTireBrake
-#else
-#ifdef USE_BASICRC
-        m_vehicleJoint->ApplyTireBrake
-#else
-        m_vehicleJoint->SetTireBrake
-#endif
 #endif
             (hb_tires[i]->tire_num, vEngineBrake);
     }
@@ -1977,34 +1919,15 @@ void NewtonRaceCar::RaceCarTire::activate(bool p_useOffset)
 
     float newFriction = friction * root->friction_multi;
 	// add the tire and set this as the user data
-#ifdef USE_BASICRC
-    tire_num = 
-#endif
     root->GetJoint()->AddSingleSuspensionTire (this,
         dVector(tirePosition.X,tirePosition.Y,tirePosition.Z),
         tyre_mass,
         m_radius, m_width,
-#ifndef USE_BASICRC
         newFriction,
-#endif
-        suspension_length, suspension_spring, suspension_damper
-#ifndef USE_BASICRC
-        ,JEEP_USE_CONVEX_CAST
-#endif
+        suspension_length, suspension_spring, suspension_damper,
+        1
         );
 
-// here
-
-#ifdef USE_BASICRC
-#define DEFAULT_TIRE_ANGULAR_VIUSCOUS_DRAG	(0.8f)
-//#define DEFAULT_TIRE_ANGULAR_VIUSCOUS_DRAG	(0.0f)
-    m_newtonBody = root->GetJoint()->GetTireBody(tire_num);
-    pdprintf(printf("activate tire %d newtonbody %p\n", tire_num, m_newtonBody);)
-	// set the transform call back function
-	NewtonBodySetTransformCallback (m_newtonBody, SetTransformTire);
-	//NewtonBodySetMaterialGroupID (m_newtonBody, tireID);
-	root->GetJoint()->ApplyTireRollingDrag(tire_num, DEFAULT_TIRE_ANGULAR_VIUSCOUS_DRAG);
-#endif    
     {
         matrix4 tirePositionM;
         tirePositionM.setTranslation(tirePosition);
@@ -2058,16 +1981,8 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
     dprintf(printf("NewtonRaceCar::RaceCarTire::disconnect, connected: %d\n", connected));
     
     if (!connected) return;
-#ifndef USE_BASICRC
     NewtonCollision* vehicleCollision;
     
-    /*
-    vehicleCollision = NewtonCreateBox(nWorld,
-                           m_radius,
-                           m_radius, // * 2.f,
-                           m_width, // * 2.f,
-                           treeID, NULL);
-    */
     vehicleCollision = NewtonCreateCylinder(nWorld, m_radius * 0.9f, m_width, treeID, NULL);
     
 	//create the rigid body
@@ -2113,7 +2028,6 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
     NewtonBodySetAutoSleep (m_newtonBody, 0);
     
     NewtonReleaseCollision (nWorld, vehicleCollision);
-#endif    
     connected = false;
     
     connectionStrength = 0.f;
@@ -2128,11 +2042,7 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
     }
 }
 
-#ifdef USE_BASICRC
-CustomMultiBodyVehicle* NewtonRaceCar::GetJoint() const
-#else
 CustomDGRayCastCar* NewtonRaceCar::GetJoint() const
-#endif
 {
 	return m_vehicleJoint;
 }
@@ -2319,9 +2229,6 @@ void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
     {
 	   node->setMaterialTexture(0, smokeWaterTexture);
     }
-//	node->setMaterialFlag(video::EMF_LIGHTING, false);
-//	node->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_smoke/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
-//	node->setMaterialTexture(0, driver->getTexture("data/terrain-textures/dirt.png"));
 }
 
 #ifdef USE_MY_SOUNDENGINE
@@ -2392,16 +2299,6 @@ void NewtonRaceCar::reset(const core::vector3df& newpos)
     matrix4 mat = m_matrix;
     core::vector3df rot = mat.getRotationDegrees() - m_trafo.getRotationDegrees();
     dprintf(printf("reset car: orig rot: %f %f %f\n", rot.X, rot.Y, rot.Z));
-    /*
-    if (fabsf(rot.Z-180.f) < 90.f)
-    {
-        rot.Z = rot.X = 180.f;
-    }
-    else
-    {
-        rot.Z = rot.X = 0.f;
-    }
-    */
     if (fabsf(rot.Z-180.f) < 90.f)
     {
         if (rot.Y < 90.f)
@@ -2525,18 +2422,6 @@ void NewtonRaceCar::updateDirt()
 void NewtonRaceCar::switchLight()
 {
     cLight = 1-cLight;
-/*    
-    if (cLight)
-    {
-        carTex |= 2;
-    }
-    else
-    {
-        carTex &= ~2;
-    }
-    
-    m_node->setMaterialTexture(0, carTexs[carTex]);
-*/
 }
 
 void NewtonRaceCar::switchBrake(bool brake)
@@ -2557,34 +2442,6 @@ void NewtonRaceCar::switchBrake(bool brake)
     if (carTexs[carTex])
         m_node->setMaterialTexture(0, carTexs[carTex]);
 }
-
-/*
-#define ADD_WORLD_VIEW_PROJ_V \
-	    WorldViewProjection = cgGetNamedParameter(Vertex, "mWorldViewProj"); \
-        core::matrix4 cworldViewProj; \
-		cworldViewProj = driver->getTransform(video::ETS_PROJECTION); \
-		cworldViewProj *= driver->getTransform(video::ETS_VIEW); \
-		cworldViewProj *= driver->getTransform(video::ETS_WORLD); \
-		services->setMatrix(WorldViewProjection,ICGT_MATRIX_IDENTITY,cworldViewProj);
-
-#define ADD_WORLD_V \
-	    World = cgGetNamedParameter(Vertex, "mWorld"); \
-        core::matrix4 cworld; \
-		cworld = driver->getTransform(video::ETS_WORLD); \
-		services->setMatrix(World,ICGT_MATRIX_IDENTITY,cworld); 
-
-#define ADD_INV_WORLD_V \
-	    InvWorld = cgGetNamedParameter(Vertex, "mInvWorld"); \
-		core::matrix4 cinvWorld = driver->getTransform(video::ETS_WORLD); \
-		cinvWorld.makeInverse(); \
-		services->setMatrix(InvWorld,ICGT_MATRIX_IDENTITY,cinvWorld);
-
-#define ADD_TRA_WORLD_V 
-	    TraWorld = cgGetNamedParameter(Vertex, "mTransWorld"); \
-		core::matrix4 ctraWorld = driver->getTransform(video::ETS_WORLD); \
-		ctraWorld = ctraWorld.getTransposed(); \
-		services->setMatrix(TraWorld,ICGT_MATRIX_IDENTITY, ctraWorld); 
-*/
 
 void NewtonRaceCar::collide(const vector3df &point, const vector3df &direction,
                             float speed, float demageMultip, float amortMultip)
@@ -2652,25 +2509,10 @@ void NewtonRaceCar::collide(const vector3df &point, const vector3df &direction,
     rotpos.Y = fabsf(rotpos.Y);
     dprintf(printf("collision rotpos: %f %f %f\n", rotpos.X, rotpos.Y, rotpos.Z));
     dprintf(printf("collision dir: %f %f %f\n", dir.X, dir.Y, dir.Z));
-//    float tmp = dir.Z;
-//    dir.Z = dir.X;
-//    dir.X = tmp;
-//    printf("collision dirinv: %f %f %f\n", dir.X, dir.Y, dir.Z);
     matdir.setTranslation(dir);
     matrotdir = matrot*matdir;
     dir = matrotdir.getTranslation();
-//    dir.X = -dir.X;
     dprintf(printf("collision rotdir: %f %f %f\n", dir.X, dir.Y, dir.Z));
-	//mat.makeInverse();
-    //mat.transformVect(postmp);
-    //printf("collision invtra: %f %f %f\n", postmp.X, postmp.Y, postmp.Z);
-    
-    //printf("collision posrot: %f %f %f\n", matposrot.getTranslation().X, matposrot.getTranslation().Y, matposrot.getTranslation().Z);
-    //printf("collision rotpos: %f %f %f\n", matrotpos.getTranslation().X, matrotpos.getTranslation().Y, matrotpos.getTranslation().Z);
-    //printf("collision posrotin1: %f %f %f\n", matposrotin1.getTranslation().X, matposrotin1.getTranslation().Y, matposrotin1.getTranslation().Z);
-    
-    //rotpos = matrotpos.getTranslation();
-    //rotpos.Y = -rotpos.Y;
     
     for (int i = 0; i < mesh->getMeshBufferCount();i++)
     {
@@ -2745,7 +2587,6 @@ void NewtonRaceCar::repair()
     
     for (int i = 0; i < m_tires.size(); i++)
     {
-#ifndef USE_BASICRC
         if (!m_tires[i]->connected && m_tires[i]->m_newtonBody)
         {
             //delete m_tires[i]->m_newtonBody;
@@ -2757,19 +2598,13 @@ void NewtonRaceCar::repair()
             }
 
         }
-#endif
         m_tires[i]->connected = true;
         m_tires[i]->connectionStrength = 1.f;
         if (m_vehicleJoint)
         {
-#ifdef USE_BASICRC
-            m_vehicleJoint->GetTire(m_tires[i]->tire_num)->m_suspenstionSpan = m_tires[i]->suspension_length;
-            m_vehicleJoint->GetTire(m_tires[i]->tire_num)->m_mass = m_tires[i]->tyre_mass;
-#else
             m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_suspensionLenght = m_tires[i]->suspension_length;
             //m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_mass = m_tires[i]->tyre_mass;
             m_vehicleJoint->SetTireMassAndRadius(m_tires[i]->tire_num, m_tires[i]->tyre_mass, m_vehicleJoint->GetTire(m_tires[i]->tire_num).m_radius);
-#endif
         }
     }
 
@@ -2786,22 +2621,13 @@ void NewtonRaceCar::loseTyre(int num)
 	NewtonBodyGetVelocity(m_vehicleBody, &veloc.X);
     
     m_tires[num]->disconnect(veloc, nWorld);
-#ifdef USE_BASICRC
-    m_vehicleJoint->GetTire(m_tires[num]->tire_num)->m_suspenstionSpan = m_tires[num]->suspension_length * 0.1f;
-    m_vehicleJoint->GetTire(m_tires[num]->tire_num)->m_mass = m_tires[num]->tyre_mass * 0.1f;
-#else
     m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_suspensionLenght = m_tires[num]->suspension_length * 0.1f;
     m_vehicleJoint->SetTireMassAndRadius(m_tires[num]->tire_num, m_tires[num]->tyre_mass * 0.1f, m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_radius);
     //m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_mass = m_tires[num]->tyre_mass * 0.1f;
-#endif
 }
 
 void NewtonRaceCar::OnRegisterSceneNode()
 {
-//    m_node->OnAnimate(device->getTimer()->getTime());
-//    for (int i = 0; i < 4; i++)
-//        m_tires[i]->m_tireNode->OnAnimate(device->getTimer()->getTime());
-        
     m_node->OnRegisterSceneNode();
     for (int i = 0; i < m_tires.size(); i++)
         m_tires[i]->m_tireNode->OnRegisterSceneNode();

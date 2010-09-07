@@ -82,7 +82,7 @@ using namespace gui;
 #endif
 
 c8 currentDirectory[256];
-const static video::SColor colors[] =
+const static video::SColor colors_for_hdr[] =
 {
 	video::SColor(255,96,96,96),
 	video::SColor(255,96,96,96),
@@ -95,7 +95,7 @@ void BodyLeaveWorld (const NewtonBody* body, int threadId);
 int main()
 {
     do {
-    
+
     // new init
     quitGame = false;
     inGame = 0;
@@ -122,35 +122,13 @@ int main()
     getcwd(currentDirectory, 256);
     readSettings("data/settings.txt");
     
-//    if (reinitialize && driverType == video::EDT_DIRECT3D9)
-//        useShaders = useCgShaders = false;
     reinitialize = false;
 
-    // let user select driver type
-	//video::E_DRIVER_TYPE driverType = video::EDT_OPENGL/*EDT_SOFTWARE*/;
-/*
-	printf("Please select the driver you want for this example:\n"\
-		" (a) Direct3D 9.0c\n (b) Direct3D 8.1\n (c) OpenGL 1.5\n"\
-		" (d) Software Renderer\n (e) Burning's Software Renderer\n"\
-		" (f) NullDevice\n (otherKey) exit\n\n");
-	char i;
-	std::cin >> i;
-	switch(i)
-	{
-		case 'a': driverType = video::EDT_DIRECT3D9;break;
-		case 'b': driverType = video::EDT_DIRECT3D8;break;
-		case 'c': driverType = video::EDT_OPENGL;   break;
-		case 'd': driverType = video::EDT_SOFTWARE; break;
-		case 'e': driverType = video::EDT_BURNINGSVIDEO;break;
-		case 'f': driverType = video::EDT_NULL;     break;
-		default: return 1;
-	}	
-*/
 #ifdef __linux__
     if (driverType == video::EDT_DIRECT3D9 || driverType == video::EDT_DIRECT3D8) driverType = video::EDT_OPENGL;
 #endif
+
     irr::SIrrlichtCreationParameters param;
-    //param.WindowId = reinterpret_cast<void*>(hIrrlichtWindow); // hColorButton
     param.DriverType = driverType;
     param.Fullscreen = full_screen;
     param.WindowSize = dimension2d<s32>(resolutionX, resolutionY);
@@ -158,19 +136,48 @@ int main()
     param.AntiAlias = anti_aliasing;
     param.Vsync = vsync;
     param.HighPrecisionFPU = high_precision_fpu;
-    
-    if (auto_resolution && full_screen)
+
+    // remove me
+    if (auto_resolution==2)
+    {
+        irr::IrrlichtDevice* nullDev = createDevice(EDT_NULL);
+        dprintf(printf("Use auto-detection optimal\n"));
+        if (nullDev)
+        {
+            dprintf(printf("null device found auto-detection is possible."));
+            core::dimension2d<u32> resd = nullDev->getVideoModeList()->getDesktopResolution();
+            core::dimension2d<u32> res = resd;
+            float rated = (float)resd.Width / (float)resd.Height;
+            float minRateDiff = 10.f;
+            s32 dep = nullDev->getVideoModeList()->getDesktopDepth();
+            for(int i=0;i<nullDev->getVideoModeList()->getVideoModeCount();i++)
+            {
+                core::dimension2d<u32> resi = nullDev->getVideoModeList()->getVideoModeResolution(i);
+                float ratei = (float)resi.Width / (float)resi.Height;
+                if (resi.Width >= 1024 && resi.Width <= 1280 && fabsf(ratei-rated) <= minRateDiff+0.00001f)
+                {
+                    minRateDiff = fabsf(ratei-rated);
+                    res = resi;
+                }
+            }
+            nullDev->drop();
+            display_bits = dep;
+            resolutionX = res.Width;
+            resolutionY = res.Height;
+            dprintf(printf("null device found auto-detection is possible for optimal. detected: %dx%dx%d\n", resolutionX, resolutionY, display_bits));
+            printf("auto-detection optimal, detected: %dx%dx%d\n", resolutionX, resolutionY, display_bits);
+        }
+        //assert(0);
+    }
+    else
+    if (auto_resolution==1 && full_screen)
     {
         irr::IrrlichtDevice* nullDev = createDevice(EDT_NULL);
         dprintf(printf("Use full screen with auto-detection\n"));
         if (nullDev)
         {
             dprintf(printf("null device found auto-detection is possible."));
-#ifdef IRRLICHT_SDK_15
-            core::dimension2d<s32> res = nullDev->getVideoModeList()->getDesktopResolution();
-#else
             core::dimension2d<u32> res = nullDev->getVideoModeList()->getDesktopResolution();
-#endif
             s32 dep = nullDev->getVideoModeList()->getDesktopDepth();
             
             nullDev->drop();
@@ -178,7 +185,7 @@ int main()
             display_bits = dep;
             resolutionX = res.Width;
             resolutionY = res.Height;
-            dprintf(printf("null device found auto-detection is possible. detected: %dx%d%d\n", resolutionX, resolutionY, display_bits));
+            dprintf(printf("null device found auto-detection is possible. detected: %dx%dx%d\n", resolutionX, resolutionY, display_bits));
         }
         else
             dprintf(printf("null device not found auto-detection is not possible!!!\n"));
@@ -188,26 +195,12 @@ int main()
 
     irr::IrrlichtDevice* device = irr::createDeviceEx(param);
 
-/*
-    IrrlichtDevice* device = createDevice(driverType,                  // render type
-                                          dimension2d<s32>(resolutionX, resolutionY),  // resolution/window size
-                                          32,                          // bits
-                                          full_screen,                 // fullscreen
-                                          shadows,                     // stencilbuffer
-                                          0,                           // vsync
-                                          0);                          // eventReceiver
-*/    
     if (!device)
     {
         myError(1, "Cannot initialize Irrlicht device!");
         return 1;  // failed to initialize driver
     }
-    /*
-    for (int i = 0; i < 100; i++)
-    {
-   	    dprintf(printf("DEBUG: %i device run device %p\n", i, device); device->run();)
-    }
-    */
+
     initializeUsedMemory(device);
 
 	core::array<SJoystickInfo> joystickInfo;
@@ -286,7 +279,6 @@ int main()
         motiondir_map[0] = driver->getTexture("data/posteffects/motiondir_center.png");
     }
     blurmapSide = driver->getTexture("data/posteffects/blurmap_side.png");
-    //motiondir_mapSide = driver->getTexture("data/posteffects/motiondir_side.png");
     motiondir_map[1] = driver->getTexture("data/posteffects/motiondir_sideLeft.png");
     motiondir_map[2] = driver->getTexture("data/posteffects/motiondir_sideRight.png");
     motiondir_map[3] = motiondir_map[0];
@@ -303,13 +295,12 @@ int main()
     recreateRTTs(driver);
     
 	// Newton vars
-	NewtonWorld *nWorld = NewtonCreate(/*NULL, NULL*/);
+	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
 	NewtonSetThreadsCount(nWorld, /*use_threads?*/2/*:1*/);
 
 	// Set up default material properties for newton
 	SetupMaterials(nWorld, soundEngine);
 	
-    //video::ITexture* bgTexture = driver->getTexture("data/bg/dakar_bg1.jpg");
     if (screenSize.Width > 1280)
     {
         bgImages = (char**)bgImagesHi;
@@ -336,14 +327,20 @@ int main()
                         info_bg, true, 0, -1, info_bg);
     fpsText->setVisible(false);
     polyText = env->addStaticText(L"POLYS: ",         // 110
+#ifdef USE_EDITOR
                         core::rect<int>(10,50,420,66),
-//                        core::rect<int>(screenSize.Width-150,30,screenSize.Width-10,46),
+#else
+                        core::rect<int>(10,50,140,66),
+#endif
                         info_bg, true, 0, -1, info_bg);
     polyText->setVisible(false);
+
+#ifdef USE_EDITOR
     posText = env->addStaticText(L"POS: ",
                         core::rect<int>(10,70,420,86),
                         info_bg, true, 0, -1, info_bg);
     posText->setVisible(false);
+#endif // USE_EDITOR
     {
         core::stringw str = L" Build ";
         str += VER_STRING;
@@ -353,18 +350,18 @@ int main()
         versionText->setVisible(false);
     }
     
+#ifdef USE_EDITOR
     if (editorMode)
     {
         initEditor(env);
     }
+#endif // USE_EDITOR
 
     const int fontH = 25;
     const int fontO = 10;
 
     ITexture* hudInfoTexture = driver->getTexture("data/hud/info_bg.png");
-//	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-3, 7+350/*hudInfoTexture->getSize().Width*/, screenSize.Height-(fontO)+3/*+hudInfoTexture->getSize().Height*/), 0, -1, L"hudInfo");
 	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-1, 7+hudInfoTexture->getSize().Width, screenSize.Height-(fontO+fontH*3)-1+hudInfoTexture->getSize().Height), 0, -1, L"hudInfo");
-//	hudInfo->setScaleImage(true);
 	hudInfo->setScaleImage(false);
 	hudInfo->setUseAlphaChannel(true);
     hudInfo->setImage(hudInfoTexture);
@@ -417,74 +414,16 @@ int main()
         }
         default:
         {
-	        //env->getSkin()->setFont(env->getFont("data/fonts/fontlucida.png"));
-	        //env->getSkin()->setFont(env->getBuiltInFont(), EGDF_TOOLTIP);
             break;
         }
     }
-//    printf("gui textures: %d\n", env->getSkin()->getSpriteBank()->getTextureCount());
-//    bgImage->setImage(env->getSkin()->getSpriteBank()->getTexture(0));
-	//set other font
-	//env->getSkin()->setFont(env->getFont("data/fonts/fonthaettenschweiler.bmp"));
 	setupFonts(env);
 	
 	env->getSkin()->setFont(fonts[FONT_NORMALBOLD]);
 	env->getSkin()->setFont(fonts[FONT_BUILTIN], EGDF_TOOLTIP);
-/*
-EGDC_3D_DARK_SHADOW 	
-Dark shadow for three-dimensional display elements. 
-EGDC_3D_SHADOW 	
-Shadow color for three-dimensional display elements (for edges facing away from the light source). 
-EGDC_3D_FACE 	
-Face color for three-dimensional display elements and for dialog box backgrounds. 
-EGDC_3D_HIGH_LIGHT 	
-Highlight color for three-dimensional display elements (for edges facing the light source.). 
-EGDC_3D_LIGHT 	
-Light color for three-dimensional display elements (for edges facing the light source.). 
-EGDC_ACTIVE_BORDER 	
-Active window border. 
-EGDC_ACTIVE_CAPTION 	
-Active window title bar text. 
-EGDC_APP_WORKSPACE 	
-Background color of multiple document interface (MDI) applications. 
-EGDC_BUTTON_TEXT 	
-Text on a button. 
-EGDC_GRAY_TEXT 	
-Grayed (disabled) text. 
-EGDC_HIGH_LIGHT 	
-Item(s) selected in a control. 
-EGDC_HIGH_LIGHT_TEXT 	
-Text of item(s) selected in a control. 
-EGDC_INACTIVE_BORDER 	
-Inactive window border. 
-EGDC_INACTIVE_CAPTION 	
-Inactive window caption. 
-EGDC_TOOLTIP 	
-Tool tip text color. 
-EGDC_TOOLTIP_BACKGROUND 	
-Tool tip background color. 
-EGDC_SCROLLBAR 	
-Scrollbar gray area. 
-EGDC_WINDOW 	
-Window background. 
-EGDC_WINDOW_SYMBOL 	
-Window symbols like on close buttons, scroll bars and check boxes. 
-EGDC_ICON 	
-Icons in a list or tree. 
-EGDC_ICON_HIGH_LIGHT 	
-Selected icons in a list or tree. 
-EGDC_COUNT 	
-this value is not used, it only specifies the amount of default colors available.
-*/
-//    SColor guicol(255, 111, 85, 23);
     SColor guicol(255, 90, 70, 16);
     SColor guicol2(255, 255, 255, 255);
-//	env->getSkin()->setColor(EGDC_ACTIVE_CAPTION, guicol);
-//	env->getSkin()->setColor(EGDC_APP_WORKSPACE, guicol);
 	env->getSkin()->setColor(EGDC_BUTTON_TEXT, guicol);
-//	env->getSkin()->setColor(EGDC_GREY_TEXT, guicol);
-//	env->getSkin()->setColor(EGDC_INACTIVE_CAPTION, guicol);
-//	env->getSkin()->setColor(, guicol);
     demageText->setOverrideFont(fonts[FONT_SPECIAL16]);
     speedText->setOverrideFont(fonts[FONT_SPECIAL16]);
     timeText->setOverrideFont(fonts[FONT_SPECIAL16]);
@@ -506,13 +445,9 @@ this value is not used, it only specifies the amount of default colors available
 
     // first draw the wait message
     driver->beginScene(true, true, SColor(0,192,192,192));
-    //smgr->drawAll();
     env->drawAll();
     driver->endScene();
-   
-    //driver->setFog(SColor(0, 255, 255, 255), false);
 
-    ITexture* hudCompassTexture = driver->getTexture("data/hud/hud_compass.png");
     hudTextures[0] = driver->getTexture("data/hud/hud0.png");
     hudTextures[1] = driver->getTexture("data/hud/hud1.png");
     hudTextures[2] = driver->getTexture("data/hud/hud2.png");
@@ -523,7 +458,6 @@ this value is not used, it only specifies the amount of default colors available
     hudTextures[7] = driver->getTexture("data/hud/hudr.png");
     hudTextures[8] = driver->getTexture("data/hud/hudd.png");
     
-    hudMapTextures[0] = driver->getTexture("data/hud/map.png");
     hudUserOnMapTexture = driver->getTexture("data/hud/useronmap.png");
 
 
@@ -533,17 +467,12 @@ this value is not used, it only specifies the amount of default colors available
         hudSize = (float)hudTextures[1]->getSize().Width * hudRate;
     else
         hudSize = 512.f * hudRate;
-    const float hudCompassRate = 0.3f;
-    const float hudCompassSize = hudSize * hudCompassRate;
     const float hudCenter1Size = 255.f * hudRate;
     const float hudPos1X = (255.f-120.f) * hudRate;
     const float hudPos1Y = (255.f-390.f) * hudRate;
     const float hudCenter2Size = 440.f * hudRate;
     const float hudPos2X = (255.f-181.f) * hudRate;
     const float hudPos2Y = (440.f-397.f) * hudRate;
-    const float hudCenter3Size = hudCenter1Size * hudCompassRate;
-    const float hudPos3X = 0.f;
-    const float hudPos3Y = (255.f - 100.f) * hudCompassRate * hudRate;
     const int hudPositionX = screenSize.Width-(int)hudSize-10;
     const int hudPositionY = screenSize.Height-(int)hudSize-10;
 	hudImage = env->addImage(core::rect<int>(hudPositionX, hudPositionY, screenSize.Width-10, screenSize.Height-10), 0, -1, L"hud");
@@ -554,21 +483,6 @@ this value is not used, it only specifies the amount of default colors available
     hudImage->setVisible(false);
     
     ItinerHud::init(device, env, screenSize, (int)hudSize);
-
-    // compass
-    const int hudCompassPositionX = 10; //hudPositionX - hudCompassSize / 2.f;
-    const int hudCompassPositionY = screenSize.Height-(fontO+fontH*3)-30-(int)hudCompassSize;//(int)hudCompassSize-10;
-    compassText = env->addStaticText(L"DOUBLE TIME!",
-                        core::rect<int>(hudCompassPositionX, screenSize.Height-(fontO+fontH*3)-20, 210, screenSize.Height-(fontO+fontH*3)-4),
-                        info_bg, true, 0, -1, info_bg);
-    compassText->setVisible(false);
-	hudCompassImage = env->addImage(core::rect<int>(hudCompassPositionX, hudCompassPositionY,
-                                                    (int)(hudCompassSize)+hudCompassPositionX, (int)(hudCompassSize)+hudCompassPositionY),
-                                    0, -1, L"hudCompass");
-	hudCompassImage->setScaleImage(true);
-	hudCompassImage->setUseAlphaChannel(true);
-    hudCompassImage->setImage(hudCompassTexture);
-    hudCompassImage->setVisible(false);
 
     // FPS cross at the middle of the screen
     ITexture* crossTexture = driver->getTexture("data/hud/cross.png");
@@ -581,53 +495,6 @@ this value is not used, it only specifies the amount of default colors available
     crossImage->setVisible(false);
 
 
-    // big map for tab
-    /*
-    const float mapScale = (screenSize.Height>hudMapTextures[0]->getSize().Height) ? 1.0f : ((float)(screenSize.Height-40.f)/(float)(hudMapTextures[0]->getSize().Height));
-    if (screenSize.Height>hudMapTextures[0]->getSize().Height)
-    {
-        const int mapUpX = (screenSize.Width-hudMapTextures[0]->getSize().Width) / 2;
-        const int mapUpY = (screenSize.Height-hudMapTextures[0]->getSize().Height) / 2;
-        const int mapDownX = screenSize.Width - mapUpX;
-        const int mapDownY = screenSize.Height - mapUpY;
-	    hudMap = env->addImage(core::rect<int>(mapUpX, mapUpY, mapDownX, mapDownY), 0, -1, L"hudMap");
-	    hudMap->setScaleImage(false);
-    }
-    else
-    {
-        const int mapUpX = (screenSize.Width-(int)((float)hudMapTextures[0]->getSize().Width*mapScale)) / 2;
-        const int mapUpY = 20;
-        const int mapDownX = screenSize.Width - mapUpX;
-        const int mapDownY = screenSize.Height - mapUpY;
-	    hudMap = env->addImage(core::rect<int>(mapUpX, mapUpY, mapDownX, mapDownY), 0, -1, L"hudMap");
-	    hudMap->setScaleImage(true);
-    }
-	hudMap->setUseAlphaChannel(false);
-    hudMap->setImage(hudMapTextures[0]);
-    dprintf(printf("1 %p\n", hudMap));
-    hudMap->setVisible(false);
-    */
-
-    const int mapDef = (screenSize.Height>hudMapTextures[0]->getSize().Height+40) ? 0 : (hudMapTextures[0]->getSize().Height - screenSize.Height + 40);
-    const int mapSizeX = (mapDef == 0) ? hudMapTextures[0]->getSize().Width : (screenSize.Height - 40);
-    const int mapSizeY = (mapDef == 0) ? hudMapTextures[0]->getSize().Height : (screenSize.Height - 40);
-    const int mapUpX = (screenSize.Width-mapSizeX) / 2;
-    const int mapUpY = (screenSize.Height-mapSizeY) / 2;
-    const core::position2d<s32> mapPos(mapUpX, mapUpY);
-    const core::dimension2di mapSize(mapSizeX, mapSizeY);
-    
-    //const int mapDownX = screenSize.Width - mapUpX;
-    //const int mapDownY = screenSize.Height - mapUpY;
-
-/*
-    hudCompassImage = new CQuad(vector3df(0.f, 0.f, 0.f), vector3df(1.0f, 1.0f, 0.f));
-    hudCompassImage->texture = hudCompassTexture;
-    hudCompassImage->setVisible(false);
-    hudCompassImage->getMaterial().setTexture(0, hudCompassImage->texture);
-    hudCompassImage->getMaterial().
-
-    CScreenQuad test(driverType == video::EDT_OPENGL, flip_vert);
-*/
     // helper variables for the hud pointers
     const core::vector2df hudCenter1((float)hudPositionX+hudCenter1Size, (float)hudPositionY+hudCenter1Size);
     const core::position2d<s32> hudCenter2d1((s32)hudCenter1.X,(s32)hudCenter1.Y);
@@ -637,22 +504,11 @@ this value is not used, it only specifies the amount of default colors available
     const core::position2d<s32> hudCenter2d2((s32)hudCenter2.X,(s32)hudCenter2.Y);
     const core::vector2df hudPos2(hudCenter2.X-hudPos2X, hudCenter2.Y-hudPos2Y);
 
-    const core::vector2df hudCenter3((float)hudCompassPositionX+hudCenter3Size, (float)hudCompassPositionY+hudCenter3Size);
-    const core::position2d<s32> hudCenter2d3((s32)hudCenter3.X,(s32)hudCenter3.Y);
-    const core::vector2df hudPos3(hudCenter3.X-hudPos3X, hudCenter3.Y-hudPos3Y);
-    const core::vector2df hudPos3c(hudCenter3.X-hudPos3X, hudCenter3.Y+(hudPos3Y*3/4));
-    const core::vector2df hudPos3l(hudCenter3.X-hudPos3X-5, hudCenter3.Y+hudPos3Y-4);
-    const core::vector2df hudPos3r(hudCenter3.X-hudPos3X+5, hudCenter3.Y+hudPos3Y-4);
-
     core::vector2df hudPos;
     core::position2d<s32> hudPos2d;
     core::position2d<s32> hudPos2d2;
     core::position2d<s32> hudPos2d3;
     core::position2d<s32> hudPos2d4;
-
-    compassArrow = smgr->addAnimatedMeshSceneNode(smgr->addArrowMesh("arrowMesh", video::SColor(0, 0, 155, 0), video::SColor(0, 0, 155, 0),
-                            4, 8, 1.5f, 1.0f, 0.1f, 0.2f));
-    compassArrow->setVisible(false);
 
     MessageText::addText(L"Please wait [*           ]", 1, true, false);
     
@@ -664,14 +520,12 @@ this value is not used, it only specifies the amount of default colors available
     fix_camera->setNearValue(nearValue);
 
     fix_cameraOffsetObject = new OffsetObject(fix_camera, true);
-    //offsetManager->addObject(fix_cameraOffsetObject);
 
 	fps_camera = smgr->addCameraSceneNodeFPS(0, 100.f, CAMERA_SPEED);
 	fps_camera->setFarValue(DEFAULT_FAR_VALUE);
     fps_camera->setNearValue(nearValue);
     
     fps_cameraOffsetObject = new OffsetObject(fps_camera, true);
-    //offsetManager->addObject(fps_cameraOffsetObject);
 
 	lightCam = smgr->addCameraSceneNode();
 	lightCamCar = smgr->addCameraSceneNode(); //lightCamCar->setFOV(0.02f);
@@ -686,22 +540,12 @@ this value is not used, it only specifies the amount of default colors available
     device->getCursorControl()->setPosition(0.f,0.f);
     
     // set amb light
-//	smgr->setAmbientLight(video::SColor(255, 115, 115, 115));
 	smgr->setShadowColor();
-/*
-	smgr->addLightSceneNode(0,
-        core::vector3df(((float)max_x*SMALLTERRAIN_SIZE/(float)2),5000.f,((float)max_y*SMALLTERRAIN_SIZE/(float)2)),
-		video::SColorf(1.0f, 1.0f, 1.0f, 1.0f), ((float)max_x*SMALLTERRAIN_SIZE*(float)2));
-*/
     float lightColor = 1.0f;
    	lnode = smgr->addLightSceneNode(0,
             core::vector3df(3750.f,20000.f,3750.f),
-//            core::vector3df(0.f,20.f,0.f),
 		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
-//    lnode->getLightData().Type=ELT_DIRECTIONAL; 
-//    lnode->setRotation(core::vector3df(110.f, 0.f, 0.f));
     if (useShaders && !useCgShaders) useCgShaders = true;
-//    useShaders = useCgShaders = true; // force using of shaders
     if (useShaders)
     {
     	lnode_4_shaders = smgr->addLightSceneNode(0,
@@ -715,33 +559,6 @@ this value is not used, it only specifies the amount of default colors available
     float lightStrengthS = 0.6f;
     lnode->getLightData().AmbientColor = video::SColorf(lightStrength,lightStrength,lightStrength);
     lnode->getLightData().SpecularColor = video::SColorf(lightStrengthS,lightStrengthS,lightStrengthS);
-/*
-	clnode = smgr->addLightSceneNode(0//,
-//        core::vector3df(0.f,-10.f,-1.f),
-//        core::vector3df(5300.f,10000.f,10000.f),
-//		video::SColorf(lightColor, lightColor, lightColor), 50000.f
-            );
-    clnode->getLightData().Type=ELT_SPOT; 
-    clnode->setRotation(core::vector3df(90.f, 0.f, 0.f));
-    lightColor = 1.0f;
-    lightStrength = 1.0f;
-    lightStrengthS = 1.0f;
-    clnode->getLightData().DiffuseColor = video::SColorf(lightColor,lightColor,lightColor);
-    clnode->getLightData().AmbientColor = video::SColorf(lightStrength,lightStrength,lightStrength);
-    clnode->getLightData().SpecularColor = video::SColorf(lightStrengthS,lightStrengthS,lightStrengthS);
-*/
-/*
-//    lnode->setLightType(video::ELT_DIRECTIONAL);
-    video::SLight* ldata;
-    ldata = &lnode->getLightData();
-    ldata->Type = video::ELT_DIRECTIONAL;
-//    ldata->Position = core::vector3df(0,-1,0);
-    ldata->Position = core::vector3df(3300,100,-500);
-//    ldata->Direction = core::vector3df(0,-1,0);
-//    lnode->setLightData(*ldata);
-*/
-	// disable mouse cursor
-    //device->getCursorControl()->setVisible(false);
 
     dprintf(printf("T&L:                  %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL)));
     dprintf(printf("Multitexturing:       %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE)));
@@ -760,17 +577,37 @@ this value is not used, it only specifies the amount of default colors available
     dprintf(printf("GLSL:                 %d\n", driver->queryFeature(video::EVDF_ARB_GLSL)));
     dprintf(printf("HLSL:                 %d\n", driver->queryFeature(video::EVDF_HLSL)));
     dprintf(printf("Geometry shader:      %d\n", driver->queryFeature(video::EVDF_GEOMETRY_SHADER)));
+    dprintf(printf("RTT:                  %d\n", driver->queryFeature(video::EVDF_RENDER_TO_TARGET)));
     dprintf(printf("MRT:                  %d\n", driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)));
     dprintf(printf("Non square textures:  %d\n", driver->queryFeature(video::EVDF_TEXTURE_NSQUARE)));
     dprintf(printf("Non POT:              %d\n", driver->queryFeature(video::EVDF_TEXTURE_NPOT)));
+
+    printf("T&L:                  %d\n", driver->queryFeature(video::EVDF_HARDWARE_TL));
+    printf("Multitexturing:       %d\n", driver->queryFeature(video::EVDF_MULTITEXTURE));
+    printf("Stencil buffer:       %d\n", driver->queryFeature(video::EVDF_STENCIL_BUFFER));
+    printf("Vertex shader 1.1:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_1_1));
+    printf("Vertex shader 2.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0));
+    printf("Vertex shader 3.0:    %d\n", driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0));
+    printf("Pixel shader 1.1:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_1));
+    printf("Pixel shader 1.2:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_2));
+    printf("Pixel shader 1.3:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_3));
+    printf("Pixel shader 1.4:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_1_4));
+    printf("Pixel shader 2.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0));
+    printf("Pixel shader 3.0:     %d\n", driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0));
+    printf("ARB vertex program:   %d\n", driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1));
+    printf("ARB fragment program: %d\n", driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1));
+    printf("GLSL:                 %d\n", driver->queryFeature(video::EVDF_ARB_GLSL));
+    printf("HLSL:                 %d\n", driver->queryFeature(video::EVDF_HLSL));
+    printf("Geometry shader:      %d\n", driver->queryFeature(video::EVDF_GEOMETRY_SHADER));
+    printf("RTT:                  %d\n", driver->queryFeature(video::EVDF_RENDER_TO_TARGET));
+    printf("MRT:                  %d\n", driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS));
+    printf("Non square textures:  %d\n", driver->queryFeature(video::EVDF_TEXTURE_NSQUARE));
+    printf("Non POT:              %d\n", driver->queryFeature(video::EVDF_TEXTURE_NPOT));
     //assert(0);
     dprintf(printf("2 %p %d\n", hudImage, useCgShaders));
     try
     {
-        //if (useShaders && useCgShaders)
-        //{
-            setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
-        //}
+        setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
     } catch(...)
     {
         printf("Cg shader setup casued exception, fall back to standard shaders\n");
@@ -788,7 +625,6 @@ this value is not used, it only specifies the amount of default colors available
     dprintf(printf("2b %p\n", hudImage));
 
 	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
-//	scene::ISceneNode* skydome=0;
 
 	// create skybox and skydome
     skydome=smgr->addSkyDomeSceneNode(driver->getTexture("data/skys/skydome.jpg"),
@@ -803,7 +639,7 @@ this value is not used, it only specifies the amount of default colors available
     else    
         skydome->setMaterialFlag(video::EMF_LIGHTING, globalLight);
         
-    sunSphere = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(1000.f, 1000.f));;//smgr->addSphereSceneNode(1.f);
+    sunSphere = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(1000.f, 1000.f));//smgr->addSphereSceneNode(1.f);
     //sunSphere->setScale(vector3df(300.f, 300.f, 300.f));
     sunSphere->setVisible(false);
     sunSphere->setMaterialTexture(0, driver->getTexture("data/posteffects/sun.png"));
@@ -819,25 +655,9 @@ this value is not used, it only specifies the amount of default colors available
 
     MessageText::addText(L"Please wait [  *         ]", 1, true, false);
 
-    //addToShadowNodes(skydome);
-    /*    
-	scene::ISceneNode* skybox=smgr->addSkyBoxSceneNode(
-		driver->getTexture("data/skys/irrlicht2_up.jpg"),
-		driver->getTexture("data/skys/irrlicht2_dn.jpg"),
-		driver->getTexture("data/skys/irrlicht2_lf.jpg"),
-		driver->getTexture("data/skys/irrlicht2_rt.jpg"),
-		driver->getTexture("data/skys/irrlicht2_ft.jpg"),
-		driver->getTexture("data/skys/irrlicht2_bk.jpg"));
-    */
 	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
 
-    // here was the creation if the bigTerrain
-//	camera->setPosition(
-//         core::vector3df(3400.0f,bigTerrain->getHeight(3400.f, 100.f)+5.f,100.0f));
-//	camera->setFarValue(bigTerrain->getSmallTerrainSize()*FAR_VALUE_MULTI);
-
-    NewtonSetBodyLeaveWorldEvent (nWorld, BodyLeaveWorld); 
-    // here was the creation of the car
+    //NewtonSetBodyLeaveWorldEvent (nWorld, BodyLeaveWorld); 
 
     loadGameplay("data/gameplay/gameplay.txt",
                  device,
@@ -861,7 +681,6 @@ this value is not used, it only specifies the amount of default colors available
     printPoolStat();
 #endif
     vehiclePool = new CVehiclePool(device, smgr, driver, nWorld, soundEngine, "data/vehicles/vehicle_list.txt");
-    //terrainPool = new TerrainPool(12, smgr, driver);
     MessageText::addText(L"Please wait [          * ]", 1, true, false);
     loadItinerTypes("data/itiner/itiner_types.txt", smgr, driver, nWorld);
     loadCompetitors("data/competitors/car.txt");
@@ -871,79 +690,7 @@ this value is not used, it only specifies the amount of default colors available
     MessageText::addText(L"Please wait [           *]", 1, true, false);
     
     mapReader = new CMapReaderThread(device);
-/*
-// 1. cam
-    viewpos[0][12] = -6.f;
-    viewpos[0][13] = 3.f;
-    viewdest[0][13] = 1.f;
-// left
-    viewpos[1][12] = 0.f;
-    viewpos[1][13] = 3.f;
-    viewpos[1][14] = -6.f;
-    viewdest[1][13] = 1.f;
-// right
-    viewpos[2][12] = 0.f;
-    viewpos[2][13] = 3.f;
-    viewpos[2][14] = 6.f;
-    viewdest[2][13] = 1.f;
-// behind
-    viewpos[3][12] = 6.f;
-    viewpos[3][13] = 3.f;
-    viewdest[3][13] = 1.f;
 
-// 2. cam
-    viewpos[4][12] = 0.f;
-    viewpos[4][13] = 1.2f;
-    viewdest[4][12] = 6.5f;
-    viewdest[4][13] = 0.f;
-// left
-    viewpos[5][12] = viewpos[4][12];
-    viewpos[5][13] = viewpos[4][13];
-    viewpos[5][14] = viewpos[4][14];
-    viewdest[5][13] = 0.f;
-    viewdest[5][14] = 6.5f;
-// right
-    viewpos[6][12] = viewpos[4][12];
-    viewpos[6][13] = viewpos[4][13];
-    viewpos[6][14] = viewpos[4][14];
-    viewdest[6][13] = 0.f;
-    viewdest[6][14] = -6.5f;
-// behind
-    viewpos[7][12] = 0.f;
-    viewpos[7][13] = 1.2f;
-    viewdest[7][12] = -6.5f;
-    viewdest[7][13] = 0.f;
-
-// 3. cam
-    viewpos[8][12] = 0.f;
-    viewpos[8][13] = 1.0f;
-    viewpos[8][14] = 0.4f;
-    viewdest[8][12] = 6.5f;
-    viewdest[8][13] = 0.f;
-    viewdest[8][14] = 0.4f;
-// left
-    viewpos[9][12] = viewpos[8][12];
-    viewpos[9][13] = viewpos[8][13];
-    viewpos[9][14] = viewpos[8][14];
-    viewdest[9][13] = 0.f;
-    viewdest[9][14] = 6.5f;
-// right
-    viewpos[10][12] = viewpos[8][12];
-    viewpos[10][13] = viewpos[8][13];
-    viewpos[10][14] = viewpos[8][14];
-    viewdest[10][13] = 0.f;
-    viewdest[10][14] = -6.5f;
-// behind
-    viewpos[11][12] = 0.f;
-    viewpos[11][13] = 1.0f;
-    viewpos[11][14] = 0.4f;
-    viewdest[11][12] = -6.5f;
-    viewdest[11][13] = 0.f;
-    viewdest[11][14] = 0.4f;
-
-    viewpos_cur = viewpos[view_num];
-    viewdest_cur = viewdest[view_num];
-*/
     if (useShaders)
     {
         cLightPos_loc[12] = 3.0f;
@@ -958,68 +705,6 @@ this value is not used, it only specifies the amount of default colors available
         cLightDest_loc[12] = 15.0f;
         cLightDest_loc[13] = 0.0f;
     }
-
-/*
-{
-#define width  10
-#define height 10
-    scene::CGrassPatchSceneNode *grass[width*height];
-    
-	video::IImage* heightMap  = driver->createImageFromFile ("media/terrain-heightmap.bmp");  
-	video::IImage* textureMap = driver->createImageFromFile ("media/terrain-grasscol.bmp");  
-	video::IImage* grassMap   = driver->createImageFromFile ("media/terrain-grassmap.png"); 
-    video::ITexture *tex1 = driver->getTexture("media/grass.png");
-
-    scene::IWindGenerator *wind = scene::createWindGenerator( 30.0f, 3.0f );
-    for (int x=0; x<width; ++x)
-      for (int z=0; z<height; ++z)
-      {   
-            printf("grass %d %d\n", x, z);
-        // add a grass node        
-        grass[x*width + z] = new scene::CGrassPatchSceneNode((scene::ITerrainSceneNode*)bigTerrain->getTerrain(1.0f,1.0f), smgr, -1, core::vector3d<s32>(x,0,z), "grass", heightMap, textureMap, grassMap, wind);
-        grass[x*width + z]->setMaterialFlag(video::EMF_LIGHTING, false);
-        grass[x*width + z]->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-		grass[x*width + z]->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
-		grass[x*width + z]->getMaterial(0).MaterialTypeParam = 0.5f;
-        grass[x*width + z]->setMaterialTexture(0, tex1);
-		//grass[x*width + z]->setDebugDataVisible(-1);
-        grass[x*width + z]->drop();
-    }
-
-//    CGrassPatchSceneNode* grass = new
-//    scene::CGrassPatchSceneNode((scene::ITerrainSceneNode*)bigTerrain->getTerrain(1.0f,1.0f), smgr, -1, core::vector3d<s32>(1,0,1), "grass", heightMap, textureMap, grassMap, wind);
-
-    new CGrassPatchSceneNode(
-           (scene::ITerrainSceneNode*)bigTerrain->getTerrain(200.0f, 200.0f),
-           smgr,
-           -1,
-           core::vector3df(200.0f, 0.f, 200.0f),
-           "grass",
-           wind
-          );
-
-    grass->setMaterialFlag(video::EMF_LIGHTING, false);
-    grass->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-	grass->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
-	grass->getMaterial(0).MaterialTypeParam = 0.5f;
-    grass->setMaterialTexture(0, tex1);
-	//grass->setDebugDataVisible(1);
-	grass->setVisible(true);
-    //grass[x*width + z]->drop();
-    //smgr->getParameters()->setAttribute(scene::ALLOW_ZWRITE_ON_TRANSPARENT, true);
-
-}
-*/
-    
-/*
-    device->run();
-    MessageText::addText(
-            L"Welcome in the Dakar 2010 Game\n\n" \
-            L"Go through (slowly) all the flashing checkpoints\n\n" \
-            L"Press ESC to access Main Menu" \
-            L""
-            , 5);
-*/
     
 	// create event receiver
    	dprintf(printf("DEBUG: create event receiver game\n");)
@@ -1070,21 +755,12 @@ this value is not used, it only specifies the amount of default colors available
     vector3df lookDir;
     vector3df lookPos;
     const float lookFOV = cosf(camera->getFOV());
-    //NewtonSetMinimumFrameRate( nWorld, min_fps);
     vector3df dynCamPos;
-    //vector3df dynCamRight;
-    //vector3df dynCamUp;
-    //int dynCamReset = 1;
     float dynCamDist;
     core::vector3df nearestCP;
     unsigned int drawnObjs;
-    unsigned int drawnObjsPolys;
     unsigned int notDrawnObjs;
-    unsigned int notDrawnObjsPolys;
     unsigned int shadowObjs;
-    unsigned int shadowObjsPolys;
-    float compassDotp = 0.f;
-    float compassAngle = 0.f;
     
     u32 drawTick = 0;
     u32 newtonUpdateCount = 0;
@@ -1092,28 +768,16 @@ this value is not used, it only specifies the amount of default colors available
     s32 sleepTime = 0;
 #define NEWTONUPDATECOUNTCHANGE_LIMIT 10
     s32 fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
-/*
-    u32 otherTick = 0;
-    u32 saveLastTick = 0;
-    u32 drawCount = 0;
-    
-    u32 lastTickDiff = 0;
-    u32 tickDiff = 0;
-    u32 newNewtonUpdateCount = 0;
-    u32 oldNewtonUpdateCount = 0;
-    u32 tmpOldNewtonUpdateCount = 0;
-    u32 newtonUpdateCountChange = 0;
-    u32 uplace = 0;
-    //u32 newSleepTime = 0;
-#define NEWTONUPDATECOUNTCHANGE_LIMIT 5
-*/    
     int failed_render = 0;
-    //intf("device %p\n", device);
     dprintf(printf("device %p\n", device));
     MessageText::hide();
     while(device->run())
     { 
-        if (device->isWindowActive() || (followCarlos && !editorMode))
+        if (device->isWindowActive()
+#ifdef USE_EDITOR
+            || (followCarlos && !editorMode)
+#endif
+        )
         {
             tick = device->getTimer()->getTime();
             if (!fps_compensation)
@@ -1121,145 +785,6 @@ this value is not used, it only specifies the amount of default colors available
                 sleepTime = 0;
                 newtonUpdateCount = (tick - lasttick) / 16;
             }
-#if 0
-            tickDiff = tick - (lasttick+lastTickDiff);
-            uplace = 0;
-            sleepTime = 0;
-            tmpOldNewtonUpdateCount = oldNewtonUpdateCount;
-            //if (tickDiff <= 96)
-            //{
-                /*
-                    FPS      MS        NUC
-                    > 60     < 16      0 - 1
-                    60       16.6666   1
-                    30       33.3333   2
-                    20       50        3
-                    15       66.6666   4
-                    12       83.3333   5
-                    10       100       6
-                    < 10     > 100     6+
-                */
-                //sleepTime = 0;
-                newNewtonUpdateCount = (tickDiff + 16) / 16;
-                sleepTime = (newNewtonUpdateCount * 16) - tickDiff;
-                /*
-                if (tickDiff > 96)
-                {
-                    sleepTime = 0;
-                    newNewtonUpdateCount = (tick - lasttick) / 16;
-                }
-                else
-                if (tickDiff > 80)
-                {
-                    sleepTime = 96 - tickDiff;
-                    newNewtonUpdateCount = 6;
-                }
-                else
-                if (tickDiff > 64)
-                {
-                    sleepTime = 80 - tickDiff;
-                    newNewtonUpdateCount = 5;
-                }
-                else
-                if (tickDiff > 48)
-                {
-                    sleepTime = 64 - tickDiff;
-                    newNewtonUpdateCount = 4;
-                }
-                else
-                if (tickDiff > 32)
-                {
-                    sleepTime = 48 - tickDiff;
-                    newNewtonUpdateCount = 3;
-                }
-                else
-                if (tickDiff > 16)
-                {
-                    sleepTime = 32 - tickDiff;
-                    newNewtonUpdateCount = 2;
-                }
-                else
-                {
-                    sleepTime = 16 - tickDiff;
-                    newNewtonUpdateCount = 1;
-                }
-                */
-                /*
-                else
-                {
-                    assert(0);
-                }
-                */
-                printf("td: %u st: %d dt: %u nnuc: %u onuc: %u nucc: %u\n",
-                    tickDiff, sleepTime, drawTick,
-                    newNewtonUpdateCount, oldNewtonUpdateCount, newtonUpdateCountChange);
-
-                if (newNewtonUpdateCount != oldNewtonUpdateCount)
-                {
-                    //printf("hello\n");
-                    newtonUpdateCountChange++;
-                    if (newtonUpdateCountChange > NEWTONUPDATECOUNTCHANGE_LIMIT)
-                    {
-                        newtonUpdateCountChange = 0;
-                        newtonUpdateCount = newNewtonUpdateCount;
-                        uplace = 1;
-                    }
-                    else
-                    {
-                        //if (newNewtonUpdateCount < oldNewtonUpdateCount)
-                        {
-                            sleepTime = (oldNewtonUpdateCount*16) - tickDiff;
-                            newtonUpdateCount = oldNewtonUpdateCount;
-                            uplace = 2;
-                        }
-                        /*
-                        else
-                        {
-                            sleepTime = 0;
-                            newtonUpdateCount = (tick - lasttick) / 16;
-                            uplace = 3;
-                        }
-                        */
-                    }
-                }
-                else
-                {
-                    newtonUpdateCountChange = 0;
-                    newtonUpdateCount = newNewtonUpdateCount;
-                    uplace = 4;
-                }
-                
-                //newtonUpdateCount = newNewtonUpdateCount;
-                if (sleepTime > 1)
-                {
-                    //printf("sleep: %u\n", sleepTime);
-                    device->sleep(sleepTime);
-                    device->getTimer()->tick();
-                    tick = device->getTimer()->getTime();
-                }
-                lasttick = tick - (16 * newtonUpdateCount);
-            //}
-            //else
-            //{
-            //    //newtonUpdateCount = 0;
-            //    newtonUpdateCount = (tick - lasttick) / 16;
-            //    uplace = 5;
-            //}
-            oldNewtonUpdateCount = newtonUpdateCount;
-            /*
-            if (newtonUpdateCount==0)
-            {
-                newtonUpdateCount = (tick - lasttick) / 16;
-            }
-            else
-            {
-                lasttick = tick - (16 * newtonUpdateCount);
-            }
-            */
-            
-            printf("u: %u td: %u st: %d nuc: %u nucc: %u\n",
-                    uplace, tickDiff, sleepTime, newtonUpdateCount, newtonUpdateCountChange);
-#endif
             pdprintf(printf("1\n"));
             if (car && bigTerrain && inGame == 0)
             {
@@ -1272,12 +797,15 @@ this value is not used, it only specifies the amount of default colors available
                 vector3df campos;
                 vector3df camtar;
                 vector3df centar;
+#ifdef USE_EDITOR
                 bool useCarlosView = false;
                 int carlosNum = 1;
+#endif
                 
                 viewpos_cur = car->getViewPos(view_num+view_mask);
                 viewdest_cur = car->getViewDest(view_num+view_mask);
                 
+#ifdef USE_EDITOR
                 if (followCarlos && raceEngine)
                 {
                     if (raceEngine->getStarters()[carlosNum]->competitor == playerCompetitor) carlosNum--;
@@ -1287,15 +815,18 @@ this value is not used, it only specifies the amount of default colors available
                         dprintf(printf("s: %f, t: %f, d: %d\n", raceEngine->getStarters()[carlosNum]->vehicle->getSpeed()*1.6f, raceEngine->getStarters()[carlosNum]->vehicle->getTorqueReal(), (int)(raceEngine->getStarters()[carlosNum]->vehicle->getDemagePer()));)
                     }
                 }
-                
+#endif // USE_EDITOR                
                 //vector3df carpos = car->getMatrix().getTranslation();
                 matrix4 tcentar;
                 tcentar.setTranslation(vector3df(viewdest_cur[12], viewpos_cur[13] , viewdest_cur[14]));
+#ifdef USE_EDITOR
                 if (!useCarlosView)
                 {
+#endif // USE_EDITOR
                     /*vector3df */campos = (car->getMatrix() * viewpos_cur).getTranslation();
                     /*vector3df */camtar = (car->getMatrix() * viewdest_cur).getTranslation();
                     /*vector3df */centar = (car->getMatrix() * tcentar).getTranslation();
+#ifdef USE_EDITOR
                 }
                 else
                 {
@@ -1303,6 +834,7 @@ this value is not used, it only specifies the amount of default colors available
                     camtar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * viewdest_cur).getTranslation();
                     centar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * tcentar).getTranslation();
                 }
+#endif // USE_EDITOR
                 
                 camera->setTarget(camtar);
                 if ((view_num+view_mask)!=0 || !useDynCam || dynCamReset)
@@ -1336,7 +868,7 @@ this value is not used, it only specifies the amount of default colors available
             if (!driver->beginScene(true, true, SColor(0,192,192,192)))
             {
                 printf("beginScene failed (Irrlicht bug). Program will be quit.\n");
-                //reinitialize = true;
+                reinitialize = true;
                 //env->drawAll();
                 driver->endScene();
                 driver->setMaterial(video::SMaterial());
@@ -1364,23 +896,7 @@ this value is not used, it only specifies the amount of default colors available
                 break;
             }     
             pdprintf(printf("3\n"));
-            /*
-            if (showCompass && compassArrow->isVisible() && car && inGame == 0)
-            {
-                vector3df pos = (car->getMatrix() * viewdest_cur).getTranslation();
-                pos.Y += 3.6f;
-                
-                compassArrow->setPosition(pos);
-                
-                lookDir = vector3df(0.f, 0.f, 1.f);
 
-                compassDotp = lookDir.dotProduct(nearestCP);
-                compassAngle = acosf(compassDotp) * 57.2956; //* 180.f / 3.14f;
-                if (nearestCP.X*lookDir.Z - nearestCP.Z*lookDir.X < 0) compassAngle = -compassAngle;
-
-                compassArrow->setRotation(vector3df(90.f, compassAngle, 0.f));
-            }
-            */
             pdprintf(printf("4\n"));
             if (car && inGame == 0 && useShaders)
             {
@@ -1390,7 +906,9 @@ this value is not used, it only specifies the amount of default colors available
                     cLightTar = car->getMatrix() * cLightDest_loc;
                     cLightDir = cLightTar - cLightPos;
                 }
-                //if (useCgShaders)
+#ifdef USE_EDITOR
+                if (editorMode)
+#endif
                     updateEffects(tick);
             }
             pdprintf(printf("5\n"));
@@ -1399,7 +917,7 @@ this value is not used, it only specifies the amount of default colors available
             lookPos = camera->getPosition();
 
             notDrawnObjs = drawnObjs = shadowObjs = 0;
-            notDrawnObjsPolys = drawnObjsPolys = shadowObjsPolys = 0;
+
             for (int i = 0; i<objectNodes.size();i++)
             {
                 vector3df objDir = (objectNodes[i]->getPosition() - lookPos).normalize();
@@ -1408,13 +926,11 @@ this value is not used, it only specifies the amount of default colors available
                 {
                     objectNodes[i]->setVisible(true);
                     drawnObjs++;
-                    //drawnObjsPolys += objectNodes[i]->getTriangleSelector()->getTriangleCount();
                 }
                 else
                 {
                     objectNodes[i]->setVisible(false);
                     notDrawnObjs++;
-                    //notDrawnObjsPolys += objectNodes[i]->getTriangleSelector()->getTriangleCount();
                 }
             }
             pdprintf(printf("6\n"));
@@ -1422,31 +938,31 @@ this value is not used, it only specifies the amount of default colors available
             // shadow mapping
             if (shadows && shadowMapGame)
             {
-            pdprintf(printf("6a\n"));
+                pdprintf(printf("6a\n"));
                 lightCam->setPosition(vector3df(camera->getPosition().X+2.0f,
                                       camera->getPosition().Y + 150.f,
                                       camera->getPosition().Z + 2.0f));
-            pdprintf(printf("6b\n"));
+                pdprintf(printf("6b\n"));
                 lightCam->setTarget(camera->getPosition());
-            pdprintf(printf("6c\n"));
+                pdprintf(printf("6c\n"));
                 lightCam->setFarValue(DEFAULT_FAR_VALUE);
-            pdprintf(printf("6d\n"));
+                pdprintf(printf("6d\n"));
                 smgr->setActiveCamera(lightCam);
 
-            pdprintf(printf("6e\n"));
+                pdprintf(printf("6e\n"));
                 lightCam->OnAnimate(tick);
-            pdprintf(printf("6f\n"));
+                pdprintf(printf("6f\n"));
                 lightCam->OnRegisterSceneNode();
-            pdprintf(printf("6g\n"));
+                pdprintf(printf("6g\n"));
                 lightCam->render();
-            pdprintf(printf("6h\n"));
+                pdprintf(printf("6h\n"));
                 driver->setTransform(ETS_VIEW, lightCam->getViewMatrix());
                 driver->setTransform(ETS_PROJECTION, lightCam->getProjectionMatrix());
 
-            pdprintf(printf("6i\n"));
+                pdprintf(printf("6i\n"));
     			driver->setRenderTarget(shadowMapGame, true, true, video::SColor(0, 0, 0, 0));
                 
-            pdprintf(printf("6j\n"));
+                pdprintf(printf("6j\n"));
                 for (int i = 0; i<shadowNodes.size();i++)
                 {
                     if (shadowNodes[i]->isVisible() && camera->getPosition().getDistanceFrom(shadowNodes[i]->getPosition())<160.f)
@@ -1471,19 +987,19 @@ this value is not used, it only specifies the amount of default colors available
                             max_shadow = 1.0f;
                             cardraw = true;
                         }
-            pdprintf(printf("6k\n"));
+                        pdprintf(printf("6k\n"));
                         shadowNodes[i]->OnAnimate(tick);
-            pdprintf(printf("6l\n"));
+                        pdprintf(printf("6l\n"));
                         shadowNodes[i]->OnRegisterSceneNode();
-            pdprintf(printf("6m cardraw: %u, shadowNodes[i]: %p, i: %u/%u\n", cardraw, shadowNodes[i], i, shadowNodes.size()));
+                        pdprintf(printf("6m cardraw: %u, shadowNodes[i]: %p, i: %u/%u\n", cardraw, shadowNodes[i], i, shadowNodes.size()));
                         shadowNodes[i]->render();
-            pdprintf(printf("6n\n"));
+                        pdprintf(printf("6n\n"));
                         shadowObjs++;
                         //shadowObjsPolys += objectNodes[i]->getTriangleSelector()->getTriangleCount();
                         if (cardraw)
                         {
-                           max_shadow = 0.0f;
-                           cardraw = false;
+                            max_shadow = 0.0f;
+                            cardraw = false;
                         }
     
                         const u32 BufferMaterialListSize = BufferMaterialList.size();
@@ -1491,9 +1007,9 @@ this value is not used, it only specifies the amount of default colors available
                             shadowNodes[i]->getMaterial(m).MaterialType = (E_MATERIAL_TYPE)BufferMaterialList[m];
                     }
                 }
-            pdprintf(printf("6o\n"));
+                pdprintf(printf("6o\n"));
                 smgr->setActiveCamera(camera);
-            pdprintf(printf("6p\n"));
+                pdprintf(printf("6p\n"));
             }
 
             pdprintf(printf("8\n"));
@@ -1521,7 +1037,13 @@ this value is not used, it only specifies the amount of default colors available
                 {
                     for (int i = 0; i<depthNodes.size();i++)
                     {
-                        if (depthNodes[i]->isVisible())
+                        if (depthNodes[i]->isVisible() &&
+                            car && (car->getSceneNode()==depthNodes[i] ||
+                            car->getTyreSceneNode(0)==depthNodes[i] ||
+                            car->getTyreSceneNode(1)==depthNodes[i] ||
+                            car->getTyreSceneNode(2)==depthNodes[i] ||
+                            car->getTyreSceneNode(3)==depthNodes[i])
+                            )
                         {
                             const u32 CurrentMaterialCount = depthNodes[i]->getMaterialCount();
                             core::array<irr::s32> BufferMaterialList(CurrentMaterialCount);
@@ -1563,92 +1085,44 @@ this value is not used, it only specifies the amount of default colors available
 #ifdef USE_MRT
                 driver->setRenderTarget(mrtList, true, true, video::SColor(0, 255, 255, 0));
 #else
-                driver->setRenderTarget(screenRTT[(usedScreenRTT)%MAX_SCREENRTT], true, true, video::SColor(0, 255, 255, 0));
+                driver->setRenderTarget(screenRTT[usedScreenRTT], true, true, video::SColor(0, 255, 255, 0));
 #endif
                 pdprintf(printf("10c\n"));
                 smgr->drawAll();
                 pdprintf(printf("10d\n"));
-                /* // for the new way depth
-                driver->setRenderTarget(depthRTT, true, true, video::SColor(0, 0, 0, 0));
-                //smgr->setActiveCamera(camera);
-                //camera->OnAnimate(tick);
-                //camera->OnRegisterSceneNode();
-                //camera->render();
-                driver->setTransform(ETS_VIEW, camera->getViewMatrix());
-                driver->setTransform(ETS_PROJECTION, camera->getProjectionMatrix());
-                for (int i = 0; i<depthNodes.size();i++)
-                {
-                    depthNodes[i]->setVisible(true);
-                    depthNodes[i]->OnAnimate(tick);
-                    //depthNodes[i]->OnRegisterSceneNode();
-                    depthNodes[i]->render();
-                    depthNodes[i]->setVisible(false);
-                }
-                */
 #if 1
 	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
-	            //driver->setRenderTarget(screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT], true, true, video::SColor(0, 255, 255, 0));
-                if (!useBgImageToRender)
-	            {
-                    int i = 1;
-                    int j = 1;
-                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%MAX_SCREENRTT]);
-                    //for (;i<MAX_SCREENRTT && j<3;i+=1, j++)
-                    //  screenQuad.getMaterial().setTexture(j, screenRTT[(usedScreenRTT+i)%3]);
-                    screenQuad.getMaterial().setTexture(1, depthRTT);
-                    screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
-                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
-                    screenQuad.render(driver);
-                    /*
-    	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
-                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT]);
-                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)EMT_SOLID;
-                    screenQuad.render(driver);
-                    */
-                }
-                //currentScreenRTT++;
+                screenQuad.getMaterial().setTexture(0, screenRTT[usedScreenRTT]);
+                screenQuad.getMaterial().setTexture(1, depthRTT);
+                screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
+                screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
+                screenQuad.render(driver);
 #else
-	            driver->setRenderTarget(screenRTT[(bloomScreenRTT)%MAX_SCREENRTT], true, true, video::SColor(0, 0, 0, 0));
-                driver->draw2DImage(screenRTT[(usedScreenRTT)%MAX_SCREENRTT],
-                    core::rect<s32>(0,0,screenRTT[(bloomScreenRTT)%MAX_SCREENRTT]->getOriginalSize().Width,
-                        screenRTT[(bloomScreenRTT)%MAX_SCREENRTT]->getOriginalSize().Height),
-                    core::rect<s32>(0,0,screenRTT[(usedScreenRTT)%MAX_SCREENRTT]->getOriginalSize().Width,
-                        screenRTT[(usedScreenRTT)%MAX_SCREENRTT]->getOriginalSize().Height),
+	            driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
+                driver->draw2DImage(screenRTT[usedScreenRTT],
+                    core::rect<s32>(0,0,screenRTT[bloomScreenRTT]->getOriginalSize().Width,
+                        screenRTT[bloomScreenRTT]->getOriginalSize().Height),
+                    core::rect<s32>(0,0,screenRTT[usedScreenRTT]->getOriginalSize().Width,
+                        screenRTT[usedScreenRTT]->getOriginalSize().Height),
 					0,
-                    colors
+                    colors_for_hdr
 				);
-	            //driver->setRenderTarget(screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT], true, true, video::SColor(0, 255, 255, 0));
-                if (!useBgImageToRender)
-	            {
-                    int i = 1;
-                    int j = 1;
-                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%MAX_SCREENRTT]);
-                    screenQuad.getMaterial().setTexture(1, screenRTT[(bloomScreenRTT)%MAX_SCREENRTT]);
-                    //for (;i<MAX_SCREENRTT && j<3;i+=1, j++)
-                    //  screenQuad.getMaterial().setTexture(j, screenRTT[(usedScreenRTT+i)%3]);
-                    //screenQuad.getMaterial().setTexture(1, depthRTT);
-                    //screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
-                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
-    	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
-                    screenQuad.render(driver);
-                    /*
-    	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
-                    screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT+1)%MAX_SCREENRTT]);
-                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)EMT_SOLID;
-                    screenQuad.render(driver);
-                    */
-                }
+                screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%MAX_SCREENRTT]);
+                screenQuad.getMaterial().setTexture(1, screenRTT[(bloomScreenRTT)%MAX_SCREENRTT]);
+                screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
+	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
+                screenQuad.render(driver);
 #endif
-           }
-           else
-           {
+            }
+            else
+            {
                 driver->setRenderTarget(0, true, true, video::SColor(0, 0, 0, 255));
                 pdprintf(printf("10e\n"));
                 smgr->drawAll();
                 pdprintf(printf("10f\n"));
-           }
-           if (draw_hud && car)
-           {
+            }
+            if (draw_hud && car)
+            {
                 int gear = car->getGear();
                 if (gear >= 0 && gear < MAX_HUD)
                 {
@@ -1659,73 +1133,34 @@ this value is not used, it only specifies the amount of default colors available
                 }
                 else
                     hudImage->setImage(hudTextures[0]);
-           }
-           //driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
-           //test.getMaterial().setTexture(0, hudCompassTexture);
-           //test.render(driver);
-           // draw hud stuff 1: compass
-           pdprintf(printf("11\n"));
-           if (bigTerrain)
-           {
+            }
+            pdprintf(printf("11\n"));
+            if (bigTerrain)
+            {
                 pdprintf(printf("11a\n"));
                 nearestCP = bigTerrain->updatePos(offsetManager->getOffset().X+camera->getPosition().X,
                     offsetManager->getOffset().Z+camera->getPosition().Z, density_objects, false);
                 pdprintf(printf("11b\n"));
-                /*
-                if (showCompass && inGame == 0)
-                {
-                    lookDir.Y = 0.f;
-                    nearestCP.Y = 0.f;
-                    lookDir.normalize();
-                    nearestCP.normalize();
-                    compassDotp = lookDir.dotProduct(nearestCP);
-                    compassAngle = acosf(compassDotp) * 57.2956; //* 180.f / 3.14f;
-                    if (nearestCP.X*lookDir.Z - nearestCP.Z*lookDir.X < 0) compassAngle = -compassAngle;
-                    
-                    hudPos = hudPos3;
-                    hudPos.rotateBy(compassAngle, hudCenter3);
-                    hudPos2d.X = (s32)hudPos.X;
-                    hudPos2d.Y = (s32)hudPos.Y;
-    
-                    //hudPos2d2 = hudCenter2d3 - (hudPos2d - hudCenter2d3);
-                    
-                    //driver->draw2DLine(hudPos2d, hudPos2d2, SColor(255,255,0,0));
-                    //hudPos2d2 = hudPos2d;
-    
-                    hudPos = hudPos3l;
-                    hudPos.rotateBy(compassAngle, hudCenter3);
-                    hudPos2d2.X = (s32)hudPos.X;
-                    hudPos2d2.Y = (s32)hudPos.Y;
-                    //driver->draw2DLine(hudPos2d, hudPos2d2, SColor(255,255,0,0));
-    
-                    hudPos = hudPos3r;
-                    hudPos.rotateBy(compassAngle, hudCenter3);
-                    hudPos2d3.X = (s32)hudPos.X;
-                    hudPos2d3.Y = (s32)hudPos.Y;
-                    //driver->draw2DLine(hudPos2d, hudPos2d2, SColor(255,255,0,0));
-    
-                    hudPos = hudPos3c;
-                    hudPos.rotateBy(compassAngle, hudCenter3);
-                    hudPos2d4.X = (s32)hudPos.X;
-                    hudPos2d4.Y = (s32)hudPos.Y;
-                    
-                    driver->draw2DLine(hudPos2d, hudPos2d2, SColor(255,255,0,0));
-                    driver->draw2DLine(hudPos2d2, hudPos2d4, SColor(255,255,0,0));
-                    driver->draw2DLine(hudPos2d4, hudPos2d3, SColor(255,255,0,0));
-                    driver->draw2DLine(hudPos2d3, hudPos2d, SColor(255,255,0,0));
-                }
-                */
-           }
-           if (bigTerrain && showMap)
-           {
+            }
+            if (bigTerrain && showMap)
+            {
+                //const int mapDef = (screenSize.Height>bigTerrain->getMapTexture()->getOriginalSize().Height+40) ? 0 : (bigTerrain->getMapTexture()->getOriginalSize().Height - screenSize.Height + 40);
+                const int mapSizeX = (screenSize.Width - 40 > bigTerrain->getMapTexture()->getOriginalSize().Width) ? bigTerrain->getMapTexture()->getOriginalSize().Width : (screenSize.Width - 40);
+                const int mapSizeY = (screenSize.Height - 40 > bigTerrain->getMapTexture()->getOriginalSize().Height) ? bigTerrain->getMapTexture()->getOriginalSize().Height : (screenSize.Height - 40);
+                const int mapUpX = (screenSize.Width-mapSizeX) / 2;
+                const int mapUpY = (screenSize.Height-mapSizeY) / 2;
+                const core::position2d<s32> mapPos(mapUpX, mapUpY);
+                const core::dimension2di mapSize(mapSizeX, mapSizeY);
                 core::position2d<s32> userPosOnMap;
-                userPosOnMap.X = (s32)(((offsetManager->getOffset().X+camera->getPosition().X)/TERRAIN_SCALE) * bigTerrain->getMapScale());
+                userPosOnMap.X = (s32)(((offsetManager->getOffset().X+camera->getPosition().X)/TERRAIN_SCALE) * bigTerrain->getMapScaleX());
 #ifdef USE_IMAGE_HM
-                userPosOnMap.Y = (s32)(((float)bigTerrain->getHeightMap()->getDimension().Height - 1.0f - ((offsetManager->getOffset().Z+camera->getPosition().Z)/TERRAIN_SCALE)) * bigTerrain->getMapScale());
+                userPosOnMap.Y = (s32)(((float)bigTerrain->getHeightMap()->getDimension().Height - 1.0f - ((offsetManager->getOffset().Z+camera->getPosition().Z)/TERRAIN_SCALE)) * bigTerrain->getMapScaleY());
 #else
-                userPosOnMap.Y = (s32)(((float)bigTerrain->getHeightMap()->getYSize() - 1 - ((offsetManager->getOffset().Z+camera->getPosition().Z)/TERRAIN_SCALE)) * bigTerrain->getMapScale());
+                userPosOnMap.Y = (s32)(((float)bigTerrain->getHeightMap()->getYSize() - 1 - ((offsetManager->getOffset().Z+camera->getPosition().Z)/TERRAIN_SCALE)) * bigTerrain->getMapScaleY());
 #endif
                 userPosOnMap += bigTerrain->getMapUp();
+                //printf("map  size: %d, %d\n", bigTerrain->getMapTexture()->getSize().Width, bigTerrain->getMapTexture()->getSize().Height);
+                //printf("map osize: %d, %d\n", bigTerrain->getMapTexture()->getOriginalSize().Width, bigTerrain->getMapTexture()->getOriginalSize().Height);
                 //printf("useron map: %d, %d\n", userPosOnMap.X, userPosOnMap.Y);
                 core::dimension2di drawOffset = userPosOnMap - mapSize / 2;
                 core::dimension2di drawOffsetUser = mapSize / 2;
@@ -1739,33 +1174,32 @@ this value is not used, it only specifies the amount of default colors available
                     drawOffsetUser.Height += drawOffset.Height;
                     drawOffset.Height = 0;
                 }
-                if (drawOffset.Width + mapSizeX > hudMapTextures[0]->getSize().Width)
+                if (drawOffset.Width + mapSizeX > bigTerrain->getMapTexture()->getOriginalSize().Width)
                 {
-                    drawOffsetUser.Width += drawOffset.Width - (hudMapTextures[0]->getSize().Width - mapSizeX);
-                    drawOffset.Width = hudMapTextures[0]->getSize().Width - mapSizeX;
+                    drawOffsetUser.Width += drawOffset.Width - (bigTerrain->getMapTexture()->getOriginalSize().Width - mapSizeX);
+                    drawOffset.Width = bigTerrain->getMapTexture()->getOriginalSize().Width - mapSizeX;
                 }
-                if (drawOffset.Height + mapSizeY > hudMapTextures[0]->getSize().Height)
+                if (drawOffset.Height + mapSizeY > bigTerrain->getMapTexture()->getOriginalSize().Height)
                 {
-                    drawOffsetUser.Height += drawOffset.Height - (hudMapTextures[0]->getSize().Height - mapSizeY);
-                    drawOffset.Height = hudMapTextures[0]->getSize().Height - mapSizeY;
+                    drawOffsetUser.Height += drawOffset.Height - (bigTerrain->getMapTexture()->getOriginalSize().Height - mapSizeY);
+                    drawOffset.Height = bigTerrain->getMapTexture()->getOriginalSize().Height - mapSizeY;
                 }
                 //printf("drawoffset: %d, %d\n", drawOffset.Width, drawOffset.Height);
-                driver->draw2DImage(hudMapTextures[0], mapPos, core::rect<s32>(drawOffset.Width, drawOffset.Height, drawOffset.Width+mapSizeX, drawOffset.Height+mapSizeY));
+                driver->draw2DImage(bigTerrain->getMapTexture(), mapPos, core::rect<s32>(drawOffset.Width, drawOffset.Height, drawOffset.Width+mapSizeX, drawOffset.Height+mapSizeY));
                 //printf("drawoffsetuser: %d, %d\n", drawOffsetUser.Width, drawOffsetUser.Height);
+                drawOffsetUser.Width -= (hudUserOnMapTexture->getOriginalSize().Width/2);
+                drawOffsetUser.Height -= (hudUserOnMapTexture->getOriginalSize().Height/2);
                 driver->draw2DImage(hudUserOnMapTexture, mapPos+drawOffsetUser,
-                    core::rect<s32>(0,0,hudUserOnMapTexture->getSize().Width, hudUserOnMapTexture->getSize().Height),
+                    core::rect<s32>(0,0,hudUserOnMapTexture->getOriginalSize().Width, hudUserOnMapTexture->getOriginalSize().Height),
                     0, SColor(255, 255, 255, 255), true);
-           }
-           //((eventreceiver*)device->getEventReceiver())->prerender();
-           pdprintf(printf("12\n"));
-           env->drawAll();
-           pdprintf(printf("12b\n"));
-           ((eventreceiver*)device->getEventReceiver())->render();
-           //printf("render\n");
-           // draw hud stuff 2: speedometer
-           pdprintf(printf("13\n"));
-           if (draw_hud && car && inGame == 0)
-           {
+            }
+            pdprintf(printf("12\n"));
+            env->drawAll();
+            pdprintf(printf("12b\n"));
+            ((eventreceiver*)device->getEventReceiver())->render();
+            pdprintf(printf("13\n"));
+            if (draw_hud && car && inGame == 0)
+            {
                 // speed
                 f64 speed = (f64)(fabsf(car->getSpeed())*hud_speed_multiplier);
                 hudPos = hudPos1;
@@ -1778,9 +1212,13 @@ this value is not used, it only specifies the amount of default colors available
 
                 // engine rotate
                 if (car->getEngineRotate() > 0.f)
+                {
                     speed = (f64)(fabsf(car->getEngineRotate())*60.f-30.f);
+                }
                 else
+                {
                     speed = 0.0;
+                }
                 hudPos = hudPos2;
                 hudPos.rotateBy(speed, hudCenter2);
                 
@@ -1788,45 +1226,44 @@ this value is not used, it only specifies the amount of default colors available
                 hudPos2d.Y = (s32)hudPos.Y;
                 
                 driver->draw2DLine(hudPos2d, hudCenter2d2,SColor(255,255,0,0));
-           }
-           driver->endScene();
-           //device->run();
-           device->getTimer()->tick();
-           drawTick = device->getTimer()->getTime() - tick;
-           // with sleep
-           if (fps_compensation)
-           {
-              newtonUpdateCount = (drawTick + 16) / 16;
-              /*
-              if (newtonUpdateCount < newtonUpdateCount_last)
-              {
-                fasterDraw--;
-                if (fasterDraw)
+            }
+            driver->endScene();
+            device->getTimer()->tick();
+            drawTick = device->getTimer()->getTime() - tick;
+            // with sleep
+            if (fps_compensation)
+            {
+                newtonUpdateCount = (drawTick + 16) / 16;
+                /*
+                if (newtonUpdateCount < newtonUpdateCount_last)
                 {
-                    newtonUpdateCount = newtonUpdateCount_last;
+                    fasterDraw--;
+                    if (fasterDraw)
+                    {
+                        newtonUpdateCount = newtonUpdateCount_last;
+                    }
+                    else
+                    {
+                        fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
+                    }
                 }
                 else
                 {
                     fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
                 }
-              }
-              else
-              {
-                fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
-              }
-              */
-              //newtonUpdateCount = 2;
-              sleepTime = (newtonUpdateCount * 16) - drawTick + (newtonUpdateCount/2);
-           }
-           newtonUpdateCount_last = newtonUpdateCount;
-           newtonUpdateCount = newtonUpdateCount & 0x0F;
-           //printf("dt: %u nuc: %u st: %u\n", drawTick, newtonUpdateCount, sleepTime);
-           pdprintf(printf("14\n"));
-           // display frames per second in window title
-		   int fps = driver->getFPS();
-           //tick = device->getTimer()->getTime();
-		   if (lastFPS != fps || tick - lastPrintout > 1000)
-		   {
+                */
+                //newtonUpdateCount = 2;
+                sleepTime = (newtonUpdateCount * 16) - drawTick + (newtonUpdateCount/2);
+            }
+            newtonUpdateCount_last = newtonUpdateCount;
+            if (newtonUpdateCount > 16) newtonUpdateCount = 16;
+            //printf("dt: %u nuc: %u st: %u\n", drawTick, newtonUpdateCount, sleepTime);
+            pdprintf(printf("14\n"));
+            // display frames per second in window title
+            int fps = driver->getFPS();
+            //tick = device->getTimer()->getTime();
+            if (lastFPS != fps || tick - lastPrintout > 1000)
+            {
                 if (car && bigTerrain)
                 {
                     core::stringw str;
@@ -1838,21 +1275,17 @@ this value is not used, it only specifies the amount of default colors available
         
                         str = L"POLYS: ";
                         str += driver->getPrimitiveCountDrawn();
+#ifdef USE_EDITOR
                         str += L", D: ";
                         str += drawnObjs;
-                        str += L" (";
-                        str += drawnObjsPolys;
-                        str += L"), ND: ";
+                        str += L", ND: ";
                         str += notDrawnObjs;
-                        str += L" (";
-                        str += notDrawnObjsPolys;
-                        str += L"), SH: ";
+                        str += L", SH: ";
                         str += shadowObjs;
-                        str += L" (";
-                        str += shadowObjsPolys;
-                        str += L")";
+#endif // USE_EDITOR
                         polyText->setText(str.c_str());
         
+#ifdef USE_EDITOR
                         str = L"POS: ";
                         str += (int)(offsetManager->getOffset().X+camera->getPosition().X);
                         str += ", ";
@@ -1877,44 +1310,8 @@ this value is not used, it only specifies the amount of default colors available
 #endif
                         str += ")";
                         posText->setText(str.c_str());
-                        
+#endif // USE_EDITOR
                     }
-/*
-                    str = L"Demage: ";
-                    str += (int)(car->getDemagePer());
-                    str += "%";
-                    demageText->setText(str.c_str());
-    
-                    str = L"Speed: ";
-                    str += (int)(car->getSpeed()*1.6f); // 3.0f
-                    str += " km/h (";
-                    if (gear_type=='a')
-                        str += L"A";
-                    else
-                        str += L"M";
-                    str += ": ";
-                    str += (int)(car->getGear()); // 3.0f
-                    str += ")";
-                    speedText->setText(str.c_str());
-                    
-                    //u32 endTime = bigTerrain->getEndTime() ? bigTerrain->getEndTime() : tick + bigTerrain->getPenality();
-                    u32 diffTime;
-                    if (bigTerrain->getTimeEnded())
-                        diffTime = bigTerrain->getCurrentTime();
-                    else
-                        diffTime = bigTerrain->getCurrentTime() + bigTerrain->getPenality();//bigTerrain->getStartTime()? (endTime - bigTerrain->getStartTime()):0;
-                    // stage time
-                    str = L"Time: ";
-                    BigTerrain::addTimeToStr(str, diffTime);
-                    // stagetime plus global time
-                    diffTime += globalTime;
-                    str += L" (";
-                    BigTerrain::addTimeToStr(str, diffTime);
-                    //str += day_delta_multi;
-                    str += L")";
-                    timeText->setText(str.c_str());
-*/    
-                    //bigTerrain->updatePos(camera->getPosition().X, camera->getPosition().Z, density_objects, density_grasses, false);
                 }
                 pdprintf(printf("14c\n"));
                 MessageText::updateText(tick);
@@ -1925,51 +1322,15 @@ this value is not used, it only specifies the amount of default colors available
                 lastPrintout = tick;
                 if (quitGame) break;
                 calculate_day_delta(tick);
-          }
-          pdprintf(printf("14d\n"));
-          if (car && bigTerrain)
-          {
+            }
+            pdprintf(printf("14d\n"));
+            
+            if (car && bigTerrain)
+            {
                 core::stringw str;
                 str = L"Damage: ";
                 str += (int)(car->getDemagePer());
                 str += "%";
-                /*
-                // remove me
-                str += ", ";
-                str += drawTick;
-                str += ", ";
-                str += sleepTime;
-                str += ", ";
-                str += newtonUpdateCount;
-                */
-                /*
-                if (car)
-                {
-                    str += (int)(car->getFriction(0)*100.f);
-                    str += ", ";
-                    str += (int)(car->getFriction(1)*100.f);
-                    str += ", ";
-                    str += (int)(car->getFriction(2)*100.f);
-                    str += ", ";
-                    str += (int)(car->getFriction(3)*100.f);
-                
-                    str += car->getHitBody(0);
-                    str += ", ";
-                    str += car->getHitBody(1);
-                    str += ", ";
-                    str += car->getHitBody(2);
-                    str += ", ";
-                    str += car->getHitBody(3);
-
-                    str += car->getHitBodyID(0);
-                    str += ", ";
-                    str += car->getHitBodyID(1);
-                    str += ", ";
-                    str += car->getHitBodyID(2);
-                    str += ", ";
-                    str += car->getHitBodyID(3);
-                }
-                */
                 demageText->setText(str.c_str());
         
                 str = L"Speed: ";
@@ -1984,12 +1345,15 @@ this value is not used, it only specifies the amount of default colors available
                 str += ")";
                 speedText->setText(str.c_str());
                 
-                //u32 endTime = bigTerrain->getEndTime() ? bigTerrain->getEndTime() : tick + bigTerrain->getPenality();
                 u32 diffTime;
                 if (bigTerrain->getTimeEnded())
+                {
                     diffTime = bigTerrain->getCurrentTime();
+                }
                 else
-                    diffTime = bigTerrain->getCurrentTime() + bigTerrain->getPenality();//bigTerrain->getStartTime()? (endTime - bigTerrain->getStartTime()):0;
+                {
+                    diffTime = bigTerrain->getCurrentTime() + bigTerrain->getPenality();
+                }
                 // stage time
                 str = L"Time: ";
                 BigTerrain::addTimeToStr(str, diffTime);
@@ -2000,128 +1364,105 @@ this value is not used, it only specifies the amount of default colors available
                 //str += day_delta_multi;
                 str += L")";
                 timeText->setText(str.c_str());
-          }
-          if (editorMode && car && bigTerrain && inGame == 0)
-          {
+            }
+#ifdef USE_EDITOR
+            if (editorMode && car && bigTerrain && inGame == 0)
+            {
                 pdprintf(printf("14e\n"));
                 updateEditor(); // TODO: put back into the one sec. update
-          }
-          pdprintf(printf("15\n"));
-          /*
-          if (isMultiplayer)
-          {
+            }
+#endif // USE_EDITOR
+            pdprintf(printf("15\n"));
+          
+#ifdef USE_MULTIPLAYER
+            if (isMultiplayer)
+            {
                 if (tick > lastMP + send_server_delay)
                 {
                     updateConnection();
                     lastMP = tick;
                 }
-          }
-          */
-          // Update newton 100 times / second
-          //tick = device->getTimer()->getTime();
-          //saveLastTick = lasttick; // remove me
-          if (inGame == 0)
-          {
-              if (newtonUpdateCount
-                  /*tick >= lasttick + 16*/
-                  /*(1000/min_fps*//*(lastFPS+1)) && inGame == 0*/
-                 )
-              {
-                  if (bigTerrain)
-                      bigTerrain->checkMapsQueue();
-                  if (bigTerrain)
-                      bigTerrain->updateTime(tick);
-                  //#ifndef USE_EDITOR
-                      if (raceEngine)
-                          raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
-                  //#endif
-                  //for (int i = 0; i<2; i++)
-                  //int newtonUpdateCount = 0;
-                  while (newtonUpdateCount/*lasttick+16<=tick*/)
-                  {
-                      if (car)
-                      {
-                          //if (car->getBrake()>0.f)
-                          //    car->applyHandBrakes(car->getBrake());
-                          //car->applyTireTorque(car->getTorqueReal());
-                          float kbs = car->getSteerKb();
-                          //printf("kbs: %f\n", kbs);
-                          if (fabsf(kbs) > 0.01f)
-                          {
-                              float cs = car->getSteer();
-                              if (fabsf(kbs-cs) > car->getSteerRate()/*0.01f*/)
-                              {
+            }
+#endif // USE_MULTIPLAYER
+          
+            if (inGame == 0)
+            {
+                if (newtonUpdateCount)
+                {
+                    if (bigTerrain)
+                    {
+                        bigTerrain->checkMapsQueue();
+                        bigTerrain->updateTime(tick);
+                    }
+                    if (raceEngine)
+                    {
+                        raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
+                    }
+                    while (newtonUpdateCount)
+                    {
+                        if (car)
+                        {
+                            float kbs = car->getSteerKb();
+                            if (fabsf(kbs) > 0.01f)
+                            {
+                                float cs = car->getSteer();
+                                if (fabsf(kbs-cs) > car->getSteerRate()/*0.01f*/)
+                                {
                                     //car->setSteering(kbs);
                                     if (kbs > cs)
                                        car->setSteering(cs + car->getSteerRate());
                                     else
                                         if (kbs < cs)
                                            car->setSteering(cs - car->getSteerRate());
-                              }
-                              else
-                                       car->setSteering(kbs);
-                          }
-                          //car->applySteering(car->getSteer());
-                          //if (gear_type=='a')
-                          //  car->updateGear();
+                                }
+                                else
+                                {
+                                    car->setSteering(kbs);
+                                }
+                            }
                           
-                          if (isMultiplayer)
-                            updateOtherDatas();
+#ifdef USE_MULTIPLAYER
+                            if (isMultiplayer)
+                            {
+                                updateOtherDatas();
+                            }
+#endif // USE_MULTIPLAYER
     
-                          pdprintf(printf("16b\n"));
-                          vehiclePool->updateActiveVehicles();
-                      }
-                      pdprintf(printf("17\n"));
-                      //NewtonWorldCriticalSectionLock(nWorld);
-                      pdprintf(printf("17b\n"));
-                      NewtonUpdate(nWorld, 0.015f/*1.066667f*/);
-                      //NewtonWorldCriticalSectionUnlock(nWorld);
-                      pdprintf(printf("17c\n"));
-                      lasttick += 16;
-                      newtonUpdateCount--;
-                      /*
-                      if (newtonUpdateCount>=4)
-                      {
-                        lasttick = tick;
-                      }
-                      */
-                  }
-                  //drawCount = newtonUpdateCount; // remove me
-                  pdprintf(printf("18\n"));
-                  soundEngine->setListenerPosition(camera->getPosition(), camera->getTarget()-camera->getPosition());
-                  //lasttick = tick;
-              }
-          }
-          else
-          {
-            lasttick = tick;
-          }
-          //device->run();
-          //otherTick = device->getTimer()->getTime();
-          //lastTickDiff = tick - lasttick;
-          if (sleepTime > 1 && sleepTime < 1000)
-            device->sleep(sleepTime);
-          //printf("%u %u %u %u\n", tick - saveLastTick, drawTick - tick, otherTick - drawTick, drawCount);
-       }
-       else
-       {
+                            pdprintf(printf("16b\n"));
+                            vehiclePool->updateActiveVehicles();
+                        }
+                        pdprintf(printf("17\n"));
+                        NewtonUpdate(nWorld, 0.015f/*1.066667f*/);
+                        pdprintf(printf("17c\n"));
+                        lasttick += 16;
+                        newtonUpdateCount--;
+                    }
+                    pdprintf(printf("18\n"));
+                    soundEngine->setListenerPosition(camera->getPosition(), camera->getTarget()-camera->getPosition());
+                }
+            }
+            else // inGame == 0
+            {
+                lasttick = tick;
+            }
+            
+            if (sleepTime > 1 && sleepTime < 1000)
+            {
+                device->sleep(sleepTime);
+            }
+        }
+        else // device->isWindowActive()
+        {
             if (inGame == 0)
             {
                 printf("save state\n");
                 saveState();
             }
             menu_receiver->openMainWindow();
-            /*
-            driver->beginScene(true, true, SColor(0,192,192,192));
-            smgr->drawAll();
-            env->drawAll();
-            driver->endScene();
-            */
             device->sleep(100);
             lasttick = device->getTimer()->getTime();
-            //lastTickDiff = 0;
-       }
-	}
+        }
+    } // while (run)
 
     if (reinitialize)
     {
@@ -2136,8 +1477,10 @@ this value is not used, it only specifies the amount of default colors available
     driver->setMaterial(video::SMaterial());
     printf("end game\n");
 	endGame();
+#ifdef USE_MULTIPLAYER
     printf("disconnect from server\n");
 	disconnectFromServer(false);
+#endif // USE_MULTIPLAYER
     printf("delete event receivers\n");
 	delete menu_receiver; //.releaseResources();
 	delete game_receiver; //.releaseResources();
@@ -2235,7 +1578,7 @@ this value is not used, it only specifies the amount of default colors available
     //else
     //    device->drop();
     
-    } while (reinitialize);
+    } while (0/*reinitialize*/);
 
     printf("return 0\n");
     return(0);

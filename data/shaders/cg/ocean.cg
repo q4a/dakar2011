@@ -119,12 +119,13 @@ struct v2f {
 };
 
 
-float4 main_f(v2f IN,
+void main_f(v2f IN,
 			uniform sampler2D NormalMap,
 			uniform sampler2D envMap,
 //			uniform samplerCUBE EnvironmentMap,
-                        uniform float day_multi
-			) : COLOR
+                  uniform float day_multi,
+                  out float4 oColor : COLOR0
+			)
 {
 //const float4 deepColor = float4(0, 0.3, 0.5, 1.0);
 //const float4 shallowColor = float4(0, 1, 1, 1.0);
@@ -180,5 +181,5 @@ const float hdrMultiplier = 0.471;
 
     reflection = lerp(waterColor,  reflection * reflectionColor, fresnel) * reflectionAmount;
     
-    return day_effect(waterColor + reflection, float4(0,0,0,0), day_multi);
+    oColor = day_effect(waterColor + reflection, float4(0,0,0,0), day_multi);
 }

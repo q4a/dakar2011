@@ -128,19 +128,13 @@ void CImageGUISkin::draw3DSunkenPane(IGUIElement* element,
 core::rect<s32> CImageGUISkin::draw3DWindowBackground(IGUIElement* element,
             bool drawTitleBar, video::SColor titleBarColor,
             const core::rect<s32>& rect,
-            const core::rect<s32>* clip
-#ifdef IRRLICHT_SDK_17
-            , core::rect<s32>* checkClientArea
-#endif
+            const core::rect<s32>* clip,
+            core::rect<s32>* checkClientArea
             )
 {
     if ( !Config.Window.Texture )
     {
-        return FallbackSkin->draw3DWindowBackground(element, drawTitleBar, titleBarColor, rect, clip
-#ifdef IRRLICHT_SDK_17
-            , checkClientArea
-#endif
-            );
+        return FallbackSkin->draw3DWindowBackground(element, drawTitleBar, titleBarColor, rect, clip, checkClientArea);
     }
     drawElementStyle( Config.Window, rect, clip );
     
@@ -228,11 +222,7 @@ void CImageGUISkin::drawElementStyle( const SImageGUIElementStyle& elem, const c
 {
     core::rect<s32> srcRect;
     core::rect<s32> dstRect;
-#ifdef IRRLICHT_SDK_15
-    core::dimension2d<s32> tsize = elem.Texture->getSize();
-#else
     core::dimension2d<u32> tsize = elem.Texture->getSize();
-#endif
     video::ITexture* texture = elem.Texture;
     
     video::SColor color = elem.Color;

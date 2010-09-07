@@ -88,10 +88,11 @@ void main_f( float4 position 	: POSITION,
              uniform float day_multi,
              uniform float shadowParam,
              uniform float shadowRes,
-             out float4 oColor	: COLOR)
+             out float4 oColor	: COLOR0
+)
 {
   float4 col0 = tex2D(tex0, Uv0);  // sample color map
-  float2 Uv1_ = frac(Uv0*128.0);
+  float2 Uv1_ = Uv0*128.0; // frac(Uv0*128.0);
   float4 col1 = tex2D(tex1, Uv1_);  // tex0
   float4 col2 = tex2D(tex2, Uv1_);  // tex1
   float4 col3 = tex2D(tex3, Uv1_);  // tex2

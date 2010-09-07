@@ -129,7 +129,7 @@ namespace IrrCg
         virtual void setProjectionMatrix( CGparameter param,IRR_CG_TRANSFORM trans ) = 0;
 
         //! Set Your custom Matrix with Transformation.
-        virtual void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,irr::core::matrix4 mat ) = 0;
+        virtual void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,const irr::core::matrix4& mat ) = 0;
 
         //! Get pointer to currently use Irrlicht Device.
         virtual irr::IrrlichtDevice* getDevice() = 0;
@@ -185,7 +185,7 @@ namespace IrrCg
         void setViewMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
         void setViewProjectionMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
         void setProjectionMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
-        void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,irr::core::matrix4 mat );
+        void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,const irr::core::matrix4& mat );
 
         // Core Functions.
         irr::IrrlichtDevice* getDevice();
@@ -243,7 +243,7 @@ namespace IrrCg
         void setViewMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
         void setViewProjectionMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
         void setProjectionMatrix( CGparameter param,IRR_CG_TRANSFORM trans );
-        void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,irr::core::matrix4 mat );
+        void setMatrix( CGparameter param,IRR_CG_TRANSFORM trans,const irr::core::matrix4& mat );
 
         // Core Functions.
         irr::IrrlichtDevice* getDevice();

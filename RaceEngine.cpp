@@ -20,8 +20,8 @@
 
 #include "linux_includes.h"
 
-#define FAR_VALUE (farValue / 2.f)
-#define NEAR_VALUE ((farValue / 2.f)-100.f)
+#define FAR_VALUE ((farValue / 3.f)+400.f)
+#define NEAR_VALUE (farValue / 3.f)
 #ifdef MY_DEBUG
 # define START_SECS 10
 #else
@@ -658,10 +658,10 @@ void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
     for (int i = 0; i < stageState->starters.size(); i++)
     {
         int j = 0;
-        if (stageState->starters[i]->competitor->lastTime == 0) continue;
+        //if (stageState->starters[i]->competitor->lastTime == 0) continue;
         while (j < raceState.size() &&
                (
-                /*(stageState->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime!=0) ||*/
+                (stageState->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime!=0) ||
                 (stageState->starters[i]->competitor->globalTime >= raceState[j]->globalTime)
                )
               )

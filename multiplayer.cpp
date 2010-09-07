@@ -10,6 +10,8 @@
 *                                                               *
 ****************************************************************/
 
+#ifdef USE_MULTIPLAYER
+
 #include <stdlib.h>
 #include <unistd.h>
 //#include <string.h>
@@ -502,3 +504,4 @@ u32 getSec()
 {
     return device->getTimer()->getTime() / 1000;
 }
+#endif // USE_MULTIPLAYER

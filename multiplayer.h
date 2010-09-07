@@ -9,6 +9,9 @@
 *       the game.                                               *
 *                                                               *
 ****************************************************************/
+#ifdef USE_MULTIPLAYER
+#ifndef __MULTIPLAYER_H__
+#define __MULTIPLAYER_H__
 
 #include <sys/time.h>
 #include <time.h>
@@ -94,3 +97,5 @@ time_t getSec()
 }
 #endif
 
+#endif // __MULTIPLAYER_H__
+#endif // USE_MULTIPLAYER

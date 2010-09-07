@@ -93,17 +93,13 @@ extern gui::IGUIStaticText* posText;
 extern gui::IGUIStaticText* speedText;
 extern gui::IGUIStaticText* demageText;
 extern gui::IGUIStaticText* timeText;
-extern gui::IGUIStaticText* compassText;
 extern gui::IGUIStaticText* versionText;
 extern gui::IGUIImage* bgImage;
 extern gui::IGUIImage* hudImage;
-extern gui::IGUIImage* hudCompassImage;
 extern gui::IGUIImage* hudMap;
 extern gui::IGUIImage* hudInfo;
 extern gui::IGUIImage* crossImage;
-extern bool showCompass;
 extern bool showMap;
-extern scene::IAnimatedMeshSceneNode* compassArrow;
 extern scene::ISceneNode* skydome;
 extern scene::IBillboardSceneNode* sunSphere;
 extern video::ITexture* smokeTexture;
@@ -147,8 +143,8 @@ extern video::ITexture* bgImagesTextures[MAX_BGIMAGE+1];
 
 #define MAX_HUD 7
 extern video::ITexture* hudTextures[MAX_HUD+2];
-#define HUD_MAPS 14
-extern video::ITexture* hudMapTextures[HUD_MAPS];
+//#define HUD_MAPS 14
+//extern video::ITexture* hudMapTextures[HUD_MAPS];
 extern video::ITexture* hudUserOnMapTexture;
 
 
@@ -181,8 +177,6 @@ extern CVehiclePool* vehiclePool;
 
 extern SCompetitor* playerCompetitor;
 extern CRaceEngine* raceEngine;
-
-extern TerrainPool* terrainPool;
 
 extern OffsetManager* offsetManager;
 

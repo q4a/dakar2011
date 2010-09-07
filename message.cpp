@@ -18,14 +18,10 @@ u32 MessageText::timeout = 0;
 IrrlichtDevice* MessageText::device = 0;
 core::list<core::stringw> MessageText::messageHistory;
 
-#ifdef IRRLICHT_SDK_15
-void MessageText::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<s32> screenSize)
-#else
 void MessageText::init(IrrlichtDevice* pdevice, IGUIEnvironment* env, core::dimension2d<u32> screenSize)
-#endif
 {
     messageText = env->addStaticText(L"messageText",
-                        core::rect<int>(screenSize.Width/2-200,10/*screenSize.Height/2-50*/,screenSize.Width/2+200,110/*screenSize.Height/2+50*/),
+                        core::rect<int>(screenSize.Width/2-200,10,screenSize.Width/2+200,110),
                         message_bg, // border
                         true,  // wordwrap
                         0, -1,

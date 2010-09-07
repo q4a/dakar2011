@@ -1,4 +1,5 @@
 
+#if 0
 #include "TerrainPool.h"
 #include "settings.h"
 
@@ -53,3 +54,4 @@ void TerrainPool::putTerrain(scene::ITerrainSceneNode* terrain)
     terrain->setVisible(false);
     terrains.push_back(terrain);
 }
+#endif // 0

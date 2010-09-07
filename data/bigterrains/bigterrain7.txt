@@ -7,7 +7,7 @@ data/bigterrains/textures/sand_10.jpg
 data/bigterrains/textures/grass_06.jpg
 data/bigterrains/textures/grass_04.jpg
 data/bigterrains/textures/concrete_03.jpg
-data/skys/fairday.jpg
+data/skys/cleardusk.jpg
 data/roads/roads6.txt
 data/objects/objects7.txt
 data/vehicles/sound/surfaces/sand.wav
@@ -24,3 +24,6 @@ cp_pos: 17180.0 95380.0
 cp_pos: 31170.0 113682.0
 cp_pos: 22200.0 123800.0
 end_pos: 10176.0 127888.0
+map_up: 121 84
+map_down: 218 352
+map_texture: data/bigterrains/maps/map.png

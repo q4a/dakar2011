@@ -2,12 +2,12 @@
 data/bigterrains/heightmaps/stage1_hm.hmbin
 data/bigterrains/densitymaps/stage1_dm.png
 data/bigterrains/texturemaps/stage1_tm.png
-data/bigterrains/textures/dirt_09.jpg
+data/bigterrains/textures/dirt_19.jpg
 data/bigterrains/textures/grass_02.jpg
 data/bigterrains/textures/dirt_03.jpg
 data/bigterrains/textures/dirt_04.jpg
 data/bigterrains/textures/concrete_03.jpg
-data/skys/fairday.jpg
+data/skys/cloudyday.jpg
 data/roads/roads1.txt
 data/objects/objects2.txt
 data/vehicles/sound/surfaces/gravel.wav
@@ -20,6 +20,12 @@ water_height: 3.5
 start_pos: 69468.0 35627.0
 start_offset: 20.0 -20.0
 start_rot: 0.0 -135.0 0.0
-cp_pos: 69468.0 35627.0
-cp_pos: 4962.0 56207.0
+cp_pos: 55373.0 44570.0
+cp_pos: 49206.0 43084.0
+cp_pos: 29287.0 48804.0
+cp_pos: 16524.0 50324.0
+cp_pos: 9593.0 54216.0
 end_pos: 4962.0 56207.0
+map_up: 413 734
+map_down: 691 933
+map_texture: data/bigterrains/maps/map.png

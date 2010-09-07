@@ -9,11 +9,7 @@ DESTNAME = Dakar2011.bin
 
 OBJS = $(SRCS:.cpp=.o)
 
-IRRLICHT_SDK_VER = 17
-#IRRLICHT_DIR = ../irrlicht-1.5.1
 IRRLICHT_DIR = ../irrlicht-1.7.1
-#IRRLICHT_DIR = ../irrlicht-svn/irrlicht-20090825
-#IRRLICHT_DIR = ../irrlicht-svn/irrlicht
 IRRKLANG_DIR = ../irrKlang-1.3.0
 NEWTON_DIR = ../newtonSDK/sdk
 OPENAL_DIR = ../openal-soft-1.10.622
@@ -28,8 +24,8 @@ CG_DEF =
 
 # general compiler settings
 CPPFLAGS = -I. -I$(IRRLICHT_DIR)/include -I$(IRRLICHT_DIR)/source/Irrlicht -I/usr/X11R6/include -I$(IRRKLANG_DIR)/include -I$(NEWTON_DIR) -I$(CG_DIR)/include -I$(OPENAL_DIR)/include  -I$(ALUT_DIR)/include
-CXXFLAGS = -O3 -ffast-math -DIRRLICHT_SDK_$(IRRLICHT_SDK_VER) -DUSE_EDITOR -DIRR_CG_8 -DUSE_MY_SOUNDENGINE
-# -DMY_DEBUG
+CXXFLAGS = -O3 -ffast-math -DUSE_MY_SOUNDENGINE
+# -DMY_DEBUG -DUSE_EDITOR -DUSE_MY_SOUNDENGINE
 #CXXFLAGS = -g -Wall
 
 #default target is Linux
@@ -51,13 +47,13 @@ all_win32 clean_win32: SUF=.exe
 
 SUFFIXES : .o .cpp
 .cpp.o :
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
-#	clang $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
+#	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
+	clang $(CPPFLAGS) $(CXXFLAGS) $(CG_DEF) -c -o $@ $<
 
 all_linux all_win32: $(OBJS)
-	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
-#	clang -o $(DESTNAME) $(OBJS) $(LDFLAGS)
-	$(CXX) -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
+#	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+	clang -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+#	$(CXX) -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
 #	clang -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
 #$(warning Building...)
 #$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(srcs) -o $(DESTNAME) $(LDFLAGS)

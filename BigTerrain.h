@@ -52,8 +52,7 @@ class BigTerrain
 public:
        BigTerrain(const c8* name, IrrlichtDevice* p_device, ISceneManager* p_smgr,
                   IVideoDriver* p_driver, NewtonWorld* p_nWorld, u32 pstageTime, u32 pgtime,
-                  scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap, int p_stageNum,
-                  TerrainPool* p_terrainPool);
+                  scene::ISceneNode* p_skydome, video::ITexture* p_shadowMap, int p_stageNum);
        ~BigTerrain();
 
        core::vector3df updatePos(float newX, float newY, int obj_density, bool force, bool showPerc = false);
@@ -80,10 +79,6 @@ public:
        void setOVLimit(float new_val);
        float getOVLimit();
 
-       void loadRoads_old(const c8* name, ISceneManager* smgr, IVideoDriver* driver,
-                      const vector3df& loc);
-       void destroyRoads_old();
-       
        void loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* driver);
        void destroyObjects();
        
@@ -133,7 +128,9 @@ public:
        core::position2d<s32>& getMapUp() {return mapUp;}
        core::position2d<s32>& getMapDown() {return mapDown;}
        core::dimension2di& getMapSize() {return mapSize;}
-       float getMapScale() { return mapScale;}
+       float getMapScaleX() { return mapScaleX;}
+       float getMapScaleY() { return mapScaleY;}
+       video::ITexture* getMapTexture() {return mapTexture;}
        
 
 private:
@@ -167,24 +164,12 @@ public:
        
        SmallTerrain** map;
 
-       //unsigned int numOfRoads;
-       //IAnimatedMesh** roadMeshes;
-       core::array<SRoadWrapper_old*> roadWrappers_old;
-       //ISceneNode** roadNodes;
-       
-       //unsigned int numOfObjects;
-       //IAnimatedMesh** objectMeshes;
-       //IAnimatedMeshSceneNode** objectNodes;
        core::array<SObjectWrapper*> objectWrappers;
 
        int stHeightmapSize;
        float tScale;
        float ov_limit;
 
-       //unsigned int numOfGrasses;
-       //core::array<SObjectWrapper*> grassWrappers;
-       //ISceneNode** grassNodes;
-       
        vector3df startPos;
        vector3df startOffset;
        vector3df startRot;
@@ -242,17 +227,7 @@ public:
        float speed;
        CMyList<SMapsQueueElement*> mapsQueue;
        scene::ISceneNode* skydome;
-       TerrainPool* m_terrainPool;
-/*       
-       NewtonBody* bodyl;
-       NewtonCollision* collisionl;
-       NewtonBody* bodyr;
-       NewtonCollision* collisionr;
-       NewtonBody* bodyu;
-       NewtonCollision* collisionu;
-       NewtonBody* bodyd;
-       NewtonCollision* collisiond;
-*/
+
        float vscale;
        float waterHeight;
        unsigned int lastMapsQueueUpdate;
@@ -261,7 +236,9 @@ public:
        core::position2d<s32> mapUp;
        core::position2d<s32> mapDown;
        core::dimension2di mapSize;
-       float mapScale;
+       float mapScaleX;
+       float mapScaleY;
+       video::ITexture* mapTexture;
 };
 
 #endif // __BIGTERRAIN_H__
