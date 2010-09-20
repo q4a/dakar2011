@@ -179,7 +179,7 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
 			return true;
 		case irr::KEY_F3:
 		    draw_hud = !draw_hud;
-            hudImage->setVisible(draw_hud);
+            hudImage->setVisible(draw_hud && !useCgShaders);
 			return true;
 		case irr::KEY_F4:
 		    if (car) car->switchLight();

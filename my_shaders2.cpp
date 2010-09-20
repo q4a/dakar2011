@@ -32,11 +32,8 @@ using namespace IrrCg;
 ICgProgrammingServices* gpu = 0;
 
 s32 myMaterialType_light_tex = /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-s32 myMaterialType_light_tex_wfar = video::EMT_SOLID;
 s32 myMaterialType_light_notex = video::EMT_SOLID;
-s32 myMaterialType_light_notex_wfar = video::EMT_SOLID;
 s32 myMaterialType_light_notex_car = video::EMT_SOLID;
-s32 myMaterialType_light_2tex = video::EMT_SOLID;
 s32 myMaterialType_light_2tex_2 = /*video::EMT_SOLID*/video::EMT_DETAIL_MAP;
 s32 myMaterialType_ocean = video::EMT_SOLID/*video::EMT_NORMAL_MAP_SOLID video::EMT_SPHERE_MAP video::EMT_REFLECTION_2_LAYER*/;
 s32 myMaterialType_ocean_fix = video::EMT_SOLID/*video::EMT_NORMAL_MAP_SOLID video::EMT_SPHERE_MAP video::EMT_REFLECTION_2_LAYER*/;
@@ -45,13 +42,16 @@ s32 myMaterialType_light_tex_s = video::EMT_SOLID;
 s32 myMaterialType_light_tex_s_car = /*video::EMT_SOLID video::EMT_SPHERE_MAP*/video::EMT_REFLECTION_2_LAYER;
 s32 myMaterialType_light_tex_s_car_tyre = video::EMT_SOLID;
 s32 myMaterialType_transp = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+s32 myMaterialType_road = video::EMT_SOLID;
 s32 myMaterialType_transp_road = /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 s32 myMaterialType_transp_stat = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-s32 myMaterialType_tex = video::EMT_SOLID;
+s32 myMaterialType_sky = video::EMT_SOLID;
 s32 myMaterialType_shadow = video::EMT_SOLID;
 s32 myMaterialType_depth = video::EMT_SOLID;
 s32 myMaterialType_depthSun = video::EMT_SOLID;
 s32 myMaterialType_screenRTT = video::EMT_SOLID;
+s32 myMaterialType_palca = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
+s32 myMaterialType_sun = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 
 // shadow map
 video::ITexture* shadowMap = 0;
@@ -390,54 +390,6 @@ static float get_day_multi()
 }
 */
 // part of scene: no transparent texture with light, and the terrain, and the car
-
-class MyShaderCallBack2_light_2tex : public ICgShaderConstantSetCallBack
-{
-public:
-    CGparameter	WorldViewProjection, InvWorld, TraWorld, World,
-                lightColor, lightPosition,
-                eyePosition, shininess,
-                tex0, tex1,
-                day_multi,
-                clightPos, clightDir, clight,
-                eyePositionF,
-                pshadowMap, pshadowParam, pshadowRes,
-                ptextureMatrix
-                ;
-public:
-    MyShaderCallBack2_light_2tex(IrrlichtDevice* pdevice,
-                     video::IVideoDriver* pdriver,
-                     scene::ILightSceneNode* plnode) :
-        device(pdevice), driver(pdriver), m_lnode(plnode)
-    {
-    }
-
-    virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
-	{
-	    // Vertex Shader
-        ADD_WORLD_VIEW_PROJ_V
-        ADD_WORLD_V
-        ADD_INV_WORLD_V
-        ADD_TRA_WORLD_V
-        ADD_TEXTURE_MATRIX_V
-        ADD_LIGHT_COL_V
-        ADD_LIGHT_POS_V
-        ADD_EYEPOSITION_SHINE
-        // Pixel Shader
-        ADD_TEXTURE0
-        ADD_TEXTURE1
-        ADD_CAR_LIGHT
-        ADD_DAY_MULTI
-        ADD_EYEPOSITIONF
-        ADD_SHADOWMAP_F
-	}
-
-public:
-	IrrlichtDevice* device;
-	scene::ILightSceneNode* m_lnode;
-    video::IVideoDriver* driver;
-	const video::SMaterial *UsedMaterial;
-};
 
 class MyShaderCallBack2_light_2tex_2 : public ICgShaderConstantSetCallBack
 {
@@ -818,7 +770,7 @@ public:
 };
 
 // part of scene: sky
-class MyShaderCallBack2_tex : public ICgShaderConstantSetCallBack
+class MyShaderCallBack2_sky : public ICgShaderConstantSetCallBack
 {
 public:
     CGparameter	WorldViewProjection,
@@ -829,7 +781,7 @@ public:
                 ptick,
                 prtsm;
 public:
-    MyShaderCallBack2_tex(IrrlichtDevice* pdevice,
+    MyShaderCallBack2_sky(IrrlichtDevice* pdevice,
                      video::IVideoDriver* pdriver,
                      scene::ILightSceneNode* plnode) :
         device(pdevice), driver(pdriver), m_lnode(plnode) {}
@@ -864,7 +816,55 @@ public:
 	const video::SMaterial *UsedMaterial;
 };
 
-// part of scene: grass, road
+// part of scene: road (non-transparent)
+class MyShaderCallBack2_road : public ICgShaderConstantSetCallBack
+{
+public:
+    CGparameter	WorldViewProjection, InvWorld, TraWorld, World,
+                lightColor, lightPosition,
+                eyePosition, shininess,
+                tex0,
+                day_multi,
+                clightPos, clightDir, clight,
+                eyePositionF,
+                pshadowMap, pshadowParam, pshadowRes,
+                ptextureMatrix
+                ;
+public:
+    MyShaderCallBack2_road(IrrlichtDevice* pdevice,
+                     video::IVideoDriver* pdriver,
+                     scene::ILightSceneNode* plnode) :
+        device(pdevice), driver(pdriver), m_lnode(plnode)
+    {
+    }
+
+    virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
+	{
+	    // Vertex Shader
+        ADD_WORLD_VIEW_PROJ_V
+        ADD_WORLD_V
+        ADD_INV_WORLD_V
+        ADD_TRA_WORLD_V
+        ADD_TEXTURE_MATRIX_V
+        ADD_LIGHT_COL_V
+        ADD_LIGHT_POS_V
+        ADD_EYEPOSITION_SHINE
+        // Pixel Shader
+        ADD_TEXTURE0
+        ADD_CAR_LIGHT
+        ADD_DAY_MULTI
+        ADD_EYEPOSITIONF
+        ADD_SHADOWMAP_F
+	}
+
+public:
+	IrrlichtDevice* device;
+	scene::ILightSceneNode* m_lnode;
+    video::IVideoDriver* driver;
+	const video::SMaterial *UsedMaterial;
+};
+
+// part of scene: grass, road (transparent)
 class MyShaderCallBack2_transp : public ICgShaderConstantSetCallBack
 {
 public:
@@ -899,7 +899,6 @@ public:
         ADD_TEXTURE0
         
         ADD_PARAM
-        
         
         ADD_CAR_LIGHT
 
@@ -1068,6 +1067,29 @@ public:
 //	const video::SMaterial *UsedMaterial;
 };
 
+// palca
+class MyShaderCallBack2_palca : public ICgShaderConstantSetCallBack
+{
+public:
+    CGparameter	tex0;
+public:
+    MyShaderCallBack2_palca(IrrlichtDevice* pdevice,
+                     video::IVideoDriver* pdriver,
+                     scene::ILightSceneNode* plnode) :
+        device(pdevice), driver(pdriver), m_lnode(plnode) {}
+
+    virtual void OnSetConstants(ICgServices* services,const CGeffect& Effect,const CGpass& Pass,const CGprogram& Vertex,const CGprogram& Pixel,const irr::video::SMaterial& Material)
+	{
+        ADD_TEXTURE0
+	}
+
+public:
+	IrrlichtDevice* device;
+	scene::ILightSceneNode* m_lnode;
+    video::IVideoDriver* driver;
+//	const video::SMaterial *UsedMaterial;
+};
+
 // ----------------------------- USED SHADER END --------------------------------------
 
 #endif /* DISABLE_CG_SHADERS */
@@ -1076,173 +1098,100 @@ void setupShaders2 (IrrlichtDevice* device,
                    video::E_DRIVER_TYPE driverType,
                    ISceneManager* smgr,
                    scene::ICameraSceneNode* camera,
-                   bool usehls,
                    scene::ILightSceneNode* plnode
                    )
 {
 #ifndef DISABLE_CG_SHADERS 
 
-	const c8* light_tex_vsFileName; // filename for the vertex shader
-	const c8* light_tex_psFileName; // filename for the pixel shader
-	const c8* light_tex_s_fileName; // filename for the vertex shader
-	const c8* light_tex_s_car_fileName; // filename for the vertex shader
-	const c8* light_tex_s_car_tyre_fileName; // filename for the vertex shader
+	core::stringc light_tex_fileName;
+	core::stringc light_tex_s_fileName;
+	core::stringc light_tex_s_car_fileName;
+	core::stringc light_tex_s_car_tyre_fileName;
 
-	const c8* light_tex_wfar_vsFileName; // filename for the vertex shader
-	const c8* light_tex_wfar_psFileName; // filename for the pixel shader
+	core::stringc light_notex_fileName;
 
-	const c8* light_notex_vsFileName; // filename for the vertex shader
-	const c8* light_notex_psFileName; // filename for the pixel shader
+	core::stringc light_notex_car_fileName;
 
-	const c8* light_notex_wfar_vsFileName; // filename for the vertex shader
-	const c8* light_notex_wfar_psFileName; // filename for the pixel shader
+	core::stringc light_2tex_2_fileName;
 
-	const c8* light_notex_car_vsFileName; // filename for the vertex shader
-	const c8* light_notex_car_psFileName; // filename for the pixel shader
+	core::stringc ocean_fileName; // filename for the vertex shader
+	core::stringc ocean_fix_fileName; // filename for the vertex shader
 
-	const c8* light_2tex_vsFileName; // filename for the vertex shader
-	const c8* light_2tex_psFileName; // filename for the pixel shader
+    core::stringc smoke_fileName; // filename for the pixel shader
+    core::stringc transp_fileName;
+    core::stringc road_fileName;
+    core::stringc transp_road_fileName;
+    core::stringc transp_stat_fileName;
+    core::stringc sky_fileName;
+    core::stringc shadow_fileName;
+    core::stringc depth_fileName;
+    core::stringc depthSun_fileName;
+    core::stringc screenRTT_fileName;
+    core::stringc palca_fileName;
+    const c8* ogl_vs_version;
+    const c8* ogl_ps_version;
+    const c8* d3d_vs_version;
+    const c8* d3d_ps_version;
 
-	const c8* light_2tex_2_vsFileName; // filename for the vertex shader
-	const c8* light_2tex_2_psFileName; // filename for the pixel shader
+	ogl_vs_version = "arbvp1";
+	ogl_ps_version = "arbfp1";
+	d3d_vs_version = "vs_2_0";
+	d3d_ps_version = "ps_2_0";
 
-	const c8* ocean_vsFileName; // filename for the vertex shader
-	const c8* ocean_psFileName; // filename for the pixel shader
-	const c8* ocean_fix_vsFileName; // filename for the vertex shader
-	const c8* ocean_fix_psFileName; // filename for the pixel shader
+    core::stringc cg_dir = "data/shaders/cg/";
 
-    const c8* smoke_fileName; // filename for the pixel shader
-    const c8* transp_fileName;
-    const c8* transp_road_fileName;
-    const c8* transp_stat_fileName;
-    const c8* light_transp_fileName;
-    const c8* tex_fileName;
-    const c8* shadow_fileName;
-    const c8* depth_fileName;
-    const c8* depthSun_fileName;
-    const c8* screenRTT_fileName;
-    const c8* vs_version;
-    const c8* ps_version;
-
-	if (((driverType == video::EDT_DIRECT3D9 && driver->queryFeature(video::EVDF_HLSL)) ||
-		 ((driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/) && driver->queryFeature(video::EVDF_ARB_GLSL))) &&
-         (driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) || driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1)) && 
-         (driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0) || driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1))  
-         && usehls)
+    
+	if ((driverType == video::EDT_DIRECT3D9 && driver->queryFeature(video::EVDF_HLSL) &&
+         driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) && driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0)
+        ) ||
+		((driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/) && driver->queryFeature(video::EVDF_ARB_GLSL) &&
+         driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1) && driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1)
+        )
+       )
 	{
 		dprintf(printf("use high level cg shaders.\n"));
 	}
 	else
 	{
 		dprintf(printf("Not use high level shaders, because of missing driver/hardware support.\n"));
-        ableToUseShaders = useShaders = useCgShaders = false;
+        ableToUseShaders = useShaders = useCgShaders = useAdvCgShaders = false;
         return;
     }
     if (!useCgShaders) return;
-#ifdef USE_MRT
-#define CG_DIR "data/shaders/cg_mrt/"
-#else
-#define CG_DIR "data/shaders/cg/"
-#endif
-	light_tex_psFileName = CG_DIR \
-        "light_tex.cg";
-	light_tex_vsFileName = light_tex_psFileName; // both shaders are in the same file
-	light_tex_s_fileName = CG_DIR \
-        "light_tex_s.cg";
-	light_tex_s_car_fileName = CG_DIR \
-        "light_tex_s_car.cg";
-	light_tex_s_car_tyre_fileName = CG_DIR \
-        "light_tex_s_car_tyre.cg";
-	light_tex_wfar_psFileName = CG_DIR \
-        "light_tex_wfar.cg";
-	light_tex_wfar_vsFileName = light_tex_psFileName; // both shaders are in the same file
-	light_notex_psFileName = CG_DIR \
-        "light_notex.cg";
-	light_notex_vsFileName = light_notex_psFileName;
-	light_notex_wfar_psFileName = CG_DIR \
-        "light_notex_wfar.cg";
-	light_notex_wfar_vsFileName = light_notex_psFileName;
-	light_notex_car_psFileName = CG_DIR \
-        "light_notex_car.cg";
-	light_notex_car_vsFileName = light_notex_psFileName;
-	smoke_fileName = CG_DIR \
-        "smoke.cg";
-	light_2tex_psFileName = CG_DIR \
-        "light_2tex.cg";
-	light_2tex_vsFileName = light_2tex_psFileName;
-	light_2tex_2_psFileName = CG_DIR \
-        "light_2tex_2.cg";
-	light_2tex_2_vsFileName = light_2tex_2_psFileName;
-	ocean_psFileName = CG_DIR \
-        "ocean.cg";
-	ocean_vsFileName = ocean_psFileName;
-	ocean_fix_psFileName = CG_DIR \
-        "ocean_fix.cg";
-	ocean_fix_vsFileName = ocean_fix_psFileName;
-	transp_fileName = CG_DIR \
-        "transp_obj.cg";
-	transp_road_fileName = CG_DIR \
-        "transp_road.cg";
-	transp_stat_fileName = CG_DIR \
-        "transp_stat.cg";
-	light_transp_fileName = CG_DIR \
-        "light_transp.cg";
-	tex_fileName = CG_DIR \
-        "tex.cg";
-	shadow_fileName = CG_DIR \
-        "shadow.cg";
-	depth_fileName = CG_DIR \
-        "depth.cg";
-	depthSun_fileName = CG_DIR \
-        "depth_sun.cg";
-	screenRTT_fileName = CG_DIR \
-        "screen_rtt.cg";
 
-	vs_version = "vs_2_0";
-	ps_version = "ps_2_0";
+    dprintf(printf("create new gpu\n"));
+    gpu = new ICgProgrammingServices(device/*, false, true*/);
+    dprintf(printf("create new gpu end\n"));
+    ICgServices* cgServices = gpu->getCgServices();
 
-	if (!driver->queryFeature(video::EVDF_PIXEL_SHADER_2_0) &&
-		!driver->queryFeature(video::EVDF_ARB_FRAGMENT_PROGRAM_1))
-	{
-		dprintf(printf("WARNING: Pixel shaders disabled "\
-			"because of missing driver/hardware support.\n"));
-        useShaders = useCgShaders = useAdvCgShaders = false;
-	}
-	
-	if (!driver->queryFeature(video::EVDF_VERTEX_SHADER_2_0) &&
-		!driver->queryFeature(video::EVDF_ARB_VERTEX_PROGRAM_1))
-	{
-		dprintf(printf("WARNING: Vertex shaders disabled "\
-			"because of missing driver/hardware support.\n"));
-        useShaders = useCgShaders = useAdvCgShaders = false;
-	}
-	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
-#ifdef USE_MRT
-	if (driverType == video::EDT_DIRECT3D9)
-	{
-	    light_2tex_2_psFileName = "data/shaders/cg_mrt/light_2tex_2_d3d9.cg";
-        light_2tex_2_vsFileName = light_2tex_2_psFileName;
-    	light_tex_s_car_fileName = "data/shaders/cg_mrt/light_tex_s_car_d3d9.cg";
-    }
-#endif
-	if (0 && useAdvCgShaders)
-	{
-        if (driver->queryFeature(video::EVDF_VERTEX_SHADER_3_0) &&
-            driver->queryFeature(video::EVDF_PIXEL_SHADER_3_0))
-        {
-            vs_version = "vs_3_0";
-            ps_version = "ps_3_0";
+    printf("CG support:\n");
+    printf("arbfp1:    %d\n", cgServices->isProfileSupported("arbfp1"));
+    printf("arbvp1:    %d\n", cgServices->isProfileSupported("arbvp1"));
+    printf("fp20:      %d\n", cgServices->isProfileSupported("fp20"));
+    printf("fp30:      %d\n", cgServices->isProfileSupported("fp30"));
+    printf("fp40:      %d\n", cgServices->isProfileSupported("fp40"));
+    printf("glslf:     %d\n", cgServices->isProfileSupported("glslf"));
+    printf("glslg:     %d\n", cgServices->isProfileSupported("glslg"));
+    printf("glslv:     %d\n", cgServices->isProfileSupported("glslv"));
+    printf("gp4:       %d\n", cgServices->isProfileSupported("gp4"));
+    printf("gp4fp:     %d\n", cgServices->isProfileSupported("gp4fp"));
+    printf("gp4gp:     %d\n", cgServices->isProfileSupported("gp4gp"));
+    printf("gp4vp:     %d\n", cgServices->isProfileSupported("gp4vp"));
+    printf("hlslf:     %d\n", cgServices->isProfileSupported("hlslf"));
+    printf("hlslv:     %d\n", cgServices->isProfileSupported("hlslv"));
+    printf("ps_1_1:    %d\n", cgServices->isProfileSupported("ps_1_1"));
+    printf("ps_1_2:    %d\n", cgServices->isProfileSupported("ps_1_2"));
+    printf("ps_1_3:    %d\n", cgServices->isProfileSupported("ps_1_3"));
+    printf("ps_2_0:    %d\n", cgServices->isProfileSupported("ps_2_0"));
+    printf("ps_2_x:    %d\n", cgServices->isProfileSupported("ps_2_x"));
+    printf("ps_3_0:    %d\n", cgServices->isProfileSupported("ps_3_0"));
+    printf("ps_4_0:    %d\n", cgServices->isProfileSupported("ps_4_0"));
+    printf("vp20:      %d\n", cgServices->isProfileSupported("vp20"));
+    printf("vp30:      %d\n", cgServices->isProfileSupported("vp30"));
+    printf("vp40:      %d\n", cgServices->isProfileSupported("vp40"));
+    printf("vs_4_0:    %d\n", cgServices->isProfileSupported("vs_4_0"));
+    printf("gs_4_0:    %d\n", cgServices->isProfileSupported("gs_4_0"));
 
-    	    light_2tex_2_psFileName = "data/shaders/cg/light_2tex_2_adv.cg";
-            light_2tex_2_vsFileName = light_2tex_2_psFileName;
-            myMessage(12, "Your system does support Vertex or Pixel shader 3.0");
-        }
-        else
-        {
-            myMessage(12, "Your system does not support Vertex or Pixel shader 3.0, use 2.0");
-            useAdvCgShaders = false;
-        }
-    }
 
     if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET))
     {
@@ -1251,8 +1200,8 @@ void setupShaders2 (IrrlichtDevice* device,
         bool tempTexFlagMipMaps = driver->getTextureCreationFlag(ETCF_CREATE_MIP_MAPS);
         bool tempTexFlag32 = driver->getTextureCreationFlag(ETCF_ALWAYS_32_BIT);
 
-//        driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
-//        driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
+        //driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
+        //driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
 
         shadowMap = shadowMapGame = shadows ? driver->addRenderTargetTexture(core::dimension2d<u32>(shadow_map_size,shadow_map_size), "RTT1")
                              : 0;
@@ -1260,7 +1209,7 @@ void setupShaders2 (IrrlichtDevice* device,
                              : 0;
         dprintf(printf("shadow has mip-maps: %s\n", (shadowMap && shadowMap->hasMipMaps())?"yes":"no"));
 
-//        driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
+        //driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, false);
         shadowMapMenu = driver->getTexture("data/menu_textures/menu_shadow.png");
         
         driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
@@ -1274,170 +1223,224 @@ void setupShaders2 (IrrlichtDevice* device,
         shadowMap = shadowMapGame = shadowMapMenu = 0;
     }
 
-    if (!useShaders) return;
-    dprintf(printf("create new gpu\n"));
-    gpu = new ICgProgrammingServices(device/*, false, true*/);
-    dprintf(printf("create new gpu end\n"));
+    // possible to use shaders, let see if possible to use vs and ps 3.0
+    if (useAdvCgShaders)
+    {
+        if (driverType == video::EDT_DIRECT3D9) // FIXME: irrlicht 1.7.1 has a MRT bug in D3D9 driver
+        {
+            dprintf(printf("MRT bug adv shader -> disable.\n"));
+            useAdvCgShaders = false;
+        }
+        else
+        if (!driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS))
+        {
+            dprintf(printf("MRT is not supported by the driver.\n"));
+            useAdvCgShaders = false;
+        }
+        else
+        {
+            if (driverType == video::EDT_DIRECT3D9 && !cgServices->isProfileSupported("ps_3_0"))
+            {
+		        dprintf(printf("3.0 shaders are not supported by this D3D9 driver.\n"));
+                useAdvCgShaders = false;
+            }
+            //else
+            //if (driverType == video::EDT_OPENGL && !cgServices->isProfileSupported("") // !cgServices->isProfileSupported("fp40")
+            //{
+		    //    dprintf(printf("3.0 shaders are not supported by this OpenGL driver.\n"));
+            //    useAdvCgShaders = false;
+            //}
+        }
+        if (!useAdvCgShaders)
+        {
+    		dprintf(printf("3.0 shaders are not supported disable it.\n"));
+        }
+        else
+        {
+            cg_dir = "data/shaders/cg_mrt/";
+        	d3d_vs_version = "vs_3_0";
+        	d3d_ps_version = "ps_3_0";
+            useScreenRTT = depth_effect = true;
+            setupShaders3(device, driver, gpu, plnode);
+            return;
+        }
+    }
+    
 
-	if (gpu)
-	{
-		MyShaderCallBack2_light_2tex* mc_light_2tex = new MyShaderCallBack2_light_2tex(device, driver, plnode);
+	light_tex_fileName = cg_dir + "light_tex.cg";
+	light_tex_s_fileName = cg_dir + "light_tex_s.cg";
+	light_tex_s_car_fileName = cg_dir + "light_tex_s_car.cg";
+	light_tex_s_car_tyre_fileName = cg_dir + "light_tex_s_car_tyre.cg";
+	light_notex_fileName = cg_dir + "light_notex.cg";
+	light_notex_car_fileName = cg_dir + "light_notex_car.cg";
+	smoke_fileName = cg_dir + "smoke.cg";
+	light_2tex_2_fileName = cg_dir + "light_2tex_2.cg";
+	ocean_fileName = cg_dir + "ocean.cg";
+	ocean_fix_fileName = cg_dir + "ocean_fix.cg";
+	transp_fileName = cg_dir + "transp_obj.cg";
+	road_fileName = cg_dir + "road.cg";
+	transp_road_fileName = cg_dir + "transp_road.cg";
+	transp_stat_fileName = cg_dir + "transp_stat.cg";
+	sky_fileName = cg_dir + "sky.cg";
+	shadow_fileName = cg_dir + "shadow.cg";
+	depth_fileName = cg_dir + "depth.cg";
+	depthSun_fileName = cg_dir + "depth_sun.cg";
+	screenRTT_fileName = cg_dir + "screen_rtt.cg";
+	palca_fileName = cg_dir + "palca.cg";
 
-		MyShaderCallBack2_light_2tex_2* mc_light_2tex_2 = new MyShaderCallBack2_light_2tex_2(device, driver, plnode);
+	MyShaderCallBack2_light_2tex_2* mc_light_2tex_2 = new MyShaderCallBack2_light_2tex_2(device, driver, plnode);
 
-		MyShaderCallBack2_ocean* mc_ocean = new MyShaderCallBack2_ocean(device, driver, plnode);
+	MyShaderCallBack2_ocean* mc_ocean = new MyShaderCallBack2_ocean(device, driver, plnode);
 
-		MyShaderCallBack2_light_tex* mc_light_tex = new MyShaderCallBack2_light_tex(device, driver, plnode);
-		MyShaderCallBack2_light_notex* mc_light_notex = new MyShaderCallBack2_light_notex(device, driver, plnode);
-		MyShaderCallBack2_light_tex_s* mc_light_tex_s = new MyShaderCallBack2_light_tex_s(device, driver, plnode);
-		MyShaderCallBack2_light_tex_s_car* mc_light_tex_s_car = new MyShaderCallBack2_light_tex_s_car(device, driver, plnode);
-		MyShaderCallBack2_light_tex_s_car_tyre* mc_light_tex_s_car_tyre = new MyShaderCallBack2_light_tex_s_car_tyre(device, driver, plnode);
-		
-		MyShaderCallBack2_tr_light* mc_tr_light = new MyShaderCallBack2_tr_light(device, driver, plnode);
-		MyShaderCallBack2_transp* mc_tr = new MyShaderCallBack2_transp(device, driver, plnode);
-		MyShaderCallBack2_tex* mc_tex = new MyShaderCallBack2_tex(device, driver, plnode);
-		MyShaderCallBack2_shadow* mc_shadow = new MyShaderCallBack2_shadow(device, driver, plnode);
-		MyShaderCallBack2_screenRTT* mc_screenRTT = new MyShaderCallBack2_screenRTT(device, driver, plnode);
-		MyShaderCallBack2_depth* mc_depth = new MyShaderCallBack2_depth(device, driver, plnode);
-		MyShaderCallBack2_depthSun* mc_depthSun = new MyShaderCallBack2_depthSun(device, driver, plnode);
+	MyShaderCallBack2_light_tex* mc_light_tex = new MyShaderCallBack2_light_tex(device, driver, plnode);
+	MyShaderCallBack2_light_notex* mc_light_notex = new MyShaderCallBack2_light_notex(device, driver, plnode);
+	MyShaderCallBack2_light_tex_s* mc_light_tex_s = new MyShaderCallBack2_light_tex_s(device, driver, plnode);
+	MyShaderCallBack2_light_tex_s_car* mc_light_tex_s_car = new MyShaderCallBack2_light_tex_s_car(device, driver, plnode);
+	MyShaderCallBack2_light_tex_s_car_tyre* mc_light_tex_s_car_tyre = new MyShaderCallBack2_light_tex_s_car_tyre(device, driver, plnode);
+	
+	MyShaderCallBack2_tr_light* mc_tr_light = new MyShaderCallBack2_tr_light(device, driver, plnode);
+	MyShaderCallBack2_transp* mc_tr = new MyShaderCallBack2_transp(device, driver, plnode);
+	MyShaderCallBack2_sky* mc_sky = new MyShaderCallBack2_sky(device, driver, plnode);
+	MyShaderCallBack2_shadow* mc_shadow = new MyShaderCallBack2_shadow(device, driver, plnode);
+	MyShaderCallBack2_screenRTT* mc_screenRTT = new MyShaderCallBack2_screenRTT(device, driver, plnode);
+	MyShaderCallBack2_depth* mc_depth = new MyShaderCallBack2_depth(device, driver, plnode);
+	MyShaderCallBack2_depthSun* mc_depthSun = new MyShaderCallBack2_depthSun(device, driver, plnode);
+	MyShaderCallBack2_palca* mc_palca = new MyShaderCallBack2_palca(device, driver, plnode);
+	MyShaderCallBack2_road* mc_road = new MyShaderCallBack2_road(device, driver, plnode);
 
-		// create the shaders depending on if the user wanted high level
-		// or low level shaders:
+	// create the shaders depending on if the user wanted high level
+	// or low level shaders:
 
-			// create material from high level shaders (hlsl or glsl)
+		// create material from high level shaders (hlsl or glsl)
 
-        dprintf(printf("reading shader file: %s\n", light_tex_vsFileName);)
-		myMaterialType_light_tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_tex_vsFileName, "main_v", "arbvp1", vs_version,
-			light_tex_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_tex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
-//		printf("myMaterialType_light_tex %u\n", myMaterialType_light_tex );
+    dprintf(printf("reading shader file: %s\n", light_tex_fileName.c_str());)
+	myMaterialType_light_tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_tex_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_tex_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_tex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+	//printf("myMaterialType_light_tex %u\n", myMaterialType_light_tex );
 
-        dprintf(printf("reading shader file: %s\n", light_tex_wfar_vsFileName);)
-		myMaterialType_light_tex_wfar = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_tex_wfar_vsFileName, "main_v", "arbvp1", vs_version,
-			light_tex_wfar_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_tex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    dprintf(printf("reading shader file: %s\n", light_tex_s_fileName.c_str());)
+	myMaterialType_light_tex_s = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_tex_s_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_tex_s_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_tex_s, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", light_tex_s_fileName);)
-		myMaterialType_light_tex_s = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_tex_s_fileName, "main_v", "arbvp1", vs_version,
-			light_tex_s_fileName, "main_f", "arbfp1", ps_version,
-			mc_light_tex_s, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", light_tex_s_car_fileName.c_str());)
+	myMaterialType_light_tex_s_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_tex_s_car_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_tex_s_car_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_tex_s_car, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", light_tex_s_car_fileName);)
-		myMaterialType_light_tex_s_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_tex_s_car_fileName, "main_v", "arbvp1", vs_version,
-			light_tex_s_car_fileName, "main_f", "arbfp1", ps_version,
-			mc_light_tex_s_car, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", light_tex_s_car_tyre_fileName.c_str());)
+	myMaterialType_light_tex_s_car_tyre = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_tex_s_car_tyre_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_tex_s_car_tyre_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_tex_s_car_tyre, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", light_tex_s_car_tyre_fileName);)
-		myMaterialType_light_tex_s_car_tyre = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_tex_s_car_tyre_fileName, "main_v", "arbvp1", vs_version,
-			light_tex_s_car_tyre_fileName, "main_f", "arbfp1", ps_version,
-			mc_light_tex_s_car_tyre, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", light_notex_fileName.c_str());)
+	myMaterialType_light_notex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_notex_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_notex_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_notex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", light_notex_vsFileName);)
-		myMaterialType_light_notex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_notex_vsFileName, "main_v", "arbvp1", vs_version,
-			light_notex_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_notex, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", light_notex_car_fileName.c_str());)
+	myMaterialType_light_notex_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_notex_car_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_notex_car_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_notex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
-        dprintf(printf("reading shader file: %s\n", light_notex_wfar_vsFileName);)
-		myMaterialType_light_notex_wfar = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_notex_wfar_vsFileName, "main_v", "arbvp1", vs_version,
-			light_notex_wfar_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_notex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    dprintf(printf("reading shader file: %s\n", light_2tex_2_fileName.c_str());)
+	myMaterialType_light_2tex_2 = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		light_2tex_2_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		light_2tex_2_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_light_2tex_2, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
 
-        dprintf(printf("reading shader file: %s\n", light_notex_car_vsFileName);)
-		myMaterialType_light_notex_car = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_notex_car_vsFileName, "main_v", "arbvp1", vs_version,
-			light_notex_car_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_notex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    dprintf(printf("reading shader file: %s\n", ocean_fileName.c_str());)
+	myMaterialType_ocean = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		ocean_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		ocean_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", light_2tex_vsFileName);)
-		myMaterialType_light_2tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_2tex_vsFileName, "main_v", "arbvp1", vs_version,
-			light_2tex_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_2tex, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    dprintf(printf("reading shader file: %s\n", ocean_fix_fileName.c_str());)
+	myMaterialType_ocean_fix = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		ocean_fix_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		ocean_fix_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", light_2tex_2_vsFileName);)
-		myMaterialType_light_2tex_2 = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			light_2tex_2_vsFileName, "main_v", "arbvp1", vs_version,
-			light_2tex_2_psFileName, "main_f", "arbfp1", ps_version,
-			mc_light_2tex_2, video::EMT_SOLID/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    dprintf(printf("reading shader file: %s\n", smoke_fileName.c_str());)
+	myMaterialType_smoke = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		smoke_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		smoke_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_tr_light, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", ocean_vsFileName);)
-		myMaterialType_ocean = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			ocean_vsFileName, "main_v", "arbvp1", vs_version,
-			ocean_psFileName, "main_f", "arbfp1", ps_version,
-			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", transp_fileName.c_str());)
+	myMaterialType_transp = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		transp_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		transp_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", ocean_fix_vsFileName);)
-		myMaterialType_ocean_fix = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			ocean_fix_vsFileName, "main_v", "arbvp1", vs_version,
-			ocean_fix_psFileName, "main_f", "arbfp1", ps_version,
-			mc_ocean, /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", road_fileName.c_str());)
+	myMaterialType_road = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		road_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		road_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_road, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", smoke_fileName);)
-		myMaterialType_smoke = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			smoke_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			smoke_fileName, "main_f", "arbfp1", ps_version,
-			mc_tr_light, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", transp_road_fileName.c_str());)
+	myMaterialType_transp_road = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		transp_road_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		transp_road_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL/*video::EMT_SOLID*/);
 
-        dprintf(printf("reading shader file: %s\n", transp_fileName);)
-		myMaterialType_transp = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			transp_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			transp_fileName, "main_f", "arbfp1", ps_version,
-			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", transp_stat_fileName.c_str());)
+	myMaterialType_transp_stat = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		transp_stat_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		transp_stat_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", transp_road_fileName);)
-		myMaterialType_transp_road = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			transp_road_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			transp_road_fileName, "main_f", "arbfp1", ps_version,
-			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL/*video::EMT_SOLID*/);
+    dprintf(printf("reading shader file: %s\n", sky_fileName.c_str());)
+	myMaterialType_sky = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		sky_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		sky_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_sky, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", transp_stat_fileName);)
-		myMaterialType_transp_stat = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			transp_stat_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			transp_stat_fileName, "main_f", "arbfp1", ps_version,
-			mc_tr, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
+    dprintf(printf("reading shader file: %s\n", shadow_fileName.c_str());)
+	myMaterialType_shadow = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		shadow_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		//0, 0, 0, 0,
+		shadow_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_shadow, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", tex_fileName);)
-		myMaterialType_tex = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			tex_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			tex_fileName, "main_f", "arbfp1", ps_version,
-			mc_tex, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", screenRTT_fileName.c_str());)
+	myMaterialType_screenRTT = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		screenRTT_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		screenRTT_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_screenRTT, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", shadow_fileName);)
-		myMaterialType_shadow = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			shadow_fileName, "main_v", "arbvp1", vs_version,
-			//0, 0, 0, 0,
-			shadow_fileName, "main_f", "arbfp1", ps_version,
-			mc_shadow, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", depth_fileName.c_str());)
+	myMaterialType_depth = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		depth_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		depth_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_depth, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", screenRTT_fileName);)
-		myMaterialType_screenRTT = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			screenRTT_fileName, "main_v", "arbvp1", /*"vs_2_0"*/vs_version,
-			screenRTT_fileName, "main_f", "arbfp1", /*"ps_2_0"*/ps_version,
-			mc_screenRTT, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", depthSun_fileName.c_str());)
+	myMaterialType_depthSun = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		depthSun_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		depthSun_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_depthSun, video::EMT_SOLID);
 
-        dprintf(printf("reading shader file: %s\n", depth_fileName);)
-		myMaterialType_depth = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			depth_fileName, "main_v", "arbvp1", vs_version,
-			depth_fileName, "main_f", "arbfp1", ps_version,
-			mc_depth, video::EMT_SOLID);
+    dprintf(printf("reading shader file: %s\n", palca_fileName.c_str());)
+	myMaterialType_palca = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
+		palca_fileName.c_str(), "main_v", ogl_vs_version, d3d_vs_version,
+		palca_fileName.c_str(), "main_f", ogl_ps_version, d3d_ps_version,
+		mc_palca, video::EMT_TRANSPARENT_ALPHA_CHANNEL);
 
-        dprintf(printf("reading shader file: %s\n", depthSun_fileName);)
-		myMaterialType_depthSun = gpu->addCgShaderMaterialFromFiles(CG_SOURCE,
-			depthSun_fileName, "main_v", "arbvp1", vs_version,
-			depthSun_fileName, "main_f", "arbfp1", ps_version,
-			mc_depthSun, video::EMT_SOLID);
 
 //		mc->drop();
 /*
@@ -1455,7 +1458,6 @@ void setupShaders2 (IrrlichtDevice* device,
 		delete mc_screenRTT;
 		delete mc_depth;
 */
-	}
 #endif /* DISABLE_CG_SHADERS */
 }
 
@@ -1480,10 +1482,6 @@ void recreateRTTs(IVideoDriver* driver)
 {
     if (!driver->queryFeature(video::EVDF_RENDER_TO_TARGET)/* || !useCgShaders*/
     	// we are run out of d3d9 instructions, so turn off the post effects with ps 2.0
-#ifdef USE_MRT
-        || !driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
-        || driverType == video::EDT_DIRECT3D9
-#endif
        )
     {
         printf("Render to texture is not supported: automatically turn off RTT and shadows\n");
@@ -1548,22 +1546,30 @@ void recreateRTTs(IVideoDriver* driver)
         assert(MAX_SCREENRTT==3);
 
         screenRTT[0] = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
-        screenRTT[1] = driver->addRenderTargetTexture(dimension2d<u32>(32, 32));
+        if (screenSize.Width > 1280)
+        {
+            screenRTT[1] = driver->addRenderTargetTexture(dimension2d<u32>(512, 512));
+        }
+        else
+        {
+            screenRTT[1] = driver->addRenderTargetTexture(dimension2d<u32>(256, 256));
+        }
         screenRTT[2] = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
 
-#ifdef USE_MRT
-        depthRTT = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
-#else
-        depthRTT = driver->addRenderTargetTexture(dimension2d<u32>(512, 512));
-#endif
+        if (useAdvCgShaders)
+            depthRTT = driver->addRenderTargetTexture(shitATI ? dimension2d<u32>(atiRes, atiRes) : screenSize);
+        else
+            depthRTT = driver->addRenderTargetTexture(dimension2d<u32>(512, 512));
 
 	    driver->setTextureCreationFlag(ETCF_CREATE_MIP_MAPS, tempTexFlagMipMaps);
 	    driver->setTextureCreationFlag(ETCF_ALWAYS_32_BIT, tempTexFlag32);
 	    
-#ifdef USE_MRT
-	    mrtList.push_back(video::IRenderTarget(screenRTT[0]));
-	    mrtList.push_back(video::IRenderTarget(depthRTT));
-#endif
+        if (useAdvCgShaders)
+        {
+            mrtList.push_back(video::IRenderTarget(screenRTT[0]));
+            mrtList.push_back(video::IRenderTarget(depthRTT));
+            mrtList.push_back(video::IRenderTarget(screenRTT[2]));
+        }
 	    
 	    depth_effect = true;
     }

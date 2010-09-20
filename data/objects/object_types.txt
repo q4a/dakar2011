@@ -383,3 +383,87 @@ sca: 7.8, 8.0, 7.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+nam: data/objects/barrier_concrete.mso
+tex: data/objects/barrier_concrete.png
+rot: 0.0, 0.0, 0.0
+sca: 1.65, 1.65, 1.65
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_red.mso
+tex: data/objects/barrier_red.png
+rot: 0.0, 0.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_white.mso
+tex: data/objects/barrier_white.png
+rot: 0.0, 0.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_concrete_45.mso
+tex: data/objects/barrier_concrete.png
+rot: 0.0, 45.0, 0.0
+sca: 1.65, 1.65, 1.65
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_red_45.mso
+tex: data/objects/barrier_red.png
+rot: 0.0, 45.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_white_45.mso
+tex: data/objects/barrier_white.png
+rot: 0.0, 45.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_concrete_90.mso
+tex: data/objects/barrier_concrete.png
+rot: 0.0, 90.0, 0.0
+sca: 1.65, 1.65, 1.65
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_red_90.mso
+tex: data/objects/barrier_red.png
+rot: 0.0, 90.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_white_90.mso
+tex: data/objects/barrier_white.png
+rot: 0.0, 90.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_concrete_135.mso
+tex: data/objects/barrier_concrete.png
+rot: 0.0, 135.0, 0.0
+sca: 1.65, 1.65, 1.65
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_red_135.mso
+tex: data/objects/barrier_red.png
+rot: 0.0, 135.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+nam: data/objects/barrier_white_135.mso
+tex: data/objects/barrier_white.png
+rot: 0.0, 135.0, 0.0
+sca: 1.5, 1.5, 1.5
+box: 1.0, 1.0, 1.0
+ofs: 0.0, 0.0, 0.0
+cat: 0

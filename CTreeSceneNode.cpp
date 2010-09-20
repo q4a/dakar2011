@@ -136,10 +136,10 @@ void CTreeSceneNode::OnRegisterSceneNode()
             DistSQ = (campos - center).getLengthSQ();
         }
         
-        if ( LeafNode )
+        if ( LeafNode)
         {
             f32 far = FarRange + Size;
-            LeafNode->setVisible( far*far >= DistSQ );
+            LeafNode->setVisible( far*far >= DistSQ);
         }
         
         SceneManager->registerNodeForRendering( this );
@@ -154,7 +154,7 @@ void CTreeSceneNode::render()
     f32 far = FarRange + Size;
     f32 mid = MidRange + Size;
     
-	if ( far*far < DistSQ && BillboardMaterial.TextureLayer[0].Texture != 0 )
+	if ( far*far < DistSQ && BillboardMaterial.TextureLayer[0].Texture != 0)
     {
         driver->setTransform( video::ETS_WORLD, core::matrix4() );
         
@@ -164,7 +164,7 @@ void CTreeSceneNode::render()
         
         core::vector3df view = camera->getAbsolutePosition() - getAbsolutePosition();
         
-        if ( view.getDistanceFromSQ( LastViewVec ) >= CAMERA_UPDATE_DISTANCE*CAMERA_UPDATE_DISTANCE )
+        if ( view.getDistanceFromSQ( LastViewVec ) >= CAMERA_UPDATE_DISTANCE*CAMERA_UPDATE_DISTANCE)
         {
             updateBillboard();
             LastViewVec = view;
@@ -205,7 +205,18 @@ const core::aabbox3d<f32>& CTreeSceneNode::getBoundingBox() const
 {
     return HighLODMeshBuffer->BoundingBox;
 }
-
+/*
+void CTreeSceneNode::setPosition(const core::vector3df &newpos)
+{
+    ISceneNode::setPosition(newpos);
+    if (LeafNode)
+    {
+        LeafNode->updateAbsolutePosition();
+    }
+        //updateBillboard();
+        //LeafNode->setPosition(newpos);
+}
+*/
 s32 CTreeSceneNode::getVertexCount() const
 {
     return HighLODMeshBuffer->getVertexCount();

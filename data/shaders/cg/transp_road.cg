@@ -26,7 +26,8 @@ void main_v(float4 position : POSITION,
   oTexCoordProj = mul(mTextureMatrix, position);
   oTexCoordProj.xy = float2(oTexCoordProj.x, -oTexCoordProj.y) * 0.5;
 // no need for non d3d calculate shadow
-  oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);}
+  oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);
+}
 
 
 struct fragment

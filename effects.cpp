@@ -15,6 +15,10 @@
 #include "gameplay.h"
 #include "settings.h"
 
+#include <irrlicht.h>
+
+using namespace irr;
+
 const char* car_dirt_array[MAX_CAR_DIRT] =
 {
     "data/vehicles/texture/dirt0.png",
@@ -63,7 +67,7 @@ u32 car_dirt_delta = 0;
 void calculate_day_delta(u32 ptick)
 {
     u32 day_delta_time = ptick - day_start_time;
-    const u32 shour = 7;
+    const u32 shour = 7; // 7
     /*
     if (stages[oldStage]->stagePart > 1)
     {
@@ -100,6 +104,17 @@ void calculate_day_delta(u32 ptick)
     }
     else
         day_delta_multi = 1.0f;
+
+    if (useAdvCgShaders)
+    {
+        float rotateDeg = (360.f * (float)((day_delta_time+shour*CALC_HOUR)%CALC_DAY)) / (float)CALC_DAY;
+        core::vector2df lightpos = core::vector2df(0.f, -150.f);
+        lightpos.rotateBy(rotateDeg);
+        
+        lnode_4_shaders->setPosition(core::vector3df(lightpos.X, lightpos.Y, 20.f));
+        //sunSphere->setPosition(lnode_4_shaders->getPosition());
+    }
+
 /*        
     if (!useShaders)
     {

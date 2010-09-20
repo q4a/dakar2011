@@ -1,0 +1,106 @@
+mesh: data/vehicles/mesh/mitsu_paj_old.ms3d
+texture: data/vehicles/texture/mitsu_paj_old_tex.png
+enginesound: data/vehicles/sound/engine_sound_08.wav
+scale: 1.0, 1.0, 1.2
+rotation: 0.0, 0.0, 0.0
+mass: 1875.0
+engine_centre_of_mass: 0.3
+centre_of_mass: 0.1
+num_of_tyres: 4
+chassis_rotation_limit: 0.93
+chassis_rotation_rate: 0.21
+max_brake_force: 425.0
+max_gears: 4
+gear: 10000.0 330.0
+gear: 15000.0 330.0
+gear: 20000.0 330.0
+gear: 25000.0 330.0
+change_gear_time: 18
+max_steer_angle: 29.0
+max_steer_rate: 0.1
+engine_steer_div: 200.0
+torque_multi: 1.0
+view1_forward_pos: -6.0 3.0 0.0
+view1_forward_dest: 0.0 1.0 0.0
+view1_left_pos: 0.0 3.0 -6.0
+view1_left_dest: 0.0 1.0 0.0
+view1_right_pos: 0.0 3.0 6.0
+view1_right_dest: 0.0 1.0 0.0
+view1_behind_pos: 6.0 3.0 0.0
+view1_behind_dest: 0.0 1.0 0.0
+view2_forward_pos: 0.0 1.2 0.0
+view2_forward_dest: 6.5 0.0 0.0
+view2_left_pos: 0.0 1.2 0.0
+view2_left_dest: 0.0 0.0 6.5
+view2_right_pos: 0.0 1.2 0.0
+view2_right_dest: 0.0 0.0 -6.5
+view2_behind_pos: 0.0 1.2 0.0
+view2_behind_dest: -6.5 0.0 0.0
+view3_forward_pos: 0.0 1.0 0.4
+view3_forward_dest: 6.5 0.0 0.4
+view3_left_pos: 0.0 1.0 0.4
+view3_left_dest: 0.0 0.0 6.5
+view3_right_pos: 0.0 1.0 0.4
+view3_right_dest: 0.0 0.0 -6.5
+view3_behind_pos: 0.0 1.0 0.4
+view3_behind_dest: -6.5 0.0 0.4
+-----front_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.37
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position: 1.45, 0.0, -1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.46
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 0
+-----front_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.37
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position: 1.45, 0.0, 1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.46
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 1
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 0
+-----rear_right_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.37
+tyre_rotation: 0.0, -90.0, 0.0
+tyre_local_position: -0.95, 0.0, -1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.46
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1
+-----rear_left_tyre-----
+tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
+tyre_texture: data/vehicles/texture/monster_wheel_tex.png
+tyre_scale: 0.45, 0.45, 0.37
+tyre_rotation: 0.0, 90.0, 0.0
+tyre_local_position: -0.95, 0.0, 1.0
+tyre_mass: 30.0
+friction: 1.5
+suspension_length: 0.46
+suspension_spring: 150.0
+suspension_damper: 6.0
+steer_tyres: 0
+torque_tyres: 1
+smoke_tyres: 1
+hb_tyres: 1

@@ -7,8 +7,8 @@ mass: 1900.0
 engine_centre_of_mass: -0.1
 centre_of_mass: 0.2
 num_of_tyres: 4
-chassis_rotation_limit: 0.86
-chassis_rotation_rate: 0.01
+chassis_rotation_limit: 0.94
+chassis_rotation_rate: 0.21
 max_brake_force: 465.0
 max_gears: 4
 gear: 14000.0 500.0
@@ -16,7 +16,7 @@ gear: 19000.0 500.0
 gear: 24000.0 500.0
 gear: 28000.0 500.0
 change_gear_time: 16
-max_steer_angle: 25.0
+max_steer_angle: 35.0
 max_steer_rate: 0.1
 engine_steer_div: 200.0
 torque_multi: 1.0
@@ -51,14 +51,14 @@ tyre_scale: 0.43, 0.42, 0.35
 tyre_rotation: 0.0, -90.0, 0.0
 tyre_local_position: 1.2, 0.0, -1.0
 tyre_mass: 50.0
-friction: 1.5
+friction: 1.45
 suspension_length: 0.47
 suspension_spring: 150.0
 suspension_damper: 6.0
 steer_tyres: 1
 torque_tyres: 0
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----front_left_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/hummer_wheel_tex.png
@@ -66,14 +66,14 @@ tyre_scale: 0.43, 0.42, 0.35
 tyre_rotation: 0.0, 90.0, 0.0
 tyre_local_position: 1.2, 0.0, 1.0
 tyre_mass: 50.0
-friction: 1.5
+friction: 1.45
 suspension_length: 0.47
 suspension_spring: 150.0
 suspension_damper: 6.0
 steer_tyres: 1
 torque_tyres: 0
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----rear_right_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/hummer_wheel_tex.png
@@ -81,7 +81,7 @@ tyre_scale: 0.43, 0.42, 0.35
 tyre_rotation: 0.0, -90.0, 0.0
 tyre_local_position: -1.43, 0.0, -1.0
 tyre_mass: 50.0
-friction: 1.5
+friction: 1.25
 suspension_length: 0.43
 suspension_spring: 150.0
 suspension_damper: 6.0
@@ -96,7 +96,7 @@ tyre_scale: 0.43, 0.42, 0.35
 tyre_rotation: 0.0, 90.0, 0.0
 tyre_local_position: -1.43, 0.0, 1.0
 tyre_mass: 50.0
-friction: 1.5
+friction: 1.25
 suspension_length: 0.43
 suspension_spring: 150.0
 suspension_damper: 6.0

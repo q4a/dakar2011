@@ -111,7 +111,7 @@ public:
     u32 getTime() {return time;}
 
     // comment it out if you don't need the visible stuff
-#ifndef MY_DEBUG
+#ifndef USE_EDITOR
     virtual void setVisible(bool pvisible) {}
     virtual void setFarVisible() {}
     virtual void setNearVisible(){}

@@ -68,6 +68,10 @@ gui::IGUIImage* crossImage = 0;
 bool showMap = false;
 scene::ISceneNode* skydome = 0;
 scene::IBillboardSceneNode* sunSphere = 0;
+scene::IBillboardSceneNode* sunSphere1 = 0;
+scene::IBillboardSceneNode* sunSphere2 = 0;
+scene::IBillboardSceneNode* sunSphere3 = 0;
+scene::IBillboardSceneNode* sunSphere4 = 0;
 video::ITexture* smokeTexture = 0;
 video::ITexture* smokeWaterTexture = 0;
 bool fpsCam = false;
@@ -298,7 +302,17 @@ void startGame(int stageNum, SState* state)
     core::stringw str;
 
     device->getCursorControl()->setVisible(false);
-        
+    
+    srand(tick % RAND_MAX);
+    /*
+    for (unsigned int i = 0; i < 20; i++)
+    {
+        int ranv = rand();
+        printf("%d - %d\n", ranv % 100, ranv);
+    }
+    printf("tick: %u (%d)\n", tick, RAND_MAX);
+    assert(0);
+    */
     str = L"Loading: 0%";
     MessageText::addText(str.c_str(), 1, true, false);
 
@@ -403,7 +417,7 @@ void startGame(int stageNum, SState* state)
                 competitors[i]->globalPenalityTime = 0;
             }
             CRaceEngine::getRaceState() = competitors;
-#ifdef MY_DEBUG
+#ifdef USE_EDITOR
             CRaceEngine::getRaceState().push_front(playerCompetitor);
 #else
             CRaceEngine::getRaceState().push_back(playerCompetitor);
@@ -445,7 +459,7 @@ void startGame(int stageNum, SState* state)
     timeText->setVisible(true);
     speedText->setVisible(true);
     demageText->setVisible(true);
-    hudImage->setVisible(draw_hud);
+    hudImage->setVisible(draw_hud && !useCgShaders);
     showMap = false;
     hudInfo->setVisible(info_bg);
     crossImage->setVisible(false);
@@ -456,6 +470,11 @@ void startGame(int stageNum, SState* state)
         editorSetVisible(display_extra_info);
     }
 #endif
+    sunSphere->setVisible(useAdvCgShaders);
+    sunSphere1->setVisible(useAdvCgShaders);
+    //sunSphere2->setVisible(useAdvCgShaders);
+    //sunSphere3->setVisible(useAdvCgShaders);
+    //sunSphere4->setVisible(useAdvCgShaders);
     projMat.buildProjectionMatrixPerspectiveFovLH(
         lightCam->getFOV(),
         lightCam->getAspectRatio(),
@@ -588,6 +607,11 @@ void endGame()
         editorSetVisible(false);
     }
 #endif
+    sunSphere->setVisible(false);
+    sunSphere1->setVisible(false);
+    sunSphere2->setVisible(false);
+    sunSphere3->setVisible(false);
+    sunSphere4->setVisible(false);
     
 #ifdef USE_MULTIPLAYER
     if (isMultiplayer)

@@ -46,7 +46,8 @@ public:
 #endif
                  const char *p_name,
                  const char *p_fileName,
-                 int type);
+                 int type,
+                 int rep);
     ~CVehicleType();
     
     char vehicleName[256];

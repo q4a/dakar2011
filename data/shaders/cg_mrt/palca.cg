@@ -1,0 +1,37 @@
+#include "common.cg"
+
+struct v_output {
+    float4 position : POSITION;
+    float3 color    : COLOR;
+    float2 texCoord : TEXCOORD0;
+};
+
+v_output main_v(float2 position : POSITION,
+                float3 color    : COLOR,
+                float2 texCoord : TEXCOORD0
+)
+{
+    v_output OUT;
+
+    OUT.position = float4(position,0,1);
+    OUT.color    = color;
+    OUT.texCoord = texCoord;
+
+    return OUT;
+}
+
+struct f_output {
+    float4 color : COLOR;
+};
+
+f_output main_f(float2 texCoord : TEXCOORD0,
+                uniform sampler2D tex0 : register(s0)
+)
+{
+    f_output OUT;
+
+    float4 col;
+    col = tex2D(tex0, texCoord);
+    OUT.color = col;
+    return OUT;
+}

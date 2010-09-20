@@ -10,9 +10,9 @@ data/bigterrains/textures/concrete_03.jpg
 data/skys/fairday.jpg
 data/roads/roads3.txt
 data/objects/objects3.txt
-data/vehicles/sound/surfaces/gravel.wav
+data/vehicles/sound/surfaces/mud.wav
 data/vehicles/sound/puff.wav
-data/vehicles/sound/skids/gravel.wav
+data/vehicles/sound/skids/mud.wav
 speed: 150.0
 friction_multi: 0.8
 vscale: 0.3

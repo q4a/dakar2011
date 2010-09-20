@@ -125,7 +125,8 @@ void main_f(v2f IN,
 //			uniform samplerCUBE EnvironmentMap,
                   uniform float day_multi,
                   out float4 oColor : COLOR0,
-                  out float4 oColord : COLOR1
+                  out float4 oColord : COLOR1,
+                  out float4 oColorc : COLOR2
 			)
 {
 //const float4 deepColor = float4(0, 0.3, 0.5, 1.0);
@@ -184,4 +185,5 @@ const float hdrMultiplier = 0.471;
     
     oColor = day_effect(waterColor + reflection, float4(0,0,0,0), day_multi);
     oColord = float4(0, 0, 1.0, 1.0);
+    oColorc = calculate_color(float4(0.5, 0.5, 0.5, 1.0) * day_multi);
 }

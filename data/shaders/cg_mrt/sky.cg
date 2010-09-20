@@ -1,0 +1,56 @@
+#include "common.cg"
+
+void main_v(float4 position : POSITION,
+            float3 normal   : NORMAL,
+            float2 Uv       : TEXCOORD0,
+
+            out float4 oPosition    : POSITION,
+            out float4 color        : COLOR,
+            out float2 oUv          : TEXCOORD0,
+            out float3 oNormal      : TEXCOORD1,
+            uniform float4x4 mWorldViewProj,
+            uniform float4x4 mWorld
+)
+{
+    oPosition = mul(mWorldViewProj, position);
+    oUv = Uv;
+    oNormal = normal;
+}
+
+
+struct fragment
+{
+    float4 position  : POSITION;
+    float4 color0    : COLOR0;
+    float2 texcoord0 : TEXCOORD0;
+    float3 normal    : TEXCOORD1;
+};
+
+struct pixel
+{
+    float4 color  : COLOR0;
+    float4 colord : COLOR1;
+    float4 colorc : COLOR2;
+};
+
+pixel main_f(fragment IN,
+
+             uniform sampler2D tex0 : register(s0),
+             uniform sampler2D tex1 : register(s1),
+
+             uniform float3 eyePositionF,
+             uniform float day_multi
+)
+{
+    pixel OUT;
+
+    float4 col = tex2D( tex0, IN.texcoord0 );
+
+    OUT.color = day_effect(col, IN.position, day_multi);
+    add_stars(IN.texcoord0, tex1, OUT.color, day_multi);
+
+    OUT.colord = float4(0, 0, 1.0, 1.0);
+    OUT.colorc = calculate_color(tex2D(tex1, IN.texcoord0).x * (1.0-day_multi)); // float4(0.5, 0.5, 0.5, 1.0) IN.color0;
+
+    return OUT;
+}

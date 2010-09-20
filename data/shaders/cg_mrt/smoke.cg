@@ -4,45 +4,47 @@ void main_v(float4 position : POSITION,
             float3 normal   : NORMAL,
             float2 Uv       : TEXCOORD0,
 
-            out float4 oPosition       : POSITION,
-            out float2 oUv       : TEXCOORD0,
-            out float  oRtsm  : TEXCOORD1,
-	    
-	    uniform float4x4 mWorldViewProj,
-             uniform float4x4 mWorld
-	    )
+            out float4 oPosition    : POSITION,
+            out float2 oUv          : TEXCOORD0,
+
+            uniform float4x4 mWorldViewProj,
+            uniform float4x4 mWorld
+)
 {
-  oPosition = mul(mWorldViewProj, position);
-  //oPosition = position;
-  oUv = Uv;
+    oPosition = mul(mWorldViewProj, position);
+    oUv = Uv;
 }
 
 struct fragment
 {
-	float4 position  : POSITION;
-	float4 color0    : COLOR0;
-	float2 texcoord0 : TEXCOORD0;
+    float4 position     : POSITION;
+    float4 color0       : COLOR0;
+    float2 texcoord0    : TEXCOORD0;
 };
 
 struct pixel
 {
-	float4 color : COLOR0;
-	float4 colord : COLOR1;
+    float4 color    : COLOR0;
+    float4 colord   : COLOR1;
+    float4 colorc   : COLOR2;
 };
 
-pixel main_f( fragment IN,
-              uniform sampler2D tex0,
-              uniform float day_multi
-             )
+pixel main_f(fragment IN,
+
+             uniform sampler2D tex0 : register(s0),
+
+             uniform float day_multi
+)
 {
-	pixel OUT;
+    pixel OUT;
 
-    	float4 col = tex2D( tex0, IN.texcoord0 );
+    float4 col = tex2D( tex0, IN.texcoord0 );
 
-	col.a = col.a * 0.3;
+    col.a = col.a * 0.3;
 
-    	OUT.color = day_effect(col, IN.position, day_multi);
-    	OUT.colord = float4(0, 0, 1.0, 1.0);
+    OUT.color = day_effect(col, IN.position, day_multi);
+    OUT.colord = float4(0, 0, 1.0, col.a);
+    OUT.colorc = calculate_color(float4(0.5, 0.5, 0.5, col.a) * day_multi); // IN.color0;
 
-	return OUT;
+    return OUT;
 }

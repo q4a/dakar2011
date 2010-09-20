@@ -1335,6 +1335,45 @@ fix: data/objects/palm3.ms3d 33834.093750 29971.214844
 fix: data/objects/palm3.ms3d 33857.035156 29948.779297
 fix: data/objects/palm3.ms3d 33886.312500 29928.458984
 fix: data/objects/palm3.ms3d 33924.500000 29904.240234
+fix: data/objects/barrier_concrete_90.mso 71516.703125 93059.234375
+fix: data/objects/barrier_concrete_90.mso 71519.679688 93067.414063
+fix: data/objects/barrier_concrete_90.mso 71514.156250 93050.257813
+fix: data/objects/barrier_concrete_135.mso 71508.320313 93043.867188
+fix: data/objects/barrier_concrete.mso 71499.257813 93042.546875
+fix: data/objects/barrier_concrete.mso 71492.898438 93043.367188
+fix: data/objects/barrier_concrete.mso 71485.546875 93044.609375
+fix: data/objects/barrier_concrete.mso 71477.789063 93046.414063
+fix: data/objects/barrier_concrete.mso 57970.859375 65710.500000
+fix: data/objects/barrier_concrete.mso 57975.867188 65710.718750
+fix: data/objects/barrier_concrete.mso 57965.453125 65710.296875
+fix: data/objects/barrier_concrete.mso 57971.867188 65674.203125
+fix: data/objects/barrier_concrete.mso 57967.273438 65674.476563
+fix: data/objects/barrier_concrete.mso 57977.328125 65673.804688
+fix: data/objects/barrier_concrete_135.mso 44170.328125 34764.953125
+fix: data/objects/barrier_concrete_135.mso 44173.957031 34769.539063
+fix: data/objects/barrier_concrete_135.mso 44166.500000 34760.062500
+fix: data/objects/barrier_concrete_135.mso 44195.121094 34748.542969
+fix: data/objects/barrier_concrete_135.mso 44198.214844 34752.902344
+fix: data/objects/barrier_concrete_135.mso 44192.066406 34744.074219
+fix: data/objects/barrier_concrete_90.mso 41987.339844 18526.904297
+fix: data/objects/barrier_concrete_90.mso 41988.097656 18532.796875
+fix: data/objects/barrier_concrete_90.mso 41989.242188 18539.410156
+fix: data/objects/barrier_concrete_90.mso 41990.132813 18546.271484
+fix: data/objects/barrier_concrete_45.mso 41990.574219 18517.859375
+fix: data/objects/barrier_concrete.mso 41995.777344 18512.017578
+fix: data/objects/barrier_concrete.mso 42004.867188 18508.408203
+fix: data/objects/barrier_concrete.mso 42014.996094 18505.294922
+fix: data/objects/barrier_concrete.mso 42026.277344 18501.781250
+fix: data/objects/barrier_red_90.mso 50593.234375 2824.182129
+fix: data/objects/barrier_red_90.mso 50593.105469 2850.220459
+fix: data/objects/barrier_red_90.mso 50591.812500 2882.976563
+fix: data/objects/barrier_red_90.mso 50618.863281 2866.294434
+fix: data/objects/barrier_red_90.mso 50617.687500 2837.299561
+fix: data/objects/barrier_white_90.mso 50617.949219 2883.420410
+fix: data/objects/barrier_white_90.mso 50618.082031 2851.719482
+fix: data/objects/barrier_white_90.mso 50617.394531 2822.827148
+fix: data/objects/barrier_white_90.mso 50593.417969 2836.962402
+fix: data/objects/barrier_white_90.mso 50592.531250 2866.622559
 ran: data/objects/my_cactus_grass.mso 4000
 ran: data/objects/my_cactus_grass_ss.mso 7000
 ran: data/objects/my_grass1_ss.mso 6000

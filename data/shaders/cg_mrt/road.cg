@@ -1,0 +1,98 @@
+#include "common.cg"
+
+void main_v(float4 vPosition    : POSITION,
+            float3 vNormal      : NORMAL,
+            float2 Uv           : TEXCOORD0,
+
+            out float4 oPosition        : POSITION,
+            out float4 color            : COLOR,
+            out float2 oUv              : TEXCOORD0,
+            out float3 objPos           : TEXCOORD1,
+            out float3 oNormal          : TEXCOORD2,
+            out float4 oTexCoordProj    : TEXCOORD3,
+
+            uniform float4x4 mWorldViewProj,
+            uniform float4x4 mWorld,
+            uniform float4x4 mInvWorld,
+            uniform float4x4 mTextureMatrix,
+            uniform float3 mLightColor,
+            uniform float3 mLightPos,
+            uniform float3 eyePosition,
+            uniform float shininess
+)
+{
+    oPosition = mul(mWorldViewProj, vPosition);
+    oUv = Uv;
+    oNormal = vNormal;
+    objPos = mul(mWorld, vPosition).xyz;
+
+    float3 normal = mul(float4(vNormal,0.0), mInvWorld).xyz;
+
+    // renormalize normal 
+    normal = normalize(normal);
+    //normal.x = -normal.x;
+
+    float3 worldpos = objPos;
+
+    // calculate light vector, vtxpos - lightpos
+    float3 L = normalize(mLightPos - float3(0.0, 0.0, 0.0));
+    float3 V = normalize(eyePosition - worldpos);
+    float3 H = normalize(L + V);
+
+    // calculate light color 
+    float3 tmp = dot(normal, L);
+    tmp.y = dot(normal, H); 
+    tmp = lit(tmp.x, tmp.y, shininess).xyz;
+
+    tmp = mLightColor * tmp.y * tmp.z;
+    color = float4(tmp, 1.0);
+
+    oTexCoordProj = mul(mTextureMatrix, vPosition);
+    oTexCoordProj.xy = float2(oTexCoordProj.x, -oTexCoordProj.y) * 0.5;
+    // no need for non d3d calculate shadow
+    oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);
+}
+
+void main_f(float4 position     : POSITION,
+            float4 color        : COLOR,
+            float2 Uv           : TEXCOORD0,
+            float3 objPos       : TEXCOORD1,
+            float3 normal       : TEXCOORD2,
+            float4 texCoordProj : TEXCOORD3,
+
+            uniform sampler2D tex0 : register(s0),
+            uniform sampler2D shadowMap : register(s1),
+
+            uniform float3 clightPos,
+            uniform float3 clightDir,
+            uniform float3 eyePositionF,
+            uniform float clight,
+            uniform float day_multi,
+            uniform float shadowParam,
+            uniform float shadowRes,
+
+            out float4 oColor   : COLOR0,
+            out float4 oColord  : COLOR1,
+            out float4 oColorc  : COLOR2
+)
+{
+    float4 col = tex2D (tex0, Uv);
+    float3 diffuseLight = float3(0.0, 0.0, 0.0);
+    float4 shadowCoeff = calculate_shadow_ter(texCoordProj, shadowMap, shadowParam, shadowRes, day_multi);
+
+    oColor = (color + float4(0.2, 0.2, 0.2, 1.0)) * col;
+    oColor *= 1.5;
+//    oColor = col;
+
+    if (clight>0.0)
+    {
+        spotAttenLighting(clightPos, clightDir, objPos, normal, day_multi, diffuseLight);
+        oColor.xyz = oColor.xyz * diffuseLight;
+    }
+
+    oColor = day_effect(oColor, position, day_multi);
+    add_shadow(oColor, shadowCoeff /* shadowCoeff2*/);
+    oColord = float4(0, 0, 1.0, 1.0);
+    oColorc = calculate_color(color * 0.5 * (day_multi));
+    add_shadow(oColorc, shadowCoeff * shadowCoeff/* shadowCoeff2*/);
+}

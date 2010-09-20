@@ -4,82 +4,84 @@ void main_v(float4 position : POSITION,
             float3 normal   : NORMAL,
             float2 Uv       : TEXCOORD0,
 
-            out float4 oPosition       : POSITION,
-            out float4 color     : COLOR0,
-            out float2 oUv       : TEXCOORD0,
-            out float3 objPos    : TEXCOORD1,
-            out float3 oNormal   : TEXCOORD2,
-            out float4 oTexCoordProj	: TEXCOORD3,
+            out float4 oPosition        : POSITION,
+            out float4 color            : COLOR0,
+            out float2 oUv              : TEXCOORD0,
+            out float3 objPos           : TEXCOORD1,
+            out float3 oNormal          : TEXCOORD2,
+            out float4 oTexCoordProj    : TEXCOORD3,
 
-	      uniform float4x4 mWorldViewProj,
+            uniform float4x4 mWorldViewProj,
             uniform float4x4 mWorld,
             uniform float4x4 mTextureMatrix
 )
 {
-  oPosition = mul(mWorldViewProj, position);
-  //oPosition = position;
-  oUv = Uv;
-  //objPos = position.xyz;
-  objPos = mul(mWorld, position).xyz;
-  oNormal = normal;
+    oPosition = mul(mWorldViewProj, position);
+    oUv = Uv;
+    objPos = mul(mWorld, position).xyz;
+    oNormal = normal;
 
-  oTexCoordProj = mul(mTextureMatrix, position);
-  oTexCoordProj.xy = float2(oTexCoordProj.x, -oTexCoordProj.y) * 0.5;
-// no need for non d3d calculate shadow
-  oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);}
+    oTexCoordProj = mul(mTextureMatrix, position);
+    oTexCoordProj.xy = float2(oTexCoordProj.x, -oTexCoordProj.y) * 0.5;
+    // no need for non d3d calculate shadow
+    oTexCoordProj.xy = oTexCoordProj.xy / oTexCoordProj.w + float2(0.5, 0.5);
+}
 
 
 struct fragment
 {
-	float4 position  : POSITION;
-	float4 color0    : COLOR0;
-	float2 texcoord0 : TEXCOORD0;
-      float3 objPos    : TEXCOORD1;
-      float3 normal    : TEXCOORD2;
-      float4 texCoordProj	: TEXCOORD3;
+    float4 position     : POSITION;
+    float4 color0       : COLOR0;
+    float2 texcoord0    : TEXCOORD0;
+    float3 objPos       : TEXCOORD1;
+    float3 normal       : TEXCOORD2;
+    float4 texCoordProj : TEXCOORD3;
 };
 
 struct pixel
 {
-	float4 color : COLOR0;
-	float4 colord : COLOR1;
+    float4 color  : COLOR0;
+    float4 colord : COLOR1;
+    float4 colorc : COLOR2;
 };
 
-pixel main_f( fragment IN,
-              uniform sampler2D tex0 : register(s0),
-	        uniform sampler2D shadowMap : register(s1),
-              uniform float param,
-              uniform float3 clightPos,
-              uniform float3 clightDir,
-	        uniform float3 eyePositionF,
-              uniform float clight,
-              uniform float day_multi,
-              uniform float ov_limit,
-              uniform float etick,
-              uniform float shadowParam,
-              uniform float shadowRes
-	      )
+pixel main_f(fragment IN,
+
+             uniform sampler2D tex0         : register(s0),
+             uniform sampler2D shadowMap    : register(s1),
+
+             uniform float param,
+             uniform float3 clightPos,
+             uniform float3 clightDir,
+             uniform float3 eyePositionF,
+             uniform float clight,
+             uniform float day_multi,
+             uniform float ov_limit,
+             uniform float etick,
+             uniform float shadowParam,
+             uniform float shadowRes
+)
 {
-  pixel OUT;
+    pixel OUT;
 
-  float4 col = tex2D( tex0, IN.texcoord0 );
-  float3 diffuseLight = float3(0.0, 0.0, 0.0);
-  float4 shadowCoeff = calculate_shadow_ter(IN.texCoordProj, shadowMap, shadowParam, shadowRes, day_multi);
+    float4 col = tex2D( tex0, IN.texcoord0 );
+    float3 diffuseLight = float3(0.0, 0.0, 0.0);
+    float4 shadowCoeff = calculate_shadow_ter(IN.texCoordProj, shadowMap, shadowParam, shadowRes, day_multi);
 
-  //col.a = col.a * 0.3;
-  clip(col.a - param);
+    clip(col.a - param);
 
-  spotAttenLighting(clightPos, clightDir, IN.objPos, IN.normal, day_multi, diffuseLight);
-  if (clight>0.0) col.xyz = col.xyz * diffuseLight;
+    if (clight>0.0)
+    {
+        spotAttenLighting(clightPos, clightDir, IN.objPos, IN.normal, day_multi, diffuseLight);
+        col.xyz = col.xyz * diffuseLight;
+    }
 
-  // fog stuff  
-  //add_fog(eyePositionF, IN.objPos, col);
-  //add_fog_tra(eyePositionF, IN.objPos, col, ov_limit, etick);
+    OUT.color = day_effect(col, IN.position, day_multi);
+    add_shadow(OUT.color, shadowCoeff /* shadowCoeff2*/);
 
-  OUT.color = day_effect(col, IN.position, day_multi);
-  add_shadow(OUT.color, shadowCoeff /* shadowCoeff2*/);
+    OUT.colord = float4(0, 0, 1.0, 1.0);
+    OUT.colorc = calculate_color(float4(0.5, 0.5, 0.5, col.a) * (day_multi)); // IN.color0;
+    add_shadow(OUT.colorc, shadowCoeff * shadowCoeff/* shadowCoeff2*/);
 
-  OUT.colord = float4(0, 0, 1.0, 1.0);
-
-  return OUT;
+    return OUT;
 }

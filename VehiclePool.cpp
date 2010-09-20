@@ -26,7 +26,7 @@
 
 //#define pdprintf(x) x
 
-#define PREGENERATED_VEHICLE_NUM 3
+#define PREGENERATED_VEHICLE_NUM 2
 
 CVehicleType::CVehicleType(
                  IrrlichtDevice* p_device,
@@ -40,7 +40,8 @@ CVehicleType::CVehicleType(
 #endif
                  const char *p_name,
                  const char *p_fileName,
-                 int type)
+                 int type,
+                 int rep)
     : device(p_device), smgr(p_smgr), driver(p_driver), nWorld(p_nWorld),
       soundEngine(p_soundEngine),
       vehicleList()
@@ -48,7 +49,7 @@ CVehicleType::CVehicleType(
     strcpy(vehicleName, p_name);
     strcpy(vehicleFileName, p_fileName);
     
-    for (int i = 0; i < PREGENERATED_VEHICLE_NUM; i++)
+    for (int i = 0; i < rep; i++)
     {
         NewtonRaceCar* vehicle = new NewtonRaceCar(device, smgr, driver, nWorld, soundEngine,
                                                    type, vehicleFileName);
@@ -92,6 +93,7 @@ CVehiclePool::CVehiclePool(IrrlichtDevice* p_device,
         int ret = 1;
         char vname[256];
         char vfname[256];
+        int rep = PREGENERATED_VEHICLE_NUM;
         
         f = fopen(p_name, "r");
 
@@ -102,10 +104,11 @@ CVehiclePool::CVehiclePool(IrrlichtDevice* p_device,
 
         while (1)
         {
-            ret = fscanf(f, "%s\n%s\n", vname, vfname);
+            ret = fscanf(f, "%s\n%s\n%d\n", vname, vfname, &rep);
             if (ret <= 0) break;
+            if (rep < 2 ) rep = 2;
             CVehicleType* vt = new CVehicleType(device, smgr, driver, nWorld, soundEngine,
-                                                vname, vfname, vehicleTypes.size());
+                                                vname, vfname, vehicleTypes.size(), rep);
             
             vehicleTypes.push_back(vt);
             MessageText::refresh();

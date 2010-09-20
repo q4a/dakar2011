@@ -1,11 +1,11 @@
 #include "common.cg"
 
 struct v_output {
-  float4 position : POSITION;
-  float3 color    : COLOR;
-  float2 texCoord : TEXCOORD0;
-  float2 texCoord1 : TEXCOORD1;
-  float2 oPosition : TEXCOORD2;
+    float4 position : POSITION;
+    float3 color    : COLOR;
+    float2 texCoord : TEXCOORD0;
+    float2 texCoord1 : TEXCOORD1;
+    float2 oPosition : TEXCOORD2;
 };
 
 v_output main_v(float2 position : POSITION,
@@ -14,62 +14,84 @@ v_output main_v(float2 position : POSITION,
                 float2 texCoord1 : TEXCOORD1
 )
 {
-  v_output OUT;
+    v_output OUT;
 
-  OUT.position = float4(position,0,1);
-  OUT.color    = color;
-  OUT.texCoord = texCoord;
-  OUT.texCoord1 = texCoord1;
-  OUT.oPosition = position;
+    OUT.position = float4(position,0,1);
+    OUT.color    = color;
+    OUT.texCoord = texCoord;
+    OUT.texCoord1 = texCoord1;
+    OUT.oPosition = position;
 
-  return OUT;	
+    return OUT;
 }
 
 struct f_output {
-  float4 color : COLOR;
+    float4 color : COLOR;
 };
 
-f_output main_f(float2 texCoord : TEXCOORD0,
-                float2 texCoord1 : TEXCOORD1,
-                float2 position : TEXCOORD2,
-                uniform sampler2D tex0 : register(s0),
-                uniform sampler2D tex1 : register(s1), // deep map
-                uniform sampler2D tex2 : register(s2), // blur map
+f_output main_f(float2 texCoord     : TEXCOORD0,
+                float2 texCoord1    : TEXCOORD1,
+                float2 position     : TEXCOORD2,
+
+                uniform sampler2D tex0  : register(s0),
+                uniform sampler2D tex1  : register(s1), // deep map
+                uniform sampler2D tex2  : register(s2), // blur map
+                uniform sampler2D tex3  : register(s3), // color
+
                 uniform float coll_tick,
                 uniform float depth,
                 uniform float etick,
                 uniform float car_speed
 )
 {
-  f_output OUT;
+    f_output OUT;
 
-  float4 col;
-///  col = tex2D(tex0, texCoord);
-//  col.xyz = float3(car_speed, car_speed, car_speed);
-//  col.xyz = float3(car_speed, coll_tick, etick);
-  col = coll_effect_f(coll_tick, tex0, texCoord);
+    const float4 colc0 = tex2D(tex3, float2(texCoord.x, texCoord.y));
+    const float c_offset = 0.004 - (colc0.x*0.01);
 
-  if (car_speed > 0.1 && coll_tick < -0.5)
-  {
-    float2 offset = float2(0.0, 0.0);
-    offset = float2(0.030*car_speed*(tex2D(tex2, texCoord).x-0.5),
-                    0.015*car_speed*tex2D(tex2, texCoord).y);
-    if (texCoord.x+offset.x < 0.0 || texCoord.x+offset.x > 1.0) offset.x = 0.0;
-    if (texCoord.x-offset.x < 0.0 || texCoord.x-offset.x > 1.0) offset.x = 0.0;
-//    if (texCoord.y-offset.y > 1.0 || texCoord.y+offset.y > 1.0) offset.y = 0.0;
-    offset *= tex2D(tex1, texCoord+(offset*1.2)).b *
-              tex2D(tex1, texCoord-(offset*1.2)).b *
-              tex2D(tex1, texCoord).b;
-    float2 tcl = texCoord+offset;
-    float2 tcu = texCoord-offset;
-    col += tex2D(tex0, tcl)*0.5;
-    col += tex2D(tex0, tcu)*0.5;
-    col = col * 0.5;
-  }
+    float4 col;
+    float4 colc = colc0 +
+                  tex2D(tex3, float2(texCoord.x+c_offset, texCoord.y)) +
+                  tex2D(tex3, float2(texCoord.x-c_offset, texCoord.y)) +
+                  tex2D(tex3, float2(texCoord.x, texCoord.y-c_offset)) +
+                  tex2D(tex3, float2(texCoord.x, texCoord.y+c_offset));
 
-  OUT.color = col;
-//  OUT.color = col + (tex2D(tex1, texCoord).r*0.25);
-//  OUT.color = tex2D(tex1, texCoord);
-  return OUT;
+//    float4 colc = tex2D(tex3, texCoord) * 2.0;
+//    float4 colc = float4(0.3, 0.3, 0.3, 0.3) + (tex2D(tex3, texCoord)); //  * 0.7
+/*
+    float4 colh;
+    if (colc.x > 1.0)
+    	colh = colc;
+    else
+    	colh = float4(0,0,0,0);
+*/
+    ///  col = tex2D(tex0, texCoord);
+    //  col.xyz = float3(car_speed, car_speed, car_speed);
+    //  col.xyz = float3(car_speed, coll_tick, etick);
+    col = coll_effect_f(coll_tick, tex0, texCoord);
+
+    if (car_speed > 0.1 && coll_tick < -0.5)
+    {
+      float2 offset = float2(0.0, 0.0);
+      offset = float2(0.030*car_speed*(tex2D(tex2, texCoord).x-0.5),
+                      0.015*car_speed*tex2D(tex2, texCoord).y);
+      if (texCoord.x+offset.x < 0.0 || texCoord.x+offset.x > 1.0) offset.x = 0.0;
+      if (texCoord.x-offset.x < 0.0 || texCoord.x-offset.x > 1.0) offset.x = 0.0;
+      //if (texCoord.y-offset.y > 1.0 || texCoord.y+offset.y > 1.0) offset.y = 0.0;
+      offset *= tex2D(tex1, texCoord+(offset*1.2)).b *
+                tex2D(tex1, texCoord-(offset*1.2)).b *
+                tex2D(tex1, texCoord).b;
+      float2 tcl = texCoord+offset;
+      float2 tcu = texCoord-offset;
+      col += tex2D(tex0, tcl)*0.5;
+      col += tex2D(tex0, tcu)*0.5;
+      col = col * 0.5;
+    }
+
+    col.xyz = col.xyz + colc.xyz * 0.6;
+    OUT.color = col;
+    //  OUT.color = col + (tex2D(tex1, texCoord).r*0.25);
+    //  OUT.color = tex2D(tex3, texCoord);
+    //OUT.color = colc;
+    return OUT;
 }
-

@@ -266,6 +266,9 @@ int main()
     screenSize = driver->getScreenSize();
     
     CScreenQuad screenQuad(driverType == video::EDT_OPENGL /*|| driverType == video::EDT_OPENGL3*/, flip_vert);
+    CScreenQuad speedPalca(false, false);
+    CScreenQuad speedPalca2(false, false);
+    CScreenQuad speedHud(false, false);
 
     assert(view_multi==4);
     if (driver->getDriverType() == EDT_OPENGL /*|| driver->getDriverType() == EDT_OPENGL3*/)
@@ -459,7 +462,12 @@ int main()
     hudTextures[8] = driver->getTexture("data/hud/hudd.png");
     
     hudUserOnMapTexture = driver->getTexture("data/hud/useronmap.png");
-
+    speedPalca.getMaterial().setTexture(0, driver->getTexture("data/hud/palca.png"));
+    //speedPalca.getMaterial().MaterialTypeParam = 0.5f;
+    speedPalca2.getMaterial().setTexture(0, driver->getTexture("data/hud/palca_e.png"));
+    //speedPalca2.getMaterial().MaterialTypeParam = 0.5f;
+    speedHud.getMaterial().setTexture(0, hudTextures[1]);
+    //speedHud.getMaterial().MaterialTypeParam = 0.5f;
 
     const float hudRate = (float)(screenSize.Width)/2600.f;
     float hudSize;
@@ -476,6 +484,12 @@ int main()
     const int hudPositionX = screenSize.Width-(int)hudSize-10;
     const int hudPositionY = screenSize.Height-(int)hudSize-10;
 	hudImage = env->addImage(core::rect<int>(hudPositionX, hudPositionY, screenSize.Width-10, screenSize.Height-10), 0, -1, L"hud");
+
+    speedHud.set2DVertexPos(0, irr::core::position2d<s32>(hudPositionX, screenSize.Height-10), screenSize);
+    speedHud.set2DVertexPos(1, irr::core::position2d<s32>(hudPositionX, hudPositionY), screenSize);
+    speedHud.set2DVertexPos(2, irr::core::position2d<s32>(screenSize.Width-10, hudPositionY), screenSize);
+    speedHud.set2DVertexPos(3, irr::core::position2d<s32>(screenSize.Width-10, screenSize.Height-10), screenSize);
+
 	hudImage->setScaleImage(true);
 	hudImage->setUseAlphaChannel(true);
     hudImage->setImage(hudTextures[1]);
@@ -505,6 +519,10 @@ int main()
     const core::vector2df hudPos2(hudCenter2.X-hudPos2X, hudCenter2.Y-hudPos2Y);
 
     core::vector2df hudPos;
+    core::vector2df hudPos_;
+    core::vector2df hudPos_h;
+    core::vector2df hudPos_v;
+    float hudPos_v_tmp;
     core::position2d<s32> hudPos2d;
     core::position2d<s32> hudPos2d2;
     core::position2d<s32> hudPos2d3;
@@ -514,43 +532,43 @@ int main()
     
     offsetManager = new OffsetManager();
 
-	// add camera
-	fix_camera = smgr->addCameraSceneNode();
-	fix_camera->setFarValue(DEFAULT_FAR_VALUE);
+    // add camera
+    fix_camera = smgr->addCameraSceneNode();
+    fix_camera->setFarValue(DEFAULT_FAR_VALUE);
     fix_camera->setNearValue(nearValue);
 
     fix_cameraOffsetObject = new OffsetObject(fix_camera, true);
 
-	fps_camera = smgr->addCameraSceneNodeFPS(0, 100.f, CAMERA_SPEED);
-	fps_camera->setFarValue(DEFAULT_FAR_VALUE);
+    fps_camera = smgr->addCameraSceneNodeFPS(0, 100.f, CAMERA_SPEED);
+    fps_camera->setFarValue(DEFAULT_FAR_VALUE);
     fps_camera->setNearValue(nearValue);
     
     fps_cameraOffsetObject = new OffsetObject(fps_camera, true);
 
-	lightCam = smgr->addCameraSceneNode();
-	lightCamCar = smgr->addCameraSceneNode(); //lightCamCar->setFOV(0.02f);
+    lightCam = smgr->addCameraSceneNode();
+    lightCamCar = smgr->addCameraSceneNode(); //lightCamCar->setFOV(0.02f);
 
-	car_selector_camera = smgr->addCameraSceneNode();
-	car_selector_camera->setFarValue(DEFAULT_FAR_VALUE);
+    car_selector_camera = smgr->addCameraSceneNode();
+    car_selector_camera->setFarValue(DEFAULT_FAR_VALUE);
     car_selector_camera->setNearValue(nearValue);
-	
-	camera = fix_camera;
-	smgr->setActiveCamera(camera);
+
+    camera = fix_camera;
+    smgr->setActiveCamera(camera);
 
     device->getCursorControl()->setPosition(0.f,0.f);
     
     // set amb light
-	smgr->setShadowColor();
+    smgr->setShadowColor();
     float lightColor = 1.0f;
-   	lnode = smgr->addLightSceneNode(0,
+    lnode = smgr->addLightSceneNode(0,
             core::vector3df(3750.f,20000.f,3750.f),
-		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
+            video::SColorf(lightColor, lightColor, lightColor), 50000.f);
     if (useShaders && !useCgShaders) useCgShaders = true;
     if (useShaders)
     {
-    	lnode_4_shaders = smgr->addLightSceneNode(0,
-            core::vector3df(1.f,10.f,5.f),
-		    video::SColorf(lightColor, lightColor, lightColor), 50000.f);
+        lnode_4_shaders = smgr->addLightSceneNode(0,
+            core::vector3df(2.f,150.f,20.f),
+            video::SColorf(lightColor, lightColor, lightColor), 50000.f);
         lnode_4_shaders->getLightData().Type=ELT_DIRECTIONAL; 
         lnode_4_shaders->setRotation(core::vector3df(110.f, 0.f, 0.f));
         lnode_4_shaders->setVisible(false);
@@ -607,7 +625,7 @@ int main()
     dprintf(printf("2 %p %d\n", hudImage, useCgShaders));
     try
     {
-        setupShaders2(device, driver, driverType, smgr, camera, true/*usehls*/, lnode_4_shaders);
+        setupShaders2(device, driver, driverType, smgr, camera, lnode_4_shaders);
     } catch(...)
     {
         printf("Cg shader setup casued exception, fall back to standard shaders\n");
@@ -615,7 +633,7 @@ int main()
         return 1;
     }
     //myError(0, "hello");
-    // assert(0); // for shader debug
+    //assert(0); // for shader debug
     
     if (!useCgShaders)
     {
@@ -624,14 +642,14 @@ int main()
 
     dprintf(printf("2b %p\n", hudImage));
 
-	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
+    driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
 
-	// create skybox and skydome
+    // create skybox and skydome
     skydome=smgr->addSkyDomeSceneNode(driver->getTexture("data/skys/skydome.jpg"),
              16,8,0.95f,2.0f);
     if (useShaders && useCgShaders)
     {
-        skydome->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_tex);
+        skydome->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sky);
         skydome->setMaterialTexture(1, driver->getTexture("data/skys/skystars.jpg"));
     }
     if (useShaders)
@@ -639,11 +657,35 @@ int main()
     else    
         skydome->setMaterialFlag(video::EMF_LIGHTING, globalLight);
         
-    sunSphere = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(1000.f, 1000.f));//smgr->addSphereSceneNode(1.f);
+    sunSphere = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(80.f, 80.f));//smgr->addSphereSceneNode(1.f);
+    sunSphere1 = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(70.f, 70.f));//smgr->addSphereSceneNode(1.f);
+    sunSphere2 = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(80.f, 80.f));//smgr->addSphereSceneNode(1.f);
+    sunSphere3 = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(50.f, 50.f));//smgr->addSphereSceneNode(1.f);
+    sunSphere4 = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(50.f, 50.f));//smgr->addSphereSceneNode(1.f);
     //sunSphere->setScale(vector3df(300.f, 300.f, 300.f));
     sunSphere->setVisible(false);
-    sunSphere->setMaterialTexture(0, driver->getTexture("data/posteffects/sun.png"));
-    sunSphere->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_depthSun);
+    //sunSphere->setMaterialTexture(0, driver->getTexture("data/posteffects/sun.png"));
+    sunSphere->setMaterialTexture(0, driver->getTexture("data/posteffects/flare0.png"));
+    sunSphere1->setVisible(false);
+    sunSphere1->setMaterialTexture(0, driver->getTexture("data/posteffects/flare1.png"));
+    sunSphere2->setVisible(false);
+    sunSphere2->setMaterialTexture(0, driver->getTexture("data/posteffects/flare2.png"));
+    sunSphere3->setVisible(false);
+    sunSphere3->setMaterialTexture(0, driver->getTexture("data/posteffects/flare3.png"));
+    sunSphere4->setVisible(false);
+    sunSphere4->setMaterialTexture(0, driver->getTexture("data/posteffects/flare4.png"));
+    if (useAdvCgShaders)
+    {
+        sunSphere->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sun);
+        sunSphere1->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sun);
+        sunSphere2->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sun);
+        sunSphere3->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sun);
+        sunSphere4->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_sun);
+    }
+    else
+    {
+        sunSphere->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_depthSun);
+    }
     
     smokeTexture = driver->getTexture("data/bigterrains/smoke/dirt.png");    
     smokeWaterTexture = driver->getTexture("data/bigterrains/smoke/dirt_water.png");    
@@ -655,7 +697,7 @@ int main()
 
     MessageText::addText(L"Please wait [  *         ]", 1, true, false);
 
-	driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
+    driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, true);
 
     //NewtonSetBodyLeaveWorldEvent (nWorld, BodyLeaveWorld); 
 
@@ -706,43 +748,43 @@ int main()
         cLightDest_loc[13] = 0.0f;
     }
     
-	// create event receiver
-   	dprintf(printf("DEBUG: create event receiver game\n");)
-	eventreceiver_game* game_receiver = new eventreceiver_game(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
-   	dprintf(printf("DEBUG: create event receiver menu\n");)
-	eventreceiver_menu* menu_receiver = new eventreceiver_menu(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
+    // create event receiver
+    dprintf(printf("DEBUG: create event receiver game\n");)
+    eventreceiver_game* game_receiver = new eventreceiver_game(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
+    dprintf(printf("DEBUG: create event receiver menu\n");)
+    eventreceiver_menu* menu_receiver = new eventreceiver_menu(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
 
-   	dprintf(printf("DEBUG: create event receiver dummy\n");)
-	eventreceiver_dummy* dummy_receiver = new eventreceiver_dummy(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
-	
-	game_receiver->setOther(menu_receiver);
-	menu_receiver->setOther(game_receiver);
+    dprintf(printf("DEBUG: create event receiver dummy\n");)
+    eventreceiver_dummy* dummy_receiver = new eventreceiver_dummy(device, 0, skydome, driver, smgr, env, nWorld, soundEngine);
 
-   	device->setEventReceiver(dummy_receiver);
+    game_receiver->setOther(menu_receiver);
+    menu_receiver->setOther(game_receiver);
+
+    device->setEventReceiver(dummy_receiver);
     device->getCursorControl()->setPosition(0.f,0.f);
     
-   	device->setEventReceiver(game_receiver);
-   	
-   	dprintf(printf("DEBUG: check restore state\n");)
+    device->setEventReceiver(game_receiver);
+
+    dprintf(printf("DEBUG: check restore state\n");)
 
     if (!restoreState())
     {
-       	dprintf(printf("DEBUG: there is not state to be restore, start_with_main: %u\n", start_with_mainmenu);)
+        dprintf(printf("DEBUG: there is not state to be restore, start_with_main: %u\n", start_with_mainmenu);)
         if (start_with_mainmenu)
         {
             menu_receiver->openMainWindow();
         }
         else
         {
-           	dprintf(printf("DEBUG: try load game\n");)
+            dprintf(printf("DEBUG: try load game\n");)
             if (!loadGame(SAVE_FILE))
                 currentStage = 0;
-           	dprintf(printf("DEBUG: start stage: %u\n", currentStage);)
+            dprintf(printf("DEBUG: start stage: %u\n", currentStage);)
             startGame(currentStage);
         }
     }
 
-   	dprintf(printf("DEBUG: device run device %p\n", device);)
+    dprintf(printf("DEBUG: device run device %p\n", device);)
     device->run();
     
     menu_receiver->startEnter();
@@ -922,7 +964,7 @@ int main()
             {
                 vector3df objDir = (objectNodes[i]->getPosition() - lookPos).normalize();
                 float dist = camera->getPosition().getDistanceFrom(objectNodes[i]->getPosition());
-                if(dist < 30.f || (lookDir.dotProduct(objDir)>lookFOV && (/*useCgShaders ||*/ dist < objectVisibilityLimit)))
+                if(dist < 70.f || (lookDir.dotProduct(objDir)>lookFOV && (/*useCgShaders ||*/ dist < objectVisibilityLimit)))
                 {
                     objectNodes[i]->setVisible(true);
                     drawnObjs++;
@@ -939,9 +981,10 @@ int main()
             if (shadows && shadowMapGame)
             {
                 pdprintf(printf("6a\n"));
-                lightCam->setPosition(vector3df(camera->getPosition().X+2.0f,
-                                      camera->getPosition().Y + 150.f,
-                                      camera->getPosition().Z + 2.0f));
+                lightCam->setPosition(camera->getPosition() + lnode_4_shaders->getPosition());
+                //lightCam->setPosition(vector3df(camera->getPosition().X+2.0f,
+                //                      camera->getPosition().Y + 150.f,
+                //                      camera->getPosition().Z + 2.0f));
                 pdprintf(printf("6b\n"));
                 lightCam->setTarget(camera->getPosition());
                 pdprintf(printf("6c\n"));
@@ -1020,8 +1063,7 @@ int main()
             const int finalScreenRTT = 2; // currentScreenRTT / 2;
 
             // old way depth
-#ifndef USE_MRT
-            if (depth_effect && useCgShaders)
+            if (depth_effect && useCgShaders && !useAdvCgShaders)
             {
                 pdprintf(printf("10e\n"));
                 driver->setRenderTarget(depthRTT, true, true, video::SColor(0, 0, 0, 255));
@@ -1075,26 +1117,41 @@ int main()
                    
                 pdprintf(printf("9\n"));
             }
-#endif            
             pdprintf(printf("10 useScreenRTT: %u, depth_effect: %u\n", useScreenRTT, depth_effect));
 
             // post effects, or not
             if (useScreenRTT && depth_effect && useCgShaders)
             {
                 pdprintf(printf("10b\n"));
-#ifdef USE_MRT
-                driver->setRenderTarget(mrtList, true, true, video::SColor(0, 255, 255, 0));
-#else
-                driver->setRenderTarget(screenRTT[usedScreenRTT], true, true, video::SColor(0, 255, 255, 0));
-#endif
+                if (useAdvCgShaders)
+                {
+                    sunSphere->setPosition(camera->getPosition()+lnode_4_shaders->getPosition());
+                    sunSphere1->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.9);
+                    sunSphere2->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.8);
+                    sunSphere3->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.7);
+                    sunSphere4->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.6);
+                    driver->setRenderTarget(mrtList, true, true, video::SColor(0, 255, 255, 0));
+                }
+                else
+                {
+                    driver->setRenderTarget(screenRTT[usedScreenRTT], true, true, video::SColor(0, 255, 255, 0));
+                }
                 pdprintf(printf("10c\n"));
                 smgr->drawAll();
                 pdprintf(printf("10d\n"));
 #if 1
+                if (useAdvCgShaders)
+                {
+	                driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
+                    screenQuad.getMaterial().setTexture(0, screenRTT[finalScreenRTT]);
+                    screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_palca;
+                    screenQuad.render(driver);
+                }
 	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
                 screenQuad.getMaterial().setTexture(0, screenRTT[usedScreenRTT]);
                 screenQuad.getMaterial().setTexture(1, depthRTT);
                 screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
+                screenQuad.getMaterial().setTexture(3, screenRTT[/*finalScreenRTT*/bloomScreenRTT]);
                 screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
                 screenQuad.render(driver);
 #else
@@ -1127,12 +1184,21 @@ int main()
                 if (gear >= 0 && gear < MAX_HUD)
                 {
                     if (car->getSpeed()>=0.f || car->getTorqueReal() > -0.01f)
+                    {
                         hudImage->setImage(hudTextures[gear]); // 1 - 6
+                        speedHud.getMaterial().setTexture(0, hudTextures[gear]);
+                    }
                     else
+                    {
                         hudImage->setImage(hudTextures[MAX_HUD]); // R
+                        speedHud.getMaterial().setTexture(0, hudTextures[MAX_HUD]);
+                    }
                 }
                 else
+                {
                     hudImage->setImage(hudTextures[0]);
+                    speedHud.getMaterial().setTexture(0, hudTextures[0]);
+                }
             }
             pdprintf(printf("11\n"));
             if (bigTerrain)
@@ -1208,7 +1274,42 @@ int main()
                 hudPos2d.X = (s32)hudPos.X;
                 hudPos2d.Y = (s32)hudPos.Y;
                 
-                driver->draw2DLine(hudPos2d, hudCenter2d1,SColor(255,255,0,0));
+                if (useCgShaders)
+                {
+                    speedHud.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_palca;
+                    speedHud.render(driver);
+
+                    /* new part */
+                    hudPos_ = hudCenter1 + ((hudCenter1 - hudPos) * 0.215f);
+                    hudPos2d2.X = (s32)hudPos_.X;
+                    hudPos2d2.Y = (s32)hudPos_.Y;
+                    
+                    hudPos_v = (hudPos_ - hudPos) * 0.5f;
+                    hudPos_h = hudPos + hudPos_v;
+                    
+                    //hudPos_v.rotateBy(90.f, vector2df(0.f, 0.f));
+                    hudPos_v_tmp = hudPos_v.X;
+                    hudPos_v.X = -hudPos_v.Y;
+                    hudPos_v.Y = hudPos_v_tmp;
+                    
+                    hudPos2d3.X = (s32)(hudPos_h.X+hudPos_v.X);
+                    hudPos2d3.Y = (s32)(hudPos_h.Y+hudPos_v.Y);
+                    
+                    hudPos2d4.X = (s32)(hudPos_h.X-hudPos_v.X);
+                    hudPos2d4.Y = (s32)(hudPos_h.Y-hudPos_v.Y);
+                    
+                    speedPalca.set2DVertexPos(0, hudPos2d4, screenSize);
+                    speedPalca.set2DVertexPos(1, hudPos2d, screenSize);
+                    speedPalca.set2DVertexPos(2, hudPos2d3, screenSize);
+                    speedPalca.set2DVertexPos(3, hudPos2d2, screenSize);
+                    speedPalca.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_palca;
+                    speedPalca.render(driver);
+                    /* new part  end*/
+                }
+                else
+                {
+                    driver->draw2DLine(hudPos2d, hudCenter2d1,SColor(255,255,0,0));
+                }
 
                 // engine rotate
                 if (car->getEngineRotate() > 0.f)
@@ -1224,8 +1325,39 @@ int main()
                 
                 hudPos2d.X = (s32)hudPos.X;
                 hudPos2d.Y = (s32)hudPos.Y;
-                
-                driver->draw2DLine(hudPos2d, hudCenter2d2,SColor(255,255,0,0));
+
+                if (useCgShaders)
+                {
+                    /* new part */
+                    hudPos_ = hudCenter2 + ((hudCenter2 - hudPos) * 0.11f);
+                    hudPos2d2.X = (s32)hudPos_.X;
+                    hudPos2d2.Y = (s32)hudPos_.Y;
+                    
+                    hudPos_v = (hudPos_ - hudPos) * 0.5f;
+                    hudPos_h = hudPos + hudPos_v;
+                    
+                    hudPos_v_tmp = hudPos_v.X;
+                    hudPos_v.X = -hudPos_v.Y;
+                    hudPos_v.Y = hudPos_v_tmp;
+                    
+                    hudPos2d3.X = (s32)(hudPos_h.X+hudPos_v.X);
+                    hudPos2d3.Y = (s32)(hudPos_h.Y+hudPos_v.Y);
+                    
+                    hudPos2d4.X = (s32)(hudPos_h.X-hudPos_v.X);
+                    hudPos2d4.Y = (s32)(hudPos_h.Y-hudPos_v.Y);
+                    
+                    speedPalca2.set2DVertexPos(0, hudPos2d4, screenSize);
+                    speedPalca2.set2DVertexPos(1, hudPos2d, screenSize);
+                    speedPalca2.set2DVertexPos(2, hudPos2d3, screenSize);
+                    speedPalca2.set2DVertexPos(3, hudPos2d2, screenSize);
+                    speedPalca2.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_palca;
+                    speedPalca2.render(driver);
+                    /* new part  end*/
+                }
+                else
+                {
+                    driver->draw2DLine(hudPos2d, hudCenter2d2,SColor(255,255,0,0));
+                }
             }
             driver->endScene();
             device->getTimer()->tick();

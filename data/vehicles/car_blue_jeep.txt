@@ -7,16 +7,16 @@ mass: 2150.0
 engine_centre_of_mass: 0.30
 centre_of_mass: 0.1
 num_of_tyres: 4
-chassis_rotation_limit: 0.92
-chassis_rotation_rate: 0.01
+chassis_rotation_limit: 0.96
+chassis_rotation_rate: 0.23
 max_brake_force: 275.0
 max_gears: 4
 gear: 8000.0 300.0
-gear: 12000.0 300.0
-gear: 16000.0 300.0
-gear: 19500.0 300.0
+gear: 13000.0 300.0
+gear: 18000.0 300.0
+gear: 22000.0 300.0
 change_gear_time: 35
-max_steer_angle: 20.0
+max_steer_angle: 30.0
 max_steer_rate: 0.1
 engine_steer_div: 200.0
 torque_multi: 1.0
@@ -73,7 +73,7 @@ suspension_damper: 6.0
 steer_tyres: 1
 torque_tyres: 1
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----rear_right_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/monster_wheel_tex.png
@@ -88,7 +88,7 @@ suspension_damper: 6.0
 steer_tyres: 0
 torque_tyres: 1
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----rear_left_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/monster_wheel_tex.png

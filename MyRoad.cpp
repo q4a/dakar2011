@@ -435,7 +435,61 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
             vtx.TCoords = vector2df(tx, ty);
             
             if (j < roadType->slicePoints.size() - 1) tx += (roadType->slicePoints[j+1] - roadType->slicePoints[j]).getLength()/roadType->tRate;
+
+            // normal calculation
             
+            //vector2df fornormal = vector2df(roadType->slicePoints[j].X*normal.X, roadType->slicePoints[j].X*normal.Y);
+            //fornormal.normalize();
+            //vtx.Normal.X = fornormal.X;
+            //vtx.Normal.Z = fornormal.Y;
+            /*
+            if (j == 0)
+            {
+                vector2df cucc = roadType->slicePoints[j+1] - roadType->slicePoints[j];
+                cucc.normalize();
+                vtx.Normal.Y = -cucc.Y;
+            }
+            else if (j == roadType->slicePoints.size()-1)
+            {
+                //vtx.Normal.Y = vector2df(roadType->slicePoints[j] - roadType->slicePoints[j-1]).Y;
+                vector2df cucc = roadType->slicePoints[j] - roadType->slicePoints[j-1];
+                cucc.normalize();
+                vtx.Normal.Y = -cucc.Y;
+            }
+            else
+            {
+                //vtx.Normal.Y = vector2df(roadType->slicePoints[j+1] - roadType->slicePoints[j-1]).Y;
+                vector2df cucc = roadType->slicePoints[j+1] - roadType->slicePoints[j-1];
+                cucc.normalize();
+                vtx.Normal.Y = -cucc.Y;
+            }
+            */
+            /*
+            if (j == 0)
+            {
+                vector2df cucc = roadType->slicePoints[j+1] - roadType->slicePoints[j];
+                cucc.normalize();
+                vtx.Normal.Y = fabsf(cucc.X);
+            }
+            else if (j == roadType->slicePoints.size()-1)
+            {
+                //vtx.Normal.Y = vector2df(roadType->slicePoints[j] - roadType->slicePoints[j-1]).Y;
+                vector2df cucc = roadType->slicePoints[j] - roadType->slicePoints[j-1];
+                cucc.normalize();
+                vtx.Normal.Y = fabsf(cucc.X);
+            }
+            else
+            {
+                //vtx.Normal.Y = vector2df(roadType->slicePoints[j+1] - roadType->slicePoints[j-1]).Y;
+                vector2df vector1 = roadType->slicePoints[j+1] - roadType->slicePoints[j];
+                vector2df vector2 = roadType->slicePoints[j] - roadType->slicePoints[j-1];
+                vector2df cucc = vector2 - vector1;
+                cucc.normalize();
+                vtx.Normal.Y = fabsf(cucc.Y);
+            }
+            */
+            //vtx.Normal.normalize();
+//            printf("%f %f %f\n", vtx.Normal.X, vtx.Normal.Y, vtx.Normal.Z);
             buffer->Vertices.push_back(vtx);
         }
         if (i < basePoints.size() - 1)
@@ -445,6 +499,42 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
             {
                 buffer->Indices.push_back(vertexCount+roadType->sliceIndices[k]);
             }
+            /*
+            for (int j = 0; j < roadType->slicePoints.size(); j++)
+            {
+                if (j == 0)
+                {
+            	    core::plane3d<f32> p(
+        		                   buffer->Vertices[vertexCount+j].Pos,
+        		                   buffer->Vertices[vertexCount+j+roadType->slicePoints.size()].Pos,
+        		                   buffer->Vertices[vertexCount+j+1].Pos);
+                    p.Normal.normalize();
+                    buffer->Vertices[vertexCount+j].Normal = p.Normal;
+                }
+                else if (j == roadType->slicePoints.size()-1)
+                {
+            	    core::plane3d<f32> p(
+        		                   buffer->Vertices[vertexCount+j-1].Pos,
+        		                   buffer->Vertices[vertexCount+j+roadType->slicePoints.size()].Pos,
+        		                   buffer->Vertices[vertexCount+j].Pos);
+                    p.Normal.normalize();
+                    buffer->Vertices[vertexCount+j].Normal = p.Normal;
+                }
+                else
+                {
+            	    core::plane3d<f32> p(
+        		                   buffer->Vertices[vertexCount+j-1].Pos,
+        		                   buffer->Vertices[vertexCount+j+roadType->slicePoints.size()].Pos,
+        		                   buffer->Vertices[vertexCount+j+1].Pos);
+                    p.Normal.normalize();
+                    buffer->Vertices[vertexCount+j].Normal = p.Normal;
+                }
+                printf("%f %f %f\n", buffer->Vertices[vertexCount+j].Normal.X,
+                    buffer->Vertices[vertexCount+j].Normal.Y,
+                    buffer->Vertices[vertexCount+j].Normal.Z);
+                
+            }
+            */
             vertexCount += roadType->slicePoints.size();
         }
     }
@@ -456,12 +546,12 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
 		                   buffer->Vertices[buffer->Indices[ind+1]].Pos,
 		                   buffer->Vertices[buffer->Indices[ind+2]].Pos);
         p.Normal.normalize();
-
+        //printf("%f %f %f\n", p.Normal.X, p.Normal.Y, p.Normal.Z);
 	    buffer->Vertices[buffer->Indices[ind+0]].Normal = p.Normal;
 	    buffer->Vertices[buffer->Indices[ind+1]].Normal = p.Normal;
 	    buffer->Vertices[buffer->Indices[ind+2]].Normal = p.Normal;
     }
-   
+
     buffer->recalculateBoundingBox();
 
     SAnimatedMesh* animatedMesh = new SAnimatedMesh();
@@ -483,7 +573,14 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
     roadNode->setMaterialTexture(1, p_shadowMap);
 //    if (useShaders && useCgShaders)
 //    {
+    if (roadType->friction_multi > 0.01f)
+    {
+        roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_road);
+    }
+    else
+    {
         roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
+    }
 //    }
 //    else
 //    {

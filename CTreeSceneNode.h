@@ -62,6 +62,8 @@ public:
     
     virtual const core::aabbox3d<f32>& getBoundingBox() const;
     
+    //virtual void setPosition(const core::vector3df &newpos);
+    
     s32 getVertexCount() const;
     
     //! Returns the leaf node associated with the tree. Useful for settings the correct texture and material settings.

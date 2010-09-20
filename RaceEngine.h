@@ -70,6 +70,7 @@ public:
     float passedDistance;
     float distanceStep;
 #endif
+    float stageRand;
 };
 
 class CRaceEngine

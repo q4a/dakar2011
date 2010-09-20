@@ -1269,12 +1269,6 @@ void BigTerrain::loadObjects(const c8* name, ISceneManager* smgr, IVideoDriver* 
         return;       
     }
 
-    srand(1); // set seed, wand object to the same place always
-    
-    //objectMeshes = new IAnimatedMesh*[MAX_OBJECT_NUM];
-    //objectNodes = new IAnimatedMeshSceneNode*[MAX_OBJECT_NUM];
-    //memset(objectMeshes, 0, sizeof(void*)*MAX_OBJECT_NUM);
-    //memset(objectNodes, 0, sizeof(void*)*MAX_OBJECT_NUM);
     while (true)
     {
         int poolId = 0;

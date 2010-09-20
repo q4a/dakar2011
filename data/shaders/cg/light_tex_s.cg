@@ -67,9 +67,14 @@ void main_f( float4 position 	: POSITION,
 {
   float4 col = tex2D (tex0, Uv);
   float3 diffuseLight = float3(0.0, 0.0, 0.0);
+  float4 multip = calc_multip(color, 0.7);
 
-  oColor = (color + float4(0.2, 0.2, 0.2, 1.0)) * col;
-  oColor *= 2.0;
+  oColor.xyz = multip.xyz * col.xyz;
+  oColor.xyz *= 1.8;
+
+  oColor.a = col.a;
+//  oColor = (color + float4(0.2, 0.2, 0.2, 1.0)) * col;
+//  oColor *= 2.0;
 
   spotAttenLighting(clightPos, clightDir, objPos, normal, day_multi, diffuseLight);
   if (clight>0.0) oColor.xyz = oColor.xyz * diffuseLight;

@@ -3,20 +3,20 @@ texture: data/vehicles/texture/mitsu_paj_tex.png
 enginesound: data/vehicles/sound/engine_sound_08.wav
 scale: 1.0, 1.0, 1.1
 rotation: 0.0, 0.0, 0.0
-mass: 1825.0
+mass: 1850.0
 engine_centre_of_mass: 0.0
 centre_of_mass: 0.1
 num_of_tyres: 4
-chassis_rotation_limit: 0.89
-chassis_rotation_rate: 0.01
+chassis_rotation_limit: 0.93
+chassis_rotation_rate: 0.21
 max_brake_force: 425.0
 max_gears: 4
-gear: 10000.0 330.0
-gear: 15000.0 330.0
-gear: 20000.0 330.0
-gear: 25000.0 330.0
-change_gear_time: 15
-max_steer_angle: 23.0
+gear: 10500.0 330.0
+gear: 15500.0 330.0
+gear: 20500.0 330.0
+gear: 25500.0 330.0
+change_gear_time: 17
+max_steer_angle: 30.0
 max_steer_rate: 0.1
 engine_steer_div: 200.0
 torque_multi: 1.0
@@ -58,7 +58,7 @@ suspension_damper: 6.0
 steer_tyres: 1
 torque_tyres: 1
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----front_left_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/monster_wheel_tex.png
@@ -73,7 +73,7 @@ suspension_damper: 6.0
 steer_tyres: 1
 torque_tyres: 1
 smoke_tyres: 1
-hb_tyres: 1
+hb_tyres: 0
 -----rear_right_tyre-----
 tyre_mesh: data/vehicles/mesh/monster_wheel.ms3d
 tyre_texture: data/vehicles/texture/monster_wheel_tex.png

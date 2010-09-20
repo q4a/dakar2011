@@ -1,4 +1,10 @@
 
+float4 calculate_color(float4 color)
+{
+   const float4 color_shift = float4(0.7, 0.7, 0.7, 0.0);
+   return color - color_shift;
+}
+
 float4 day_effect(float4 color, float4 pos, float pmulti)
 {
    float4 ret;
@@ -64,15 +70,6 @@ float4 calc_multip(float4 color, float m)
 }
 
 
-void coll_effect(in float coll_tick, in out float4 oPosition)
-{
-  if (coll_tick!=-1.0)
-  {
-    oPosition.z = oPosition.z + (sin(coll_tick)*0.02);
-    oPosition.x = oPosition.x + (cos(coll_tick)*0.02);
-  }
-}
-
 void coll_effect_xy(in float coll_tick_x, in float coll_tick_y, in out float4 oPosition)
 {
     oPosition.z = oPosition.z + coll_tick_x;
@@ -94,16 +91,6 @@ float4 coll_effect_f(in float coll_tick, in sampler2D tex0, in float2 texCoord)
      ret = tex2D(tex0,texCoord);
   }
   return ret;
-}
-
-void add_fog(in float3 eyePositionF, in float3 objPos, in out float4 oColor, in float mult = 1.0)
-{
-  // fog stuff  
-  float fogDistance  = distance(eyePositionF, objPos) * mult;
-  float fogExponent  = fogDistance * log2(1-0.001);
-  float fogFactor   = exp2(-abs(fogExponent));
-  oColor.xyz = lerp(float3(0.9,0.9,0.9), oColor.xyz,
-                    fogFactor);
 }
 
 void add_fog_tra(in float3 eyePositionF, in float3 objPos, in out float4 oColor,
@@ -150,81 +137,6 @@ void add_shadow(in out float4 oColor, in float4 shadowCoeff)
     oColor.xyz *= shadowCoeff.xyz;
 }
 
-float4 add_shadow_color(float shadowColor)
-{
-  return float4(shadowColor,shadowColor,shadowColor,1.0);
-}
-
-float4 calculate_shadow(in float4 ptexCoordProj,
-                        in sampler2D shadowMap,
-                        in float shadowParam,
-                        in float shadowRes
-)
-{
-
-  const float2 texCoordProj = float2(ptexCoordProj.x, ptexCoordProj.y*shadowParam) / ptexCoordProj.w + float2(0.5, 0.5);
-
-  const float4 hshadow = float4(0.3, 0.3, 0.3, 1.0);
-  const float4 tshadow = float4(0.4, 0.4, 0.4, 1.0);
-  const float4 nshadow = float4(1.0, 1.0, 1.0, 1.0);
-
-  if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0)
-  {
-
-    const float2 offset = float2(1.0/shadowRes,1.0/shadowRes);
-    const float2 hoffset = offset * 0.5;
-    const float2 modulo = fmod(texCoordProj.xy, offset);
-    const float2 _floor = texCoordProj.xy - modulo;
-    const float2 _center = _floor + hoffset;
-    const float limit = 0.35;
-
-    const float4 sample = tex2D(shadowMap, _center);
-
-    const float4 sample1 = tex2D(shadowMap, float2(_center.x+offset.x, _center.y));
-    const float4 sample2 = tex2D(shadowMap, float2(_center.x-offset.x, _center.y));
-    const float4 sample3 = tex2D(shadowMap, float2(_center.x, _center.y+offset.y));
-    const float4 sample4 = tex2D(shadowMap, float2(_center.x, _center.y-offset.y));
-
-    if (sample.x >= limit)
-    {
-       float2 my = modulo - hoffset;
-       if (sample1.x<limit && sample3.x<limit && (my.x) > (-1*my.y))
-          return tshadow;
-       if (sample1.x<limit && sample4.x<limit && (my.x) > (my.y))
-          return tshadow;
-       if (sample2.x<limit && sample3.x<limit && (my.x) < (my.y))
-          return tshadow;
-       if (sample2.x<limit && sample4.x<limit && (my.x) < (-1*my.y))
-          return tshadow;
-   }
-    if (sample.x<limit)
-       return hshadow;
-    return tex2D(shadowMap, float2(texCoordProj.x, texCoordProj.y));
-
-  }
-  else
-    return nshadow;
-
-}
-
-float4 calculate_shadow_d3d(in float4 texCoordProj,
-                        in sampler2D shadowMap,
-                        in float shadowParam,
-                        in float shadowRes
-)
-{
-  const float4 nshadow = float4(1.0, 1.0, 1.0, 1.0);
-
-  if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0)
-  {
-    return tex2D(shadowMap, float2(texCoordProj.x, texCoordProj.y*shadowParam));
-
-  }
-  else
-    return nshadow;
-
-}
-
 float4 calculate_shadow_ter(in float4 texCoordProj,
                         in sampler2D shadowMap,
                         in float shadowParam,
@@ -240,7 +152,8 @@ float4 calculate_shadow_ter(in float4 texCoordProj,
   if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0 &&
        shd > 0.01)
   {
-      col = lerp(nshadow, hshadow, shd);
+      const float cdm = ((day_multi-0.1)*1.1111);
+      col = lerp(nshadow, hshadow, shd*cdm*cdm);
 //      if (day_multi < 0.45)
 //      {
 //         float tds = (0.45 - day_multi)*2.0;
@@ -272,7 +185,7 @@ float4 calculate_shadow_ter2(in float4 texCoordProj,
   if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0 &&
        shd > 0.01)
   {
-    col = lerp(nshadow, hshadow, shd);
+    col = lerp(nshadow, hshadow, shd*((day_multi-0.1)*1.1111));
   }
   return col;
 }
@@ -283,30 +196,31 @@ float4 calculate_shadow_car(in float4 texCoordProj,
                         in float shadowRes,
                         in float3 lightPos,
                         in float3 objPos,
-			in float far_value
+                        in float far_value,
+                        in float day_multi
 )
 {
-  const float4 nshadow = float4(1.0, 1.0, 1.0, 1.0);
-  const float4 hshadow = float4(0.7, 0.7, 0.7, 1.0);
-  float4 col = nshadow;
-  float shd = tex2D(shadowMap, float2(texCoordProj.x, texCoordProj.y*shadowParam)).z - 0.5;
+    const float4 nshadow = float4(1.0, 1.0, 1.0, 1.0);
+    const float4 hshadow = float4(0.7, 0.7, 0.7, 1.0);
+    float4 col = nshadow;
+    float shd = tex2D(shadowMap, float2(texCoordProj.x, texCoordProj.y*shadowParam)).z - 0.5;
 
-  if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0 &&
-      shd > 0.01)
-  {
-     float d = distance (objPos, lightPos);
-     if (shd < d / (far_value * 2.0 + 1.0))
-        col = hshadow;
-  }
-  return col;
+    if (0<=texCoordProj.x && texCoordProj.x<=1.0 && 0<=texCoordProj.y && texCoordProj.y<=1.0 && shadowParam!=0.0 &&
+        shd > 0.01)
+    {
+        float d = distance (objPos, lightPos);
+        if (shd < d / (far_value * 2.0 + 1.0))
+        col = lerp(nshadow, hshadow, ((day_multi-0.1)*1.1111));
+    }
+    return col;
 }
 
 void add_stars(in float2 texCoord,
                in sampler2D tex,
                in out float4 oColor, in float day_multi)
 {
-  if (day_multi < 0.4)
-  {
-     oColor.xyz = oColor.xyz + (tex2D(tex, texCoord).xyz * ((0.4-day_multi)*3.5));
-  }
+    if (day_multi < 0.4)
+    {
+        oColor.xyz = oColor.xyz + (tex2D(tex, texCoord).xyz * ((0.4-day_multi)*3.5));
+    }
 }

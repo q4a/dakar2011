@@ -356,7 +356,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             if (strcmp(textureName, "null"))
             {
                 objectNode->setMaterialTexture(0, driver->getTexture(textureName));
-                objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+                objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_s);
             }
             else
             {
@@ -624,6 +624,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             {
             	objectNode->getLeafNode()->getMaterial(0).TextureLayer[0].AnisotropicFilter = true;
                 objectNode->getLeafNode()->getMaterial(0).TextureLayer[0].BilinearFilter = false;
+                //objectNode->getLeafNode()->getMaterial(0).MaterialTypeParam = 0.5f;
                 
                 objectNode->getLeafNode()->setMaterialTexture( 0, treeDesigns[type]->LeafTexture );
                 if (useShaders && useCgShaders)
@@ -652,7 +653,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             
             //objectNode->getLeafNode()->setMaterialType( leafMaterialType );
 
-            objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+            objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_s);
             
             objectWrapper->calculateCollision(box, ofs);
             objectWrapper->setVisible(false);
@@ -704,10 +705,11 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             }
             
             objectNode->setMaterialTexture(0, myTreeDesigns[type]->treeTexture);
-            objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+            objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_s);
 
             leaf->setMaterialTexture(0, myTreeDesigns[type]->leafTexture);
             leaf->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex);
+            leaf->getMaterial(0).MaterialTypeParam = 0.1f;
             
             objectNode->setRotation(rot);
             objectNode->setScale(sca);
@@ -988,8 +990,6 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
         return;       
     }
 
-    srand(1); // set seed, wand object to the same place always
-    
     for (int i = 0;/*numOfObjects < MAX_OBJECT_NUM*/;i++)
     {
         SObjectWrapper** objectWrappers_tmp;

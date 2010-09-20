@@ -1,7 +1,7 @@
 [Project]
 FileName=Dakar2011.dev
 Name=Dakar2011
-UnitCount=100
+UnitCount=101
 Type=1
 Ver=1
 ObjFiles=
@@ -33,7 +33,7 @@ CompilerSettings=0000001000001000000100
 Major=2
 Minor=1
 Release=1
-Build=2383
+Build=2622
 LanguageID=1033
 CharsetID=1252
 CompanyName=
@@ -1038,9 +1038,9 @@ OverrideBuildCmd=0
 BuildCmd=
 
 [Unit101]
-FileName=OffsetManager.h
+FileName=my_shaders3.cpp
 CompileCpp=1
-Folder=
+Folder=Dakar2011
 Compile=1
 Link=1
 Priority=1000

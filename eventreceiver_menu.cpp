@@ -1495,24 +1495,26 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                                 globalLight = false;
                                 useShaders = false;
                                 useCgShaders = false;
+                                useAdvCgShaders = false;
                                 break;
                             case 1:
                                 globalLight = true;
                                 useShaders = false;
                                 useCgShaders = false;
+                                useAdvCgShaders = false;
                                 break;
                             case 2:
                                 globalLight = true;
                                 useShaders = true;
                                 useCgShaders = true;
+                                useAdvCgShaders = false;
                                 break;
-/*
                             case 3:
                                 globalLight = true;
                                 useShaders = true;
                                 useCgShaders = true;
+                                useAdvCgShaders = true;
                                 break;
-*/
                         }
                         if (ableToUseShaders)
                         {
@@ -1601,7 +1603,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             playSound(clickSound);
                             draw_hud = ((IGUICheckBox*)event.GUIEvent.Caller)->isChecked();
                             if (bigTerrain)
-                                hudImage->setVisible(draw_hud);
+                                hudImage->setVisible(draw_hud && !useCgShaders);
                             return true;
                             break;
                         }
@@ -3018,16 +3020,19 @@ void eventreceiver_menu::openOptionsWindow()
 		graphic2Tab,
         GUI_ID_EFFECTS_CBOX);
     effects_cbox->addItem(L"None - No shaders");
-    if (globalLight == false && useShaders == false && useCgShaders == false)
+    if (globalLight == false && useShaders == false && useCgShaders == false && useAdvCgShaders == false)
         effects_cbox->setSelected(0);
     effects_cbox->addItem(L"Low - No shaders: basic light");
-    if (globalLight == true && useShaders == false && useCgShaders == false)
+    if (globalLight == true && useShaders == false && useCgShaders == false && useAdvCgShaders == false)
         effects_cbox->setSelected(1);
     if (ableToUseShaders)
     {
         effects_cbox->addItem(L"Medium - Shaders 2.0: nicer terrain and light, car dirt, night");
-        if (globalLight == true && useShaders == true && useCgShaders == true)
+        if (globalLight == true && useShaders == true && useCgShaders == true && useAdvCgShaders == false)
             effects_cbox->setSelected(2);
+        effects_cbox->addItem(L"High - Shaders 3.0: only with OpenGL");
+        if (globalLight == true && useShaders == true && useCgShaders == true && useAdvCgShaders == true)
+            effects_cbox->setSelected(3);
     }
 /*
     effects_cbox->addItem(L"High - Night, car light, car dirt, car reflection and shadow effects");
@@ -3100,12 +3105,7 @@ void eventreceiver_menu::openOptionsWindow()
             texturedetail_cbox->setVisible(false);
     }
 
-    if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET)
-#ifdef USE_MRT
-        && driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS)
-        && driverType != video::EDT_DIRECT3D9
-#endif
-       )
+    if (driver->queryFeature(video::EVDF_RENDER_TO_TARGET) && !useAdvCgShaders)
     {
         line += 30;
     	env->addStaticText(L"RTT - Post effects",
@@ -3722,7 +3722,8 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         str += L"Stage length: ";
         str += (int)stageLength;
         str += L" m, Stage time: ";
-        str += bigTerrain->getStageTime();
+        bigTerrain->addTimeToStr(str, bigTerrain->getStageTime());
+        //str += bigTerrain->getStageTime();
         str += L" sec\n\n";
     }
     core::array<SStarter*> stageStarters;
@@ -3757,6 +3758,11 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         stageStarters.insert(raceEngine->getStarters()[i], j);
     }
+    // remove me
+    unsigned int sneg = 0;
+    unsigned int spos = 0;
+    unsigned int cneg = 0;
+    unsigned int cpos = 0;
     for (int i = 0; i < stageStarters.size(); i++)
     {
         if (i < 99)
@@ -3769,7 +3775,14 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         str += (i+1);
         str += L".     ";
-        bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastTime);
+        if (stageStarters[i]->competitor->lastTime > 0)
+        {
+            bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastTime);
+        }
+        else
+        {
+            str += L" --:-- ";
+        }
         str += L"     ";
         str += stageStarters[i]->competitor->num;
         str += L"   ";
@@ -3810,8 +3823,33 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
                 bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastPenalityTime);
             }
         }
+        /*
+        str += L"   stageRand: ";
+        str += stageStarters[i]->stageRand;
+        if (stageStarters[i]->stageRand > 0.0f)
+            spos++;
+        else
+            sneg++;
+        str += L"   currentRand: ";
+        str += stageStarters[i]->currentRand;
+        if (stageStarters[i]->currentRand > 0.0f)
+            cpos++;
+        else
+            cneg++;
+        */
         str += L"\n";
     }
+    /*
+    str += L"Stage: ";
+    str += spos;
+    str += L" / ";
+    str += sneg;
+    str += L", current: ";
+    str += cpos;
+    str += L" / ";
+    str += cneg;
+    str += L"\n";
+    */
     /*
     if (raceEngine->getFinishedState().size()==0)
     {
@@ -3983,7 +4021,14 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         str += (i+1);
         str += L".     ";
-        bigTerrain->addTimeToStr(str, CRaceEngine::getRaceState()[i]->globalTime);
+        if (CRaceEngine::getRaceState()[i]->globalTime > 0)
+        {
+            bigTerrain->addTimeToStr(str, CRaceEngine::getRaceState()[i]->globalTime);
+        }
+        else
+        {
+            str += L" --:-- ";
+        }
         str += L"     ";
         str += CRaceEngine::getRaceState()[i]->num;
         str += L"   ";
@@ -4091,7 +4136,9 @@ void eventreceiver_menu::prerender()
         //printf("render begin 2\n");
 
         car_to_draw->OnRegisterSceneNode();
+        //printf("render begin 3\n");
         car_to_draw->render();
+        //printf("render begin 4\n");
         smgr->setActiveCamera(camera);
         //printf("render begin end\n");
         //driver->setRenderTarget(0, true, true, video::SColor(0, 0, 0, 255));

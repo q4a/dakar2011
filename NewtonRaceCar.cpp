@@ -2181,6 +2181,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
     node = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(0.2, 0.2), vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
 	//node->setMaterialFlag(video::EMF_LIGHTING, false);
 	node->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_smoke/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
+    //node->getMaterial(0).MaterialTypeParam = 0.5f;
     if (useShaders)
         node->setMaterialFlag(video::EMF_LIGHTING, false);
     else

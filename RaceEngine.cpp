@@ -22,7 +22,7 @@
 
 #define FAR_VALUE ((farValue / 3.f)+400.f)
 #define NEAR_VALUE (farValue / 3.f)
-#ifdef MY_DEBUG
+#ifdef USE_EDITOR
 # define START_SECS 10
 #else
 # define START_SECS 40
@@ -65,10 +65,13 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
 #else
       passedDistance(0.f), distanceStep(0.f)
 #endif
+      , stageRand(0.f)
 {
     nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_SPECIAL14], competitor->getName().c_str(), video::SColor(255, 255, 255, 0));
+    //nameText->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
     //nameText->setScale(vector3df(3.0f, 3.0f, 3.0f));
     nameText->setVisible(false);
+    stageRand = ((float)(rand() % 100) - 50.f) * ((110.f - (float)competitor->strength)/200.f);
 }
 
 SStarter::~SStarter()
@@ -129,7 +132,8 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         float steer = 0.0f;
         float vehicleAngle = vehicle->getAngle(); normalizeAngle(vehicleAngle);
         const float speed = vehicle->getSpeed()*1.6f;
-        const float speedLimitLow = (((m_bigTerrain->getSpeed()-30.f) * (float)competitor->strength) / 100.f) * (1.f + currentRand);
+        const float speedLimitLow = (((m_bigTerrain->getSpeed()-30.f) * ((float)competitor->strength+currentRand+stageRand)) / 100.f);
+        //const float speedLimitLow = (((m_bigTerrain->getSpeed()-30.f) * ((float)competitor->strength)) / 100.f) * (1.f + currentRand);
         const float speedLimitDist = 40.f;
         const float speedLimitHigh = speedLimitLow + speedLimitDist;
         const float angleLimit = ANGLE_LIMIT;
@@ -483,7 +487,8 @@ void SStarter::goToNextPoint(u32 currentTime)
             currentPos = cp;// + dir;
         }
 #endif
-        currentRand = (((float)(rand() % 100) - 50.f) / 1000.f) + ((float)competitor->strength / 50000.f);
+        //currentRand = (((float)(rand() % 100) - 50.f) / 1000.f) + ((float)competitor->strength / 50000.f);
+        currentRand = ((float)(rand() % 100) - (60.f * ((float)competitor->strength/100.f))) * ((110.f - (float)competitor->strength)/200.f);
         calculateTo(m_bigTerrain->getAIPoints()[nextPoint]->getPosition());
     }
 }
@@ -507,8 +512,12 @@ void SStarter::calculateTo(vector3df &p_nextPointPos)
     dir = dir * (dist / nextPointCD);
 #else
     distanceStep = (m_bigTerrain->getStageLength() / (float)m_bigTerrain->getStageTime()) *
+                   (((float)competitor->strength+currentRand+stageRand) / 100.f);
+/*
+    distanceStep = (m_bigTerrain->getStageLength() / (float)m_bigTerrain->getStageTime()) *
                    ((float)competitor->strength / 100.f) *
                    (1.0f+currentRand);
+*/
 #endif
 }
 
@@ -638,7 +647,7 @@ int CRaceEngine::insertIntoFinishedState(SCompetitor* competitor)
         i++;
     }
     finishedState.insert(competitor, i);
-    return i;
+    return (i+1);
 }
 
 void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
