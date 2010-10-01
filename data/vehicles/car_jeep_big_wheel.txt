@@ -4,7 +4,7 @@ enginesound: data/vehicles/sound/engine_sound_09.wav
 scale: 1.0, 1.0, 1.2
 rotation: 0.0, 0.0, 0.0
 mass: 2100.0
-engine_centre_of_mass: 0.30
+engine_centre_of_mass: 0.3
 centre_of_mass: 0.1
 num_of_tyres: 4
 chassis_rotation_limit: 0.96
@@ -81,7 +81,7 @@ tyre_scale: 0.45, 0.45, 0.4
 tyre_rotation: 0.0, -90.0, 0.0
 tyre_local_position: -0.95, 0.0, -1.0
 tyre_mass: 30.0
-friction: 1.5
+friction: 1.4
 suspension_length: 0.6
 suspension_spring: 150.0
 suspension_damper: 6.0
@@ -96,7 +96,7 @@ tyre_scale: 0.45, 0.45, 0.4
 tyre_rotation: 0.0, 90.0, 0.0
 tyre_local_position: -0.95, 0.0, 1.0
 tyre_mass: 30.0
-friction: 1.5
+friction: 1.4
 suspension_length: 0.6
 suspension_spring: 150.0
 suspension_damper: 6.0

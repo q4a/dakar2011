@@ -352,7 +352,7 @@ void startGame(int stageNum, SState* state)
     str = L"Loading: 50%";
     MessageText::addText(str.c_str(), 1, true, false);
 
-    if (/*stages[stageNum]->stagePart <= 1 && */startNewGame != 1)
+    if (/*stages[stageNum]->stagePart <= 1 && */startNewGame != 2)
     {
         savedCarDirt = 0;
         car_dirt = 0.f;
@@ -516,29 +516,6 @@ void startGame(int stageNum, SState* state)
         str += L" started!\n\n";
         str += stages[stageNum]->info;
         
-        
-        if (stageNum>0)
-        {
-            str += L"\n\nYou are at ";
-            u32 position = 1;
-            //if ((globalTime/1000)>stages[stageNum-1]->gtime)
-            //    position += (((globalTime/1000)) - stages[stageNum-1]->gtime) / ((oldStage)*3);
-            if (globalTime>stages[stageNum-1]->gtime)
-                position += ((globalTime) - stages[stageNum-1]->gtime) / ((oldStage)*3);
-            if (position > competitors.size()) position = competitors.size();
-            str += position;
-            if ((position-1)%10==0 && (position-11)%100!=0)
-                str += L"st";
-            else
-            if ((position-2)%10==0 && (position-12)%100!=0)
-                str += L"nd";
-            else
-            if ((position-3)%10==0 && (position-13)%100!=0)
-                str += L"rd";
-            else
-                str += L"th";
-            str += L" position in the Dakar!\n";
-        }
         MessageText::addText(str.c_str(), 15, true);
     }
     loading = 0;
@@ -696,7 +673,7 @@ bool saveGame(const c8* name)
                      "car_pressure_multi: %f\ncar_ss_multi: %f\n" \
                      "car_sd_multi: %f\ncar_sl_multi: %f\n",
                 offsetManager->getOffset().X+savedState->carPos.X,
-                savedState->carPos.Y,
+                savedState->carPos.Y+1.2f,
                 offsetManager->getOffset().Z+savedState->carPos.Z,
                 savedState->carRot.X,
                 savedState->carRot.Y,

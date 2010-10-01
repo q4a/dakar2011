@@ -25,7 +25,7 @@ namespace IrrCg
 		virtual void render();
 
         //! Return assigned Scene Node culling.
-		virtual irr::scene::E_CULLING_TYPE getAutomaticCulling() const;
+		virtual /*irr::scene::E_CULLING_TYPE*/irr::u32 getAutomaticCulling() const;
 
         //! Return assigned Scene Node bounding box.
 		virtual const irr::core::aabbox3d<irr::f32>& getBoundingBox() const;

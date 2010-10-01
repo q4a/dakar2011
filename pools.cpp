@@ -82,11 +82,11 @@ public:
             NewtonDestroyBody(nWorld, body);
             body = 0;
         }
-        if (collision)
-        {
-    	   NewtonReleaseCollision(nWorld, collision);
+        //if (collision)
+        //{
+    	//   NewtonReleaseCollision(nWorld, collision);
     	   collision = 0;
-        }
+        //}
     }
     
     void setVisible(bool pvisible)
@@ -100,9 +100,14 @@ public:
             {
                 //printf("createbody\n");
                 body = NewtonCreateBody(nWorld, collision);
-        
+                
                 NewtonBodySetMaterialGroupID(body, treeID);
-        
+                /*
+                core::matrix4 matrix;
+                NewtonBodyGetMatrix(body, &matrix[0]); 
+                matrix.setRotationDegrees(objectNode->getRotation());
+                NewtonBodySetMatrix(body, &matrix[0]); 
+                */
                 // set the newton world size based on the bsp size
                 
                 //float boxP0[3]; 
@@ -175,42 +180,63 @@ public:
         }
     }
     
-    void calculateCollision(const core::vector3df& pbox, const core::vector3df& pofs)
+    //IAnimatedMeshSceneNode* objectNode;
+    ISceneNode* objectNode;
+    IShadowVolumeSceneNode* shadowNode;
+    bool addShadow;
+    PoolObjectType type;
+    NewtonCollision* collision;
+
+private:
+    bool visible;
+    bool fvisible;
+    NewtonBody* body;
+    NewtonWorld* nWorld;
+    OffsetObject* offsetObject;
+};
+
+struct nameNum
+{
+    virtual ~nameNum()
     {
-        if (pbox == vector3df(0.0f, 0.0f, 0.0f)) return;
-        box = pbox;
-        ofs = pofs;
-        collision = NewtonCreateBox(nWorld, box.X, box.Y, box.Z, treeID, NULL);
+        if (collision)
+        {
+    	   NewtonReleaseCollision(nWorld, collision);
+    	   collision = 0;
+        }
     }
 
-    void calculateCollision(const IAnimatedMesh* mesh, const core::vector3df& pbox,
-                            const vector3df& scale,
-                            const char* name, const int num)
+    void calculateCollisionBox(const core::vector3df& pbox,
+                               const core::vector3df& pofs)
     {
         if (pbox == vector3df(0.0f, 0.0f, 0.0f)) return;
-        //if (!num)
-        //printf("ojject %s mbc %u\n", name, mesh->getMeshBufferCount());
+        collision = NewtonCreateBox(nWorld, pbox.X, pbox.Y, pbox.Z, treeID, 0);
+    }
+
+    void calculateCollisionMesh(const core::vector3df& pbox,
+                                const core::vector3df& scale)
+    {
+        if (objectMesh == 0 || pbox == vector3df(0.0f, 0.0f, 0.0f)) return;
     
         int sizeOfBuffers = 0;
-        for (int i = 0; i < mesh->getMeshBufferCount(); i++)
+        for (int i = 0; i < objectMesh->getMeshBufferCount(); i++)
         {
-            if (mesh->getMeshBuffer(i)->getVertexType() != EVT_STANDARD)
+            if (objectMesh->getMeshBuffer(i)->getVertexType() != EVT_STANDARD)
             {
-                if (!num)
-                printf("ojject %u type missmatch %u\n", i, mesh->getMeshBuffer(i)->getVertexType());
+                printf("ojject %u type missmatch %u\n", i, objectMesh->getMeshBuffer(i)->getVertexType());
                 
                 return;
             }
             
-            sizeOfBuffers += mesh->getMeshBuffer(i)->getVertexCount();
+            sizeOfBuffers += objectMesh->getMeshBuffer(i)->getVertexCount();
         }
         
         float* my_vertices = new float[sizeOfBuffers*3];
         int cursor = 0;
         
-        for (int i = 0; i < mesh->getMeshBufferCount();i++)
+        for (int i = 0; i < objectMesh->getMeshBufferCount();i++)
         {
-            IMeshBuffer* mb = mesh->getMeshBuffer(i);
+            IMeshBuffer* mb = objectMesh->getMeshBuffer(i);
             video::S3DVertex* mb_vertices = (video::S3DVertex*)mb->getVertices();
             for (int j = 0; j < mb->getVertexCount(); j++)
             {
@@ -222,33 +248,19 @@ public:
         }
     
         collision = NewtonCreateConvexHull(nWorld, sizeOfBuffers,
-                                my_vertices, 3 * sizeof(float), 0.1f, vehicleID,
+                                my_vertices, 3 * sizeof(float), 0.1f, treeID,
                                 0);
         delete [] my_vertices;
     }
-    
-    //IAnimatedMeshSceneNode* objectNode;
-    ISceneNode* objectNode;
-    IShadowVolumeSceneNode* shadowNode;
-    bool addShadow;
-    PoolObjectType type;
-private:
-    bool visible;
-    bool fvisible;
-    NewtonBody* body;
-    NewtonWorld* nWorld;
-    NewtonCollision* collision;
-    core::vector3df box;
-    core::vector3df ofs;
-    OffsetObject* offsetObject;
-};
 
-struct nameNum
-{
     c8 name[256];
     CMyList<ObjectWrapper*> objectPool;
     IAnimatedMesh* objectMesh;
     int category;
+    NewtonCollision* collision;
+    NewtonWorld* nWorld;
+    //core::vector3df box;
+    //core::vector3df ofs;
 };
 //static CMyList<nameNum*> objectPools;
 static core::array<nameNum*> objectPools;
@@ -287,6 +299,8 @@ int createObjectPool(const c8* name,
         nameNum* newElement = new nameNum;
         strcpy(newElement->name, name);
         newElement->objectMesh = 0;
+        newElement->collision = 0;
+        newElement->nWorld = nWorld;
         //if (category > 3) category = 3;
         if (category < 0) category = 0;
         newElement->category = category;
@@ -314,25 +328,33 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     c8* name;
     
     if (poolId >= objectPools.size()) return;
-    
-    name = objectPools[poolId]->name;
-    CMyList<ObjectWrapper*> &objectPool = objectPools[poolId]->objectPool;
 
-    IAnimatedMesh** poolMesh = &objectPools[poolId]->objectMesh;
+    nameNum* nn = objectPools[poolId];
+
+    name = nn->name;
+    CMyList<ObjectWrapper*> &objectPool = nn->objectPool;
+
+    IAnimatedMesh** poolMesh = &nn->objectMesh;
+    NewtonCollision** poolCollision = &nn->collision;
     
     if (type==NORMAL) // normal object
     {
+        IAnimatedMesh* objectMesh = *poolMesh;
+        if(objectMesh == 0)
+        {
+            if(!strcmp(name+strlen(name)-3, "mso"))
+                objectMesh = readMySimpleObject(name);
+            else
+                objectMesh = smgr->getMesh(name);
+            *poolMesh = objectMesh;
+        }
+        if (objectMesh && *poolCollision == 0 && box != vector3df(0.0f, 0.0f, 0.0f))
+        {
+            nn->calculateCollisionMesh(box, sca);
+        }
+
         for (int j = 0; j < num /*&& numOfObjects < MAX_OBJECT_NUM*/; j++)
         {
-            IAnimatedMesh* objectMesh = *poolMesh;
-            if(objectMesh == 0)
-            {
-                if(!strcmp(name+strlen(name)-3, "mso"))
-                    objectMesh = readMySimpleObject(name);
-                else
-                    objectMesh = smgr->getMesh(name);
-                *poolMesh = objectMesh;
-            }
             
             IAnimatedMeshSceneNode* objectNode = smgr->addAnimatedMeshSceneNode(objectMesh);
 
@@ -365,8 +387,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectNode->setRotation(rot);
             objectNode->setScale(sca);
             
-            //objectWrapper->calculateCollision(box, ofs);
-            objectWrapper->calculateCollision(objectMesh, box, sca, name, j);
+            objectWrapper->collision = *poolCollision;
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;
@@ -574,15 +595,10 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                 //    objectWrapper->shadowNode = objectNode->addShadowVolumeSceneNode();
                 objectNode->setMaterialFlag(video::EMF_NORMALIZE_NORMALS, true);
             }
-            if (useShaders && useCgShaders)
-            {
                 //if (grass_type == GRASS_BILLBOARD_GROUP)
                 //    objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_stat);
                 //else
                     objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp);
-            }
-            else
-                objectNode->setMaterialType(video::EMT_TRANSPARENT_ALPHA_CHANNEL);
             //objectNode->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
             objectNode->getMaterial(0).MaterialTypeParam = 0.5f;
     	    objectNode->setMaterialTexture(0, driver->getTexture(textureName));
@@ -610,6 +626,11 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             return;
         }
         dprintf(printf("tree name %s, type %d rep %d\n", name, type, num));
+        if (*poolCollision == 0 && box != vector3df(0.0f, 0.0f, 0.0f))
+        {
+            nn->calculateCollisionBox(box, ofs);
+        }
+            
         for (int j = 0; j < num /*&& numOfObjects < MAX_OBJECT_NUM*/; j++)
         {
             
@@ -627,10 +648,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                 //objectNode->getLeafNode()->getMaterial(0).MaterialTypeParam = 0.5f;
                 
                 objectNode->getLeafNode()->setMaterialTexture( 0, treeDesigns[type]->LeafTexture );
-                if (useShaders && useCgShaders)
-                    objectNode->getLeafNode()->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_stat);
-                else
-                    objectNode->getLeafNode()->setMaterialType( video::EMT_TRANSPARENT_ALPHA_CHANNEL );
+                objectNode->getLeafNode()->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_stat);
             }        	
 
             objectNode->setMaterialTexture( 0, treeDesigns[type]->TreeTexture );
@@ -655,7 +673,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
 
             objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_s);
             
-            objectWrapper->calculateCollision(box, ofs);
+            objectWrapper->collision = *poolCollision;
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = true;
             objectWrapper->type = TREE;
@@ -672,19 +690,24 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             printf("no such my tree type %d, we have types to %d\n", type, myTreeDesigns.size());
             return;
         }
+
+        IAnimatedMesh* objectMesh = *poolMesh;
+        if(objectMesh == 0)
+        {
+            if(!strcmp(name+strlen(name)-3, "mso"))
+                objectMesh = readMySimpleObject(name);
+            else
+                objectMesh = smgr->getMesh(name);
+            *poolMesh = objectMesh;
+        }
+
+        if (objectMesh && *poolCollision == 0 && box != vector3df(0.0f, 0.0f, 0.0f))
+        {
+            nn->calculateCollisionMesh(box, sca);
+        }
         
         for (int j = 0; j < num /*&& numOfObjects < MAX_OBJECT_NUM*/; j++)
         {
-
-            IAnimatedMesh* objectMesh = *poolMesh;
-            if(objectMesh == 0)
-            {
-                if(!strcmp(name+strlen(name)-3, "mso"))
-                    objectMesh = readMySimpleObject(name);
-                else
-                    objectMesh = smgr->getMesh(name);
-                *poolMesh = objectMesh;
-            }
             
             IAnimatedMeshSceneNode* objectNode = smgr->addAnimatedMeshSceneNode(objectMesh);
             
@@ -714,8 +737,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectNode->setRotation(rot);
             objectNode->setScale(sca);
             
-            //objectWrapper->calculateCollision(box, ofs);
-            objectWrapper->calculateCollision(objectMesh, box, sca, name, j);
+            objectWrapper->collision = *poolCollision;
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;

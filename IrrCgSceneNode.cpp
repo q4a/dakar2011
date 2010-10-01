@@ -145,7 +145,7 @@ namespace IrrCg
     }
 
     // it isn't virtual in current Irrlicht ver (1.7), so we need manualy set culling or leave state from constructor process.
-    irr::scene::E_CULLING_TYPE ICgSceneNode::getAutomaticCulling() const
+    /*irr::scene::E_CULLING_TYPE*/irr::u32 ICgSceneNode::getAutomaticCulling() const
     {
         return Node->getAutomaticCulling();
     }

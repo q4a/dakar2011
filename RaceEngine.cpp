@@ -115,7 +115,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         float distToNextPoint = currentPos.getDistanceFrom(nextPointPos);
         if (distToNextPoint < REACHED_POINT_DIST)
         {
-            goToNextPoint(currentTime);
+            goToNextPoint(currentTime, camActive);
             if (finishTime)
             {
                 switchToNotVisible();
@@ -329,13 +329,13 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             (nextPoint%2==1 && cp.isBetweenPoints(currentPos, nextPos))*/
            )
         {
-            goToNextPoint(currentTime);
+            goToNextPoint(currentTime, camActive);
         }
 #else // SPEED_BASE_AI
         passedDistance += distanceStep;
         if (passedDistance > m_bigTerrain->getAIPoints()[nextPoint]->getDistance()-0.0001f)
         {
-            goToNextPoint(currentTime);
+            goToNextPoint(currentTime, camActive);
         }
         if (!finishTime && nextPoint > 0 && nextPoint < m_bigTerrain->getAIPoints().size())
         {
@@ -425,7 +425,7 @@ void SStarter::switchToNotVisible()
     m_raceEngine->removeUpdater(this);
 }
 
-void SStarter::goToNextPoint(u32 currentTime)
+void SStarter::goToNextPoint(u32 currentTime, bool camActive)
 {
     if (nextPoint < m_bigTerrain->getAIPoints().size())
     {
@@ -461,16 +461,19 @@ void SStarter::goToNextPoint(u32 currentTime)
         competitor->globalPenalityTime += competitor->lastPenalityTime;
         
         int position = m_raceEngine->insertIntoFinishedState(competitor);
-        core::stringw str = L"";
-        
-        str += competitor->num;
-        str += L" ";
-        str += competitor->getName();
-        str += L" finished the stage, time: ";
-        m_bigTerrain->addTimeToStr(str, competitor->lastTime);
-        str += L",  position: ";
-        str += position;
-        MessageText::addText(str.c_str(), 2);
+        if (camActive)
+        {
+            core::stringw str = L"";
+            
+            str += competitor->num;
+            str += L" ";
+            str += competitor->getName();
+            str += L" finished the stage, time: ";
+            m_bigTerrain->addTimeToStr(str, competitor->lastTime);
+            str += L",  position: ";
+            str += position;
+            MessageText::addText(str.c_str(), 2);
+        }
     }
     else
     {
@@ -584,7 +587,7 @@ bool CRaceEngine::update(u32 p_tick, const vector3df& me, SCompetitor* p_playerC
                     {
                         return false;
                     }
-                    starters[i]->goToNextPoint(currentTime);
+                    starters[i]->goToNextPoint(currentTime, when == InTheMiddle);
                 }
                 else
                     break;

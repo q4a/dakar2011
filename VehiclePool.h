@@ -63,6 +63,9 @@ public:
 #else
     irrklang::ISoundEngine* soundEngine;
 #endif
+	NewtonCollision* vehicleCollision;
+	NewtonCollision* vehicleCollisionBox;
+    char* omb;
 };
 
 

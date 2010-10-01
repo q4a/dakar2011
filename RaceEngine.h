@@ -42,7 +42,7 @@ public:
     bool update(u32 currentTime, const vector3df& p_me, bool camActive);
     void switchToVisible();
     void switchToNotVisible();
-    void goToNextPoint(u32 currentTime);
+    void goToNextPoint(u32 currentTime, bool camActive);
     void calculateTo(vector3df &p_nextPointPos);
 
     BigTerrain* m_bigTerrain;

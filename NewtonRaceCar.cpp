@@ -233,6 +233,9 @@ NewtonRaceCar::NewtonRaceCar(
 #else
     irrklang::ISoundEngine* psoundEngine,
 #endif
+    NewtonCollision* &p_vehicleCollision,
+    NewtonCollision* &p_vehicleCollisionBox,
+    char* &p_omb,
 	const int pcarType,
 	const char* fileName,
 	bool p_autoGear
@@ -254,8 +257,8 @@ NewtonRaceCar::NewtonRaceCar(
      gear(1), engineGoing(false), engineRotate(0.f),
      cLight(0), current_car_dirt(0),
      carTex(0), clnode(0),
-     demage(1.f), omb(0), shadowNode(0), autoGear(p_autoGear),
-     vehicleCollision(0), vehicleCollisionBox(0),
+     demage(1.f), omb(p_omb), shadowNode(0), bb_node(0), autoGear(p_autoGear),
+     vehicleCollision(p_vehicleCollision), vehicleCollisionBox(p_vehicleCollisionBox),
      num_of_tires(4), m_tires(), steer_tires(), torque_tires(), smoke_tires(),
      hb_tires(),
      mass(0.f), engine_center_of_mass(0.f), center_of_mass(0.f),
@@ -301,33 +304,12 @@ NewtonRaceCar::NewtonRaceCar(
     }
 // car1
     mesh = smgr->getMesh(meshfileName);//smgr->getMeshManipulator()->createMeshCopy(omesh);
-    int sizeOfBuffers = 0;
-    for (int i = 0; i < mesh->getMeshBufferCount(); i++)
-    {
-        //printf("%d %d %d\n", i, mesh->getMeshBuffer(i)->getVertexType(), mesh->getMeshBuffer(i)->getVertexCount());
-        if (mesh->getMeshBuffer(i)->getVertexType() != EVT_STANDARD) {fclose(f);return;}
-        
-        sizeOfBuffers += mesh->getMeshBuffer(i)->getVertexCount();
-    }
-    
-    //printf("size of omb %d\n", sizeOfBuffers);
-    
-    omb = new char[sizeOfBuffers*sizeof(video::S3DVertex)];
-    
-    char* cur = (char*)omb;
-    
-    for (int i = 0; i < mesh->getMeshBufferCount() && cur; i++)
-    {
-        int copySize = mesh->getMeshBuffer(i)->getVertexCount()*sizeof(video::S3DVertex);
-        memcpy(cur, mesh->getMeshBuffer(i)->getVertices(), copySize);
-        cur = cur + copySize;
-    }
-    
+    //printf("%p\n", mesh);
     
 	bodyPart = smgr->addAnimatedMeshSceneNode(mesh);
     dprintf(printf("car frame count: %u\n", bodyPart->getMesh()->getFrameCount()));
     dprintf(printf("car frame amesh: %p\n", bodyPart->getMesh()));
-    dprintf(printf("car frame omb: %p\n", omb));
+    //dprintf(printf("car frame omb: %p\n", omb));
     dprintf(printf("car frame mesh: %p\n", mesh));
     dprintf(printf("car frame body mesh: %p\n", bodyPart->getMesh()?bodyPart->getMesh()->getMesh(0):(irr::scene::IMesh*)1));
     if (useShaders)
@@ -428,51 +410,81 @@ NewtonRaceCar::NewtonRaceCar(
 //    bbox.MinEdge.Y = 0.25f;
 //    bbox.MinEdge.Z *= 0.1f;
 //    bbox.MaxEdge.Z *= 0.1f;
-    bb_node = createBB(smgr, bbox);
-    vehicleCollisionBox = NewtonCreateBox(nWorld,
+    //bb_node = createBB(smgr, bbox);
+    if (vehicleCollision == 0 || omb == 0)
+    {
+        assert(vehicleCollision==0 && omb==0 && vehicleCollisionBox==0);
+        
+        int sizeOfBuffers = 0;
+        for (int i = 0; i < mesh->getMeshBufferCount(); i++)
+        {
+            //printf("%d %d %d\n", i, mesh->getMeshBuffer(i)->getVertexType(), mesh->getMeshBuffer(i)->getVertexCount());
+            if (mesh->getMeshBuffer(i)->getVertexType() != EVT_STANDARD) {fclose(f);return;}
+            
+            sizeOfBuffers += mesh->getMeshBuffer(i)->getVertexCount();
+        }
+        
+        //printf("size of omb %d\n", sizeOfBuffers);
+        
+        omb = new char[sizeOfBuffers*sizeof(video::S3DVertex)];
+        
+        char* cur = (char*)omb;
+        
+        for (int i = 0; i < mesh->getMeshBufferCount() && cur; i++)
+        {
+            int copySize = mesh->getMeshBuffer(i)->getVertexCount()*sizeof(video::S3DVertex);
+            memcpy(cur, mesh->getMeshBuffer(i)->getVertices(), copySize);
+            cur = cur + copySize;
+        }
+
+        vehicleCollisionBox = NewtonCreateBox(nWorld,
                            (bbox.MaxEdge.X - bbox.MinEdge.X)*bodyPart->getScale().X,
                            (bbox.MaxEdge.Y - bbox.MinEdge.Y)*bodyPart->getScale().Y,
                            (bbox.MaxEdge.Z - bbox.MinEdge.Z)*bodyPart->getScale().Z,
                            vehicleID, NULL);
 
-    //printf("car mbc %u\n", mesh->getMeshBufferCount());
-
-    float* my_vertices = new float[sizeOfBuffers*3];
-    int cursor = 0;
-
-    //printf("1 addr %p size %u\n", my_vertices, sizeOfBuffers*3);
+        //printf("car mbc %u\n", mesh->getMeshBufferCount());
     
-    for (int i = 0; i < mesh->getMeshBufferCount();i++)
-    {
-        IMeshBuffer* mb = mesh->getMeshBuffer(i);
-        video::S3DVertex* mb_vertices = (video::S3DVertex*)mb->getVertices();
-        //printf("%d. mb->getVertexCount() %u cursor %d ... ", i, mb->getVertexCount(), cursor);
-        for (int j = cursor; j < cursor + mb->getVertexCount(); j++)
+        float* my_vertices = new float[sizeOfBuffers*3];
+        int cursor = 0;
+    
+        //printf("1 addr %p size %u\n", my_vertices, sizeOfBuffers*3);
+        
+        for (int i = 0; i < mesh->getMeshBufferCount();i++)
         {
-            //printf("%d. %p\n", j, &my_vertices[j*3]);
-            my_vertices[j*3] = mb_vertices[j-cursor].Pos.X*bodyPart->getScale().X;
-            my_vertices[j*3+1] = mb_vertices[j-cursor].Pos.Y*bodyPart->getScale().Y;
-            my_vertices[j*3+2] = mb_vertices[j-cursor].Pos.Z*bodyPart->getScale().Z;
+            IMeshBuffer* mb = mesh->getMeshBuffer(i);
+            video::S3DVertex* mb_vertices = (video::S3DVertex*)mb->getVertices();
+            //printf("%d. mb->getVertexCount() %u cursor %d ... ", i, mb->getVertexCount(), cursor);
+            for (int j = cursor; j < cursor + mb->getVertexCount(); j++)
+            {
+                //printf("%d. %p\n", j, &my_vertices[j*3]);
+                my_vertices[j*3] = mb_vertices[j-cursor].Pos.X*bodyPart->getScale().X;
+                my_vertices[j*3+1] = mb_vertices[j-cursor].Pos.Y*bodyPart->getScale().Y;
+                my_vertices[j*3+2] = mb_vertices[j-cursor].Pos.Z*bodyPart->getScale().Z;
+            }
+            cursor += mb->getVertexCount();
+            //printf("done\n");
         }
-        cursor += mb->getVertexCount();
-        //printf("done\n");
+    
+        vehicleCollision = NewtonCreateConvexHull(nWorld, sizeOfBuffers,
+                                my_vertices, 3 * sizeof(float), 0.1f, vehicleID,
+                                0);
+        if (!vehicleCollision)
+        {
+            vehicleCollision = NewtonCreateBox(nWorld,
+                                   (bbox.MaxEdge.X - bbox.MinEdge.X)*bodyPart->getScale().X,
+                                   (bbox.MaxEdge.Y - bbox.MinEdge.Y)*bodyPart->getScale().Y,
+                                   (bbox.MaxEdge.Z - bbox.MinEdge.Z)*bodyPart->getScale().Z,
+                                   vehicleID, NULL);
+            printf("vehicle collision zero, create box instead %p\n", vehicleCollision);
+        }
+        //printf("vehicle collision %p\n", vehicleCollision);
+        delete [] my_vertices;
+        
+        p_vehicleCollision = vehicleCollision;
+        p_vehicleCollisionBox = vehicleCollisionBox;
+        p_omb = omb;
     }
-
-    vehicleCollision = NewtonCreateConvexHull(nWorld, sizeOfBuffers,
-                            my_vertices, 3 * sizeof(float), 0.1f, vehicleID,
-                            0);
-    if (!vehicleCollision)
-    {
-        vehicleCollision = NewtonCreateBox(nWorld,
-                               (bbox.MaxEdge.X - bbox.MinEdge.X)*bodyPart->getScale().X,
-                               (bbox.MaxEdge.Y - bbox.MinEdge.Y)*bodyPart->getScale().Y,
-                               (bbox.MaxEdge.Z - bbox.MinEdge.Z)*bodyPart->getScale().Z,
-                               vehicleID, NULL);
-        printf("vehicle collision zero, create box instead %p\n", vehicleCollision);
-    }
-    //printf("vehicle collision %p\n", vehicleCollision);
-    delete [] my_vertices;
-
     dprintf(printf("Vehicle min: %f %f %f\n", bbox.MinEdge.X, bbox.MinEdge.Y, bbox.MinEdge.Z));
     dprintf(printf("Vehicle max: %f %f %f\n", bbox.MaxEdge.X, bbox.MaxEdge.Y, bbox.MaxEdge.Z));
     dprintf(printf("Vehicle size: %f %f %f\n", bbox.MaxEdge.X - bbox.MinEdge.X,
@@ -1018,8 +1030,8 @@ NewtonRaceCar::~NewtonRaceCar()
     printf("release racecar body end %p\n", m_vehicleBody);
     printf("delete engine sound\n");
 	// release the collision 
-	NewtonReleaseCollision (nWorld, vehicleCollision);
-	NewtonReleaseCollision (nWorld, vehicleCollisionBox);
+	vehicleCollision = 0;
+	vehicleCollisionBox = 0;
 
     pause();
 
@@ -1094,11 +1106,7 @@ NewtonRaceCar::~NewtonRaceCar()
     }
     
     printf("delete omb\n");
-    if (omb)
-    {
-        delete [] omb;
-        omb = 0;
-    }
+    omb = 0;
 
     for (int i = 0; i < m_tires.size(); i++)
     {
@@ -1487,18 +1495,21 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
     
 	if (angularVelocity>2.f)
 	{
-        for (int i = 0; i < vehicle->smoke_tires.size(); i++)
+        //if ((vehicle->setTransformCount%2) == 0)
         {
-#ifdef OLD_CDGRCC
-            if (!vehicle->m_vehicleJoint->GetTireOnAir(vehicle->smoke_tires[i]->tire_num) &&
-                vehicle->smoke_tires[i]->connected && !vehicle->smoke_tires[i]->hitRoad) // it is on the ground
-#endif
+            for (int i = 0; i < vehicle->smoke_tires.size(); i++)
             {
-                if (useSmokes)
+#ifdef OLD_CDGRCC
+                if (!vehicle->m_vehicleJoint->GetTireOnAir(vehicle->smoke_tires[i]->tire_num) &&
+                    vehicle->smoke_tires[i]->connected && !vehicle->smoke_tires[i]->hitRoad) // it is on the ground
+#endif
                 {
-                    //vector3df tpos(vehicle->smoke_tires[i]->m_matrix.getTranslation());
-                    //tpos.Y -= vehicle->smoke_tires[i]->m_radius;
-                    vehicle->addSmoke(vehicle->getSpeed(), vehicle->smoke_tires[i]->m_matrix.getTranslation(), vehicle->smoke_tires[i]->m_radius);
+                    if (useSmokes)
+                    {
+                        //vector3df tpos(vehicle->smoke_tires[i]->m_matrix.getTranslation());
+                        //tpos.Y -= vehicle->smoke_tires[i]->m_radius;
+                        vehicle->addSmoke(vehicle->getSpeed(), vehicle->smoke_tires[i]->m_matrix.getTranslation(), vehicle->smoke_tires[i]->m_radius);
+                    }
                 }
             }
         }
@@ -1981,12 +1992,12 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
     dprintf(printf("NewtonRaceCar::RaceCarTire::disconnect, connected: %d\n", connected));
     
     if (!connected) return;
-    NewtonCollision* vehicleCollision;
+    NewtonCollision* tyreCollision;
     
-    vehicleCollision = NewtonCreateCylinder(nWorld, m_radius * 0.9f, m_width, treeID, NULL);
+    tyreCollision = NewtonCreateCylinder(nWorld, m_radius * 0.9f, m_width, treeID, NULL);
     
 	//create the rigid body
-	m_newtonBody = NewtonCreateBody (nWorld, vehicleCollision);
+	m_newtonBody = NewtonCreateBody (nWorld, tyreCollision);
 	//printf("create tyre body %p\n", m_newtonBody);
 
 	// save the pointer to the graphic object with the body.
@@ -2012,7 +2023,7 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
 	float Izz;
 
 	// calculate the moment of inertia and the relative center of mass of the solid
-	NewtonConvexCollisionCalculateInertialMatrix (vehicleCollision, &inertia[0], &origin[0]);	
+	NewtonConvexCollisionCalculateInertialMatrix (tyreCollision, &inertia[0], &origin[0]);	
 
 	Ixx = tyre_mass * inertia[0];
 	Iyy = tyre_mass * inertia[1];
@@ -2027,7 +2038,7 @@ void NewtonRaceCar::RaceCarTire::disconnect(const vector3df& force, NewtonWorld*
 
     NewtonBodySetAutoSleep (m_newtonBody, 0);
     
-    NewtonReleaseCollision (nWorld, vehicleCollision);
+    NewtonReleaseCollision (nWorld, tyreCollision);
     connected = false;
     
     connectionStrength = 0.f;
@@ -2069,7 +2080,7 @@ void NewtonRaceCar::setMatrix(matrix4& newMatrix)
     m_matrix = newMatrix*m_trafo;
     m_node->setPosition(m_matrix.getTranslation());		// set position
     m_node->setRotation((m_matrix).getRotationDegrees());	// and rotation
-    if (m_debug)
+    if (m_debug && bb_node)
     {
         bb_node->setPosition(m_matrix.getTranslation());		// set position
         bb_node->setRotation((m_matrix).getRotationDegrees());	// and rotation
@@ -2082,7 +2093,7 @@ void NewtonRaceCar::setMatrixWithNB(matrix4& newMatrix)
      m_matrix = newMatrix*m_trafo;
   	 m_node->setPosition(m_matrix.getTranslation());		// set position
      m_node->setRotation((m_matrix).getRotationDegrees());	// and rotation
-    if (m_debug)
+    if (m_debug && bb_node)
     {
         bb_node->setPosition(m_matrix.getTranslation());		// set position
         bb_node->setRotation((m_matrix).getRotationDegrees());	// and rotation
@@ -2108,7 +2119,8 @@ matrix4& NewtonRaceCar::getMatrix()
 void NewtonRaceCar::setControl()
 {
     m_debug = 1 - m_debug;
-    bb_node->setVisible(m_debug);
+    if (bb_node)
+        bb_node->setVisible(m_debug);
     dprintf(printf("set debug: %d\n", m_debug));
 //    NewtonInvalidateCache(nWorld);
 //	NewtonBodySetTransformCallback (m_vehicleBody, SetTransform);
@@ -2156,6 +2168,7 @@ void NewtonRaceCar::updateSmoke()
                 size *= smokes[ind]->animePhase * scale;
                 smokes[ind]->animePhase++;
                 smokes[ind]->node->setSize(size);
+                smokes[ind]->node->getMaterial(0).MaterialTypeParam2 = 1.0f - ((float)smokes[ind]->animePhase/(float)(MAX_SMOKES/3));
             }
             else
             {
@@ -2199,6 +2212,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
     //}
     //node->getMaterial(0).TextureLayer[0].TextureWrap = video::ETC_CLAMP;
     //node->getMaterial(0).MaterialTypeParam = 0.9f;
+    node->getMaterial(0).MaterialTypeParam2 = 1.0f;
     if (pos.Y - offset > p_waterHeight)
     {
 	   node->setMaterialTexture(0, smokeTexture);
@@ -2219,6 +2233,7 @@ void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
     speed = fabsf(pspeed);
     animePhase = 0;
 
+    node->getMaterial(0).MaterialTypeParam2 = 1.0f;
     node->setSize(core::dimension2d<f32>(0.2, 0.2));
     node->setPosition(vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
     node->setVisible(true);

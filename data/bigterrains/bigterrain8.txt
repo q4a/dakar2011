@@ -33,4 +33,4 @@ cp_pos: 15376.0 23937.0
 end_pos: 7733.0 3983.0
 map_up: 121 84
 map_down: 218 352
-map_texture: data/bigterrains/maps/map.png
+map_texture: data/bigterrains/maps/map_8.png

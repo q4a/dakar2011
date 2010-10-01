@@ -819,18 +819,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
         dprintf(printf("b 5 %p\n", objectWire);)
         objectWire->updatePos(newX, newY, OV_LIMIT, force);
         dprintf(printf("b 6\n"));
-        smallTerrainsForUpdateLock.lock();
-        dprintf(printf("b 6b\n"));
-        for (int i = 0; i < smallTerrainsForUpdate.size(); i++)
-        {
-            assert(smallTerrainsForUpdate[i]);
-            dprintf(printf("b 6ba %p\n", smallTerrainsForUpdate[i]));
-            smallTerrainsForUpdate[i]->updatePos(newX, newY, OV_LIMIT, force);
-            dprintf(printf("b 6bb %p\n", smallTerrainsForUpdate[i]));
-        }
-        dprintf(printf("b 6c\n"));
-        smallTerrainsForUpdateLock.unlock();
-        dprintf(printf("b 6d\n"));
+        updateSmallTerrainsObjects(newX, newY, force);
         //if (startTime==0)
         dprintf(printf("b 7\n"));
         if (!timeStarted)
@@ -996,16 +985,14 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
         if (fabsf(newX-endPos.X)<GATE_LIMIT*2.f && fabsf(newY-endPos.Z)<GATE_LIMIT*2.f)
         {
             dprintf(printf("endpos\n"));
-            core::stringw str = L"You have reached the endpoint of stage ";
+            core::stringw str = L"";
+            
+            if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
+                str += L"Congratulation!!! You have successfully completed the Dakar 2011.\n\n\n";
+
+            str += L"You have reached the endpoint of stage ";
             str += oldStage+1;
-            /*
-            str += stages[oldStage]->stageNum;
-            if (stages[oldStage]->stagePart > 0)
-            {
-                str += L" part ";
-                str += stages[oldStage]->stagePart;
-            }
-            */
+
             if (cps>0)
             {
                 str += L", but you missed ";
@@ -1034,75 +1021,29 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             endGate->setVisible(false);
             offsetManager->removeObject(endOffsetObject);
 
-            str += L"Your time is ";
+            str += L"\n\n\nYour time is ";
             addTimeToStr(str, diffTime);
             if (penality>0)
-                str += L" including the penalities!";
+                str += L" (including the penalities)";
 
-            /*
             u32 position = 1;
-            //diffTime /= 1000;
-            if (diffTime>stageTime)
-                position += ((diffTime - stageTime) / 3);
-            if (position > competitors.size()) position = competitors.size();
-            if (position==1)
-                str += L"\n\nYou won this stage!";
-            else
-            {
-                str += L"\n\nYou reached ";
-                str += position;
-                if ((position-1)%10==0 && (position-11)%100!=0)
-                    str += L"st";
-                else
-                if ((position-2)%10==0 && (position-12)%100!=0)
-                    str += L"nd";
-                else
-                if ((position-3)%10==0 && (position-13)%100!=0)
-                    str += L"rd";
-                else
-                    str += L"th";
-                str += L" position in this stage!";
-            }
-        
-            position = 1;
-            //if ((globalTime/1000)+diffTime>gtime)
-            //    position += ((((globalTime/1000)+diffTime) - gtime) / ((oldStage + 1)*3));
-            if (globalTime+diffTime>gtime)
-                position += (((globalTime+diffTime) - gtime) / ((oldStage + 1)*3));
-            if (position > competitors.size()) position = competitors.size();
-            if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
-                str += L"\n\n\nCongratulation!!! You have successfully completed the Dakar 2010.\n\nYou finished in ";
-            else
-                str += L"\n\nYou are in ";
-            str += position;
-            if ((position-1)%10==0 && (position-11)%100!=0)
-                str += L"st";
-            else
-            if ((position-2)%10==0 && (position-12)%100!=0)
-                str += L"nd";
-            else
-            if ((position-3)%10==0 && (position-13)%100!=0)
-                str += L"rd";
-            else
-                str += L"th";
-            if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
-                str += L" position!";
-            else
-                str += L" position in the Dakar rally!";
-            */
-            str += L"\n\nYou can drive further or check your position in the Standings.";
-            
-            if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
-                MessageText::addText(str.c_str(), /*40*/10);
-            else
-                MessageText::addText(str.c_str(), 10);
-            
             // new stuff
             playerCompetitor->lastTime = diffTime;
             playerCompetitor->globalTime += diffTime;
             //playerCompetitor->finishTime = diffTime - penality;
             if (raceEngine)
-                raceEngine->insertIntoFinishedState(playerCompetitor);
+                position = raceEngine->insertIntoFinishedState(playerCompetitor);
+
+            str += L". Your current position is ";
+            str += position;
+
+            str += L"\n\nYou can drive further or check your position in the Standings.";
+            
+            if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
+                MessageText::addText(str.c_str(), 40);
+            else
+                MessageText::addText(str.c_str(), 10);
+            
         }
         else
         {
@@ -2377,4 +2318,40 @@ void BigTerrain::setRoadOnHeightMap(float x, float y)
         return;
     }
     heightMap->setRoad(_x, _y, true);
+}
+
+void BigTerrain::updateSmallTerrainsObjects(float newX, float newY, bool force)
+{
+    dprintf(printf("su 1\n"));
+    smallTerrainsForUpdateLock.lock();
+    dprintf(printf("su 2\n"));
+    for (int i = 0; i < smallTerrainsForUpdate.size(); i++)
+    {
+        assert(smallTerrainsForUpdate[i]);
+        dprintf(printf("su 3 %p\n", smallTerrainsForUpdate[i]));
+        smallTerrainsForUpdate[i]->updatePos(newX, newY, OV_LIMIT, force);
+        dprintf(printf("su 4 %p\n", smallTerrainsForUpdate[i]));
+    }
+    dprintf(printf("su 5\n"));
+    smallTerrainsForUpdateLock.unlock();
+    dprintf(printf("su 6\n"));
+}
+
+void BigTerrain::updateObjectVisibilityLimit(int obj_density)
+{
+    dprintf(printf("ovl 1\n"));
+    smallTerrainsForUpdateLock.lock();
+    dprintf(printf("ovl 2\n"));
+    for (int i = 0; i < smallTerrainsForUpdate.size(); i++)
+    {
+        assert(smallTerrainsForUpdate[i]);
+        dprintf(printf("ovl 3 %p\n", smallTerrainsForUpdate[i]));
+        smallTerrainsForUpdate[i]->updateObjects(objectReps, obj_density);
+        dprintf(printf("ovl 4 %p\n", smallTerrainsForUpdate[i]));
+        smallTerrainsForUpdate[i]->updatePos((float)ov_last_x * TILE_SIZE, (float)ov_last_y * TILE_SIZE, OV_LIMIT, true);
+        dprintf(printf("ovl 5 %p\n", smallTerrainsForUpdate[i]));
+    }
+    dprintf(printf("ovl 6\n"));
+    smallTerrainsForUpdateLock.unlock();
+    dprintf(printf("ovl 7\n"));
 }

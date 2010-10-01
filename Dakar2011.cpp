@@ -295,7 +295,7 @@ int main()
     {
         shitATI = true;
     }
-    recreateRTTs(driver);
+    //recreateRTTs(driver);
     
 	// Newton vars
 	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
@@ -639,7 +639,8 @@ int main()
     {
         shadowMap = shadowMapGame = shadowMapMenu = shadowMapCar = 0;
     }
-
+    recreateRTTs(driver);
+    
     dprintf(printf("2b %p\n", hudImage));
 
     driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
@@ -766,6 +767,8 @@ int main()
     device->setEventReceiver(game_receiver);
 
     dprintf(printf("DEBUG: check restore state\n");)
+
+    lasttick = device->getTimer()->getTime();
 
     if (!restoreState())
     {
@@ -1385,7 +1388,7 @@ int main()
                 }
                 */
                 //newtonUpdateCount = 2;
-                sleepTime = (newtonUpdateCount * 16) - drawTick + (newtonUpdateCount/2);
+                sleepTime = (newtonUpdateCount * 16) - drawTick - (newtonUpdateCount/2);
             }
             newtonUpdateCount_last = newtonUpdateCount;
             if (newtonUpdateCount > 16) newtonUpdateCount = 16;

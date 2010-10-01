@@ -193,6 +193,7 @@ void readSettings(const char* fileName)
         {
             ret = fscanf(f, "%f\n", &obj_wire_mult);
             if ( ret <=0 ) break;
+            if (obj_wire_mult < 2.f) obj_wire_mult = 2.f;
         } else
         if (strcmp(key,"resolution")==0)
         {

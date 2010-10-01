@@ -31,14 +31,15 @@ struct pixel
 
 pixel main_f( fragment IN,
               uniform sampler2D tex0,
-              uniform float day_multi
+              uniform float day_multi,
+              uniform float param2
              )
 {
 	pixel OUT;
 
     	float4 col = tex2D( tex0, IN.texcoord0 );
 
-	col.a = col.a * 0.3;
+	col.a = col.a * 0.3 * (param2+0.2);
 
     	OUT.color = day_effect(col, IN.position, day_multi);
 

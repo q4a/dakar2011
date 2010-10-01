@@ -38,7 +38,7 @@ s32 myMaterialType_light_2tex_2 = /*video::EMT_SOLID*/video::EMT_DETAIL_MAP;
 s32 myMaterialType_ocean = video::EMT_SOLID/*video::EMT_NORMAL_MAP_SOLID video::EMT_SPHERE_MAP video::EMT_REFLECTION_2_LAYER*/;
 s32 myMaterialType_ocean_fix = video::EMT_SOLID/*video::EMT_NORMAL_MAP_SOLID video::EMT_SPHERE_MAP video::EMT_REFLECTION_2_LAYER*/;
 s32 myMaterialType_smoke = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
-s32 myMaterialType_light_tex_s = video::EMT_SOLID;
+s32 myMaterialType_light_tex_s = /*video::EMT_SOLID*/video::EMT_TRANSPARENT_ALPHA_CHANNEL;
 s32 myMaterialType_light_tex_s_car = /*video::EMT_SOLID video::EMT_SPHERE_MAP*/video::EMT_REFLECTION_2_LAYER;
 s32 myMaterialType_light_tex_s_car_tyre = video::EMT_SOLID;
 s32 myMaterialType_transp = video::EMT_TRANSPARENT_ALPHA_CHANNEL;
@@ -143,6 +143,11 @@ bool ableToUseShaders = true;
         param = cgGetNamedParameter(Pixel, "param"); \
         if (param) \
            services->setParameter1f(param, Material.MaterialTypeParam);
+
+#define ADD_PARAM2 \
+        param2 = cgGetNamedParameter(Pixel, "param2"); \
+        if (param2) \
+           services->setParameter1f(param2, Material.MaterialTypeParam2);
 
 #define ADD_CAR_ENGINE_EFFECT_V \
         pcar_engine = cgGetNamedParameter(Vertex, "car_engine"); \
@@ -740,7 +745,7 @@ public:
 class MyShaderCallBack2_tr_light : public ICgShaderConstantSetCallBack
 {
 public:
-    CGparameter	WorldViewProjection, tex0, tex1, day_multi, prtsm;
+    CGparameter	WorldViewProjection, tex0, tex1, day_multi, prtsm, param2;
 public:
     MyShaderCallBack2_tr_light(IrrlichtDevice* pdevice,
                      video::IVideoDriver* pdriver,
@@ -759,6 +764,7 @@ public:
 
         ADD_DAY_MULTI
         
+        ADD_PARAM2
         //ADD_RENDER_TO_SHADOW_MAP_F
 	}
 
@@ -1226,12 +1232,12 @@ void setupShaders2 (IrrlichtDevice* device,
     // possible to use shaders, let see if possible to use vs and ps 3.0
     if (useAdvCgShaders)
     {
-        if (driverType == video::EDT_DIRECT3D9) // FIXME: irrlicht 1.7.1 has a MRT bug in D3D9 driver
-        {
-            dprintf(printf("MRT bug adv shader -> disable.\n"));
-            useAdvCgShaders = false;
-        }
-        else
+        //if (driverType == video::EDT_DIRECT3D9) // FIXME: irrlicht 1.7.1 has a MRT bug in D3D9 driver
+        //{
+        //    dprintf(printf("MRT bug adv shader -> disable.\n"));
+        //    useAdvCgShaders = false;
+        //}
+        //else
         if (!driver->queryFeature(video::EVDF_MULTIPLE_RENDER_TARGETS))
         {
             dprintf(printf("MRT is not supported by the driver.\n"));

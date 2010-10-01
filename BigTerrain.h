@@ -64,6 +64,8 @@ public:
        void addNewRoad(unsigned int type);
        void loadRoads(const char* roadsName);
        void updateObjectWire();
+       void updateSmallTerrainsObjects(float newX, float newY, bool force);
+       void updateObjectVisibilityLimit(int obj_density);
        void saveObjects(const char* name);
        void addActiveItinerPoint(SItinerPoint* itinerPoint);
        void removeActiveItinerPoint(SItinerPoint* itinerPoint);

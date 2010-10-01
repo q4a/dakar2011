@@ -138,40 +138,7 @@ SmallTerrain::SmallTerrain(
 ///////////////// BEGIN SMALL ////////////////////    
 	// add terrain scene node
     // add a notification call back for when the car leave the world
-
-    objectWire = new CObjectWire(SMALLTERRAIN_SIZE, SMALLTERRAIN_SIZE, terrain->getPosition().X, terrain->getPosition().Z);
-    vector3df maxs;
-    int addSuccCnt = 0;
-    int addFailCnt = 0;
-    for (int i = 0; i < objectReps.size(); i++)
-    {
-        for (int j = 0; j < (objectReps[i].rep*obj_density)/100;j++)
-        {
-            vector3df pos;
-            float val = ((float)(rand()%32768))/32768.f;
-            pos = vector3df(terrain->getPosition().X+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE,
-                            0.0f,
-                            terrain->getPosition().Z+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE);
-            float tval = m_bigTerrain->getDensity(pos.X, pos.Z, getPoolCategoryFromId(objectReps[i].poolId));
-            if (tval > 0.05f && val < tval)
-
-            {
-                SObjectWrapper* objectWrapper = new SObjectWrapper(m_bigTerrain);
-                objectWrapper->setPosition(pos);
-                objectWrapper->setPool(objectReps[i].poolId);
-                objectWrappers.push_back(objectWrapper);
-                if (objectWire->addObject(pos, objectWrapper))
-                    addSuccCnt++;
-                else
-                    addFailCnt++;
-                if (pos.X > maxs.X) maxs.X = pos.X;
-                if (pos.Z > maxs.Z) maxs.Z = pos.Z;
-            }
-        }
-        dprintf(printf("num: %d/(%d*%d) rep objects maxes: %f %f, terrain size %f, addSucc: %d addFail %d\n",
-                (objectReps[i].rep*obj_density)/100, objectReps[i].rep, obj_density,
-                maxs.X, maxs.Z, SMALLTERRAIN_SIZE, addSuccCnt, addFailCnt);)
-    }
+    updateObjects(objectReps, obj_density);
 
     bool fixOcean = false;
 #ifdef USE_IMAGE_HM
@@ -625,3 +592,52 @@ void SmallTerrain::addGrass(SObjectWrapper* grassWrapper)
     numOfGrasses++;
 }
 */
+
+void SmallTerrain::updateObjects(core::array<SObjectPoolIdRepPair> &objectReps, int obj_density)
+{
+    for (int i = 0; i < objectWrappers.size();i++)
+    {
+       delete objectWrappers[i];
+    }
+    objectWrappers.clear();
+
+    if (objectWire)
+    {
+        delete objectWire;
+        objectWire = 0;
+    }
+    
+    objectWire = new CObjectWire(SMALLTERRAIN_SIZE, SMALLTERRAIN_SIZE, (float)x*SMALLTERRAIN_SIZE, (float)y*SMALLTERRAIN_SIZE);
+    vector3df maxs;
+    int addSuccCnt = 0;
+    int addFailCnt = 0;
+    for (int i = 0; i < objectReps.size(); i++)
+    {
+        for (int j = 0; j < (objectReps[i].rep*obj_density)/100;j++)
+        {
+            vector3df pos;
+            float val = ((float)(rand()%32768))/32768.f;
+            pos = vector3df((float)x*SMALLTERRAIN_SIZE+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE,
+                            0.0f,
+                            (float)y*SMALLTERRAIN_SIZE+(((float)(rand()%32768))/32768.f)*SMALLTERRAIN_SIZE);
+            float tval = m_bigTerrain->getDensity(pos.X, pos.Z, getPoolCategoryFromId(objectReps[i].poolId));
+            if (tval > 0.05f && val < tval)
+
+            {
+                SObjectWrapper* objectWrapper = new SObjectWrapper(m_bigTerrain);
+                objectWrapper->setPosition(pos);
+                objectWrapper->setPool(objectReps[i].poolId);
+                objectWrappers.push_back(objectWrapper);
+                if (objectWire->addObject(pos, objectWrapper))
+                    addSuccCnt++;
+                else
+                    addFailCnt++;
+                if (pos.X > maxs.X) maxs.X = pos.X;
+                if (pos.Z > maxs.Z) maxs.Z = pos.Z;
+            }
+        }
+        dprintf(printf("num: %d/(%d*%d) rep objects maxes: %f %f, terrain size %f, addSucc: %d addFail %d\n",
+                (objectReps[i].rep*obj_density)/100, objectReps[i].rep, obj_density,
+                maxs.X, maxs.Z, SMALLTERRAIN_SIZE, addSuccCnt, addFailCnt);)
+    }
+}

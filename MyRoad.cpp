@@ -570,9 +570,10 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
        roadNode->setMaterialFlag(video::EMF_LIGHTING, globalLight);
     
     roadNode->setMaterialTexture(0, roadType->texture);
-    roadNode->setMaterialTexture(1, p_shadowMap);
-//    if (useShaders && useCgShaders)
-//    {
+    if (useShaders && useCgShaders)
+    {
+        roadNode->setMaterialTexture(1, p_shadowMap);
+    }
     if (roadType->friction_multi > 0.01f)
     {
         roadNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_road);

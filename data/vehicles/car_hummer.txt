@@ -4,7 +4,7 @@ enginesound: data/vehicles/sound/engine_sound_03.wav
 scale: 1.0, 1.0, 1.1
 rotation: 0.0, 0.0, 0.0
 mass: 1900.0
-engine_centre_of_mass: -0.1
+engine_centre_of_mass: 0.0
 centre_of_mass: 0.2
 num_of_tyres: 4
 chassis_rotation_limit: 0.94

@@ -9,7 +9,8 @@ DESTNAME = Dakar2011.bin
 
 OBJS = $(SRCS:.cpp=.o)
 
-IRRLICHT_DIR = ../irrlicht-1.7.1
+IRRLICHT_DIR = ../irrlicht-svn
+#../irrlicht-1.7.1
 IRRKLANG_DIR = ../irrKlang-1.3.0
 NEWTON_DIR = ../newtonSDK/sdk
 OPENAL_DIR = ../openal-soft-1.10.622
@@ -38,7 +39,7 @@ endif
 # target specific settings   -lGLEW
 #all_linux: LDFLAGS = -L/usr/X11R6/lib$(LIBSELECT) -L$(IRRLICHT_DIR)/lib/Linux -L../newtonSDK/sdk -L$(MY_LIBS)-lGL -lopenal -lalut -lXxf86vm -lXext -lX11 -lpthread ./libs/libIrrlicht.so.1 ./libs/libIrrKlang.so ./libs/ikpMP3.so ./libs/ikpFlac.so $(CG_BINS) ./libs/libNewton.so
 #all_linux: LDFLAGS = -L/usr/X11R6/lib$(LIBSELECT) -L$(IRRLICHT_DIR)/lib/Linux -L$(NEWTON_DIR) -L$(MY_LIBS) -lGL -L$(OPENAL_DIR)/build -lopenal -L$(ALUT_DIR)/build/lib -lalut -lXxf86vm -lXext -lX11 -lpthread -lIrrlicht -lIrrKlang $(MY_LIBS)/ikpMP3.so $(MY_LIBS)/ikpFlac.so $(CG_FLAGS) -lNewton
-all_linux: LDFLAGS = -L/usr/X11R6/lib$(LIBSELECT) -L$(NEWTON_DIR) -L$(MY_LIBS) -L$(OPENAL_DIR)/build -L$(ALUT_DIR)/build/lib -lGL -lopenal -lalut -lXxf86vm -lXext -lX11 -lpthread -lIrrKlang -lNewton $(CG_FLAGS) $(MY_LIBS)/ikpMP3.so $(MY_LIBS)/ikpFlac.so $(IRRLICHT_DIR)/lib/Linux/libIrrlicht.so.1.7.0-SVN
+all_linux: LDFLAGS = -L/usr/X11R6/lib$(LIBSELECT) -L/usr/lib$(LIBSELECT) -L$(NEWTON_DIR) -L$(MY_LIBS) -L$(OPENAL_DIR)/build -L$(ALUT_DIR)/build/lib -lGL -lopenal -lalut -lXxf86vm -lXext -lX11 -lXcursor -lpthread -lIrrKlang -lNewton $(CG_FLAGS) $(MY_LIBS)/ikpMP3.so $(MY_LIBS)/ikpFlac.so $(IRRLICHT_DIR)/lib/Linux/libIrrlicht.so.1.7.0-SVN
 all_linux clean_linux: SYSTEM=Linux
 all_win32: LDFLAGS = -L../../lib/Win32-gcc -lIrrlicht -lopengl32 -lm
 all_win32 clean_win32: SYSTEM=Win32-gcc

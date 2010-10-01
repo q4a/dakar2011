@@ -842,13 +842,15 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
         				s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
                        	core::stringw str = L" ";
 
-        				objectVisibilityLimit = (float)pos;
+        				obj_wire_mult = (float)(pos+2);
+                        objectVisibilityLimit = obj_wire_size * obj_wire_mult;
                        	str += (int)objectVisibilityLimit;
                        	ov_limit_text->setText(str.c_str());
                         if (bigTerrain)
                         {
         					dprintf(printf("set OV to %d\n", pos));
         					bigTerrain->setOVLimit(objectVisibilityLimit);
+                            bigTerrain->updateObjectVisibilityLimit(density_objects);
                         }
     				    break;	
     				}
@@ -870,6 +872,10 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                     	core::stringw str = L" ";
                     	str += density_objects;
                     	obj_density_text->setText(str.c_str());
+                    	if (bigTerrain)
+                    	{
+                            bigTerrain->updateObjectVisibilityLimit(density_objects);
+                        }
     				    break;	
     				}
     				case GUI_ID_DEAD_ZONE_SCROLL_BAR:
@@ -2703,35 +2709,7 @@ void eventreceiver_menu::openOptionsWindow()
 // ------------------------
 
     line = startLine;
-/*
-	env->addStaticText(L"Object visibility limit",
-		rect<s32>(indist,line,indist+firsttextlen,line+16),
-		false, // border?
-		false, // wordwrap?
-		graphicTab);
-	scrollbar = env->addScrollBar(true,
-			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
-            graphicTab, GUI_ID_OV_SCROLL_BAR);
-	//scrollbar->setMin(1);
-	if (bigTerrain)
-	{
-	   scrollbar->setMax((int)bigTerrain->getSmallTerrainSize()-1);
-    }
-    else
-    {
-	   scrollbar->setMax(2000);
-    }
-	str = L"";
-	scrollbar->setPos((int)objectVisibilityLimit);
-	str += (int)objectVisibilityLimit;
-	ov_limit_text = env->addStaticText(str.c_str(),
-		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
-		false, // border?
-		false, // wordwrap?
-		graphicTab);
 
-	line += 20;
-*/
 	env->addStaticText(L"Transparency",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
@@ -2789,13 +2767,44 @@ void eventreceiver_menu::openOptionsWindow()
 		graphicTab);
 
 	line += 40;
-	env->addStaticText(L"Object settings (restart require)",
+	env->addStaticText(L"Object settings",
 		rect<s32>(indist,line,screenSize.Width - (indist*2+outdist*2),line+16),
 		false, // border?
 		false, // wordwrap?
 		graphicTab);
     line += 25;
-	env->addStaticText(L"Object density",
+
+	env->addStaticText(L"Visibility limit",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		graphicTab);
+	scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
+            graphicTab, GUI_ID_OV_SCROLL_BAR);
+	//scrollbar->setMin(1);
+	if (bigTerrain)
+	{
+	   scrollbar->setMax((int)(bigTerrain->getSmallTerrainSize()/obj_wire_size)-2);
+    }
+    else
+    {
+	   scrollbar->setMax((int)(2000.f/obj_wire_size)-2);
+    }
+	str = L"";
+	scrollbar->setPos((int)obj_wire_mult);
+	scrollbar->setSmallStep(1);
+	scrollbar->setLargeStep(3);
+	str += (int)objectVisibilityLimit;
+	ov_limit_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen),line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		graphicTab);
+
+	line += 20;
+
+	env->addStaticText(L"Density",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
 		false, // border?
 		false, // wordwrap?
@@ -3589,7 +3598,7 @@ void eventreceiver_menu::openMessageWindow()
     window = messageWindow = env->addWindow(
 		rect<s32>(outdist, outdist, screenSize.Width - outdist, screenSize.Height - outdist),
 		false, // modal?
-		L"  Message", 0, GUI_ID_MESSAGE_WINDOW);
+		L"  Messages", 0, GUI_ID_MESSAGE_WINDOW);
     env->setFocus(window);
 
     IGUITab* tab = env->addTab(
@@ -3735,20 +3744,29 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         if (raceEngine->getStarters()[i]->competitor == playerCompetitor &&
             bigTerrain && car)
         {
-            float dist = 100000.f;
-            const vector3df my_pos = car->getMatrix().getTranslation() + offsetManager->getOffset();
-            for (int k = 0; k < bigTerrain->getAIPoints().size(); k++)
+            if (playerCompetitor->lastTime == 0)
             {
-                float cd = bigTerrain->getAIPoints()[k]->getPosition().getDistanceFrom(my_pos);
-                if (cd < dist)
+                float dist = 100000.f;
+                const vector3df my_pos = car->getMatrix().getTranslation() + offsetManager->getOffset();
+                for (int k = 0; k < bigTerrain->getAIPoints().size(); k++)
                 {
-                    dist = cd;
-                    raceEngine->getStarters()[i]->nextPoint = k;
+                    float cd = bigTerrain->getAIPoints()[k]->getPosition().getDistanceFrom(my_pos);
+                    if (cd < dist)
+                    {
+                        dist = cd;
+                        raceEngine->getStarters()[i]->nextPoint = k;
+                    }
                 }
+            }
+            else
+            {
+                raceEngine->getStarters()[i]->nextPoint = bigTerrain->getAIPoints().size() - 1;
             }
         }
         while (j < stageStarters.size() &&
-               raceEngine->getStarters()[i]->nextPoint <= stageStarters[j]->nextPoint &&
+               (raceEngine->getStarters()[i]->nextPoint <= stageStarters[j]->nextPoint ||
+                raceEngine->getStarters()[i]->competitor->lastTime != 0
+               ) &&
                (raceEngine->getStarters()[i]->competitor->lastTime >= stageStarters[j]->competitor->lastTime ||
                 raceEngine->getStarters()[i]->competitor->lastTime == 0
                )

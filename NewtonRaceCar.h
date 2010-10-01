@@ -152,6 +152,9 @@ public:
 #else
                   irrklang::ISoundEngine* psoundEngine,
 #endif
+                  NewtonCollision* &p_vehicleCollision,
+                  NewtonCollision* &p_vehicleCollisionBox,
+                  char* &p_omb,
                   const int pcarType,
                   const char* fileName,
                   bool p_autoGear = true);

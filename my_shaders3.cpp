@@ -138,6 +138,11 @@ OLD STUFF
         if (param) \
            services->setParameter1f(param, Material.MaterialTypeParam);
 
+#define ADD_PARAM2 \
+        param2 = cgGetNamedParameter(Pixel, "param2"); \
+        if (param2) \
+           services->setParameter1f(param2, Material.MaterialTypeParam2);
+
 #define ADD_CAR_ENGINE_EFFECT_V \
         pcar_engine = cgGetNamedParameter(Vertex, "car_engine"); \
         if (pcar_engine) \
@@ -740,7 +745,7 @@ public:
 class MyShaderCallBack3_tr_light : public ICgShaderConstantSetCallBack
 {
 public:
-    CGparameter	WorldViewProjection, tex0, tex1, day_multi, prtsm;
+    CGparameter	WorldViewProjection, tex0, tex1, day_multi, prtsm, param2;
 public:
     MyShaderCallBack3_tr_light(IrrlichtDevice* pdevice,
                      video::IVideoDriver* pdriver,
@@ -758,6 +763,7 @@ public:
         ADD_TEXTURE0
 
         ADD_DAY_MULTI
+        ADD_PARAM2
         
         //ADD_RENDER_TO_SHADOW_MAP_F
 	}
@@ -1075,9 +1081,17 @@ void setupShaders3 (IrrlichtDevice* device,
 	transp_stat_fileName = cg_dir + "transp_stat.cg";
 	sky_fileName = cg_dir + "sky.cg";
 	shadow_fileName = cg_dir + "shadow.cg";
-	screenRTT_fileName = cg_dir + "screen_rtt.cg";
 	palca_fileName = cg_dir + "palca.cg";
 	sun_fileName = cg_dir + "transp_sun.cg";
+
+    if (driverType == video::EDT_DIRECT3D9)
+    {
+    	screenRTT_fileName = cg_dir + "screen_rtt_d3d9.cg";
+    }
+    else
+    {
+    	screenRTT_fileName = cg_dir + "screen_rtt.cg";
+    }
 
 	MyShaderCallBack3_light_2tex_2* mc_light_2tex_2 = new MyShaderCallBack3_light_2tex_2(device, driver, plnode);
 

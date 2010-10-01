@@ -77,6 +77,8 @@ public:
        
        /*static */IAnimatedMeshSceneNode* loadMySimpleObject(const char* name);
 
+       void updateObjects(core::array<SObjectPoolIdRepPair> &objectReps, int obj_density);
+
 //private:
 #ifdef USE_IMAGE_HM
        void activate(video::IImage* heightMap);

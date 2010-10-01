@@ -81,7 +81,7 @@ tyre_scale: 0.4, 0.4, 0.35
 tyre_rotation: 0.0, -90.0, 0.0
 tyre_local_position: -1.33, 0.0, -0.9
 tyre_mass: 30.0
-friction: 1.3
+friction: 1.4
 suspension_length: 0.43
 suspension_spring: 150.0
 suspension_damper: 5.0
@@ -96,7 +96,7 @@ tyre_scale: 0.4, 0.4, 0.35
 tyre_rotation: 0.0, 90.0, 0.0
 tyre_local_position: -1.33, 0.0, 0.9
 tyre_mass: 30.0
-friction: 1.3
+friction: 1.4
 suspension_length: 0.43
 suspension_spring: 150.0
 suspension_damper: 5.0

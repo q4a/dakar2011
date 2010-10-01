@@ -80,7 +80,7 @@ Type: sand
 EOM
 data/bigterrains/bigterrain11.txt
 3120
-Copiapo (Chi) -> Fiambala (Arg)
+Copiapo (Chi) -> Chilecito (Arg)
 NL
 Difficulty: hard and long
 NL
@@ -88,7 +88,7 @@ Type: sand and rock
 EOM
 data/bigterrains/bigterrain12.txt
 2400
-Fiambala -> San Juan
+Chilecito -> San Juan
 NL
 Difficulty: medium
 NL

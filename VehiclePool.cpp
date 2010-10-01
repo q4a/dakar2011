@@ -44,7 +44,8 @@ CVehicleType::CVehicleType(
                  int rep)
     : device(p_device), smgr(p_smgr), driver(p_driver), nWorld(p_nWorld),
       soundEngine(p_soundEngine),
-      vehicleList()
+      vehicleList(), vehicleCollision(0), vehicleCollisionBox(0),
+      omb(0)
 {
     strcpy(vehicleName, p_name);
     strcpy(vehicleFileName, p_fileName);
@@ -52,6 +53,7 @@ CVehicleType::CVehicleType(
     for (int i = 0; i < rep; i++)
     {
         NewtonRaceCar* vehicle = new NewtonRaceCar(device, smgr, driver, nWorld, soundEngine,
+                                                   vehicleCollision, vehicleCollisionBox, omb,
                                                    type, vehicleFileName);
         vehicle->pause();
         vehicleList.push_back(vehicle);
@@ -70,6 +72,21 @@ CVehicleType::~CVehicleType()
         }
     }
     vehicleList.clear();
+    if (vehicleCollision)
+    {
+        NewtonReleaseCollision (nWorld, vehicleCollision);
+        vehicleCollision = 0;
+    }
+    if (vehicleCollisionBox)
+    {
+        NewtonReleaseCollision (nWorld, vehicleCollisionBox);
+        vehicleCollisionBox = 0;
+    }
+    if (omb)
+    {
+        delete [] omb;
+        omb = 0;
+    }
 }
 
 
