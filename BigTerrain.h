@@ -31,6 +31,7 @@ using namespace gui;
 #include "MyLock.h"
 #include "MyList.h"
 #include "TerrainPool.h"
+#include "settings.h"
 
 //#define CP_NUM 6
 
@@ -112,7 +113,7 @@ public:
        
        float getSpeed() {return speed;}
        
-       u32 getStageTime() {return stageTime;}
+       u32 getStageTime() {return stageTime + (difficulty*(stageTime/30));}
        float getStageLength() {return stageLength;}
 
 #ifdef USE_IMAGE_HM

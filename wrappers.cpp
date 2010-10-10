@@ -26,7 +26,11 @@ SObjectWrapper::~SObjectWrapper()
 
 void SObjectWrapper::setVisible(bool pvisible)
 {
-    if (pvisible==visible) return;
+    if (pvisible==visible
+#ifdef USE_MESH_COMBINER
+        && pvisible == false // with mesh combiner the visible object can be visible more times on update
+#endif
+       ) return;
 
     visible = pvisible;
     if (visible)
@@ -56,4 +60,3 @@ void SItinerPoint::setVisible(bool pvisible)
         m_bigTerrain->removeActiveItinerPoint(this);
     }
 }
-

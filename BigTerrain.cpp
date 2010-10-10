@@ -816,10 +816,18 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
     if (new_x != ov_last_x || new_y != ov_last_y || force)
     {
         //printf("update objs\n");
+#ifdef USE_MESH_COMBINER
+        dprintf(printf("b 4b %p\n", objectWire);)
+        resetCombinedObjects();
+#endif
         dprintf(printf("b 5 %p\n", objectWire);)
         objectWire->updatePos(newX, newY, OV_LIMIT, force);
         dprintf(printf("b 6\n"));
         updateSmallTerrainsObjects(newX, newY, force);
+#ifdef USE_MESH_COMBINER
+        dprintf(printf("b 6b\n"));
+        finishCombinedObjects(smgr);
+#endif
         //if (startTime==0)
         dprintf(printf("b 7\n"));
         if (!timeStarted)
@@ -1021,7 +1029,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             endGate->setVisible(false);
             offsetManager->removeObject(endOffsetObject);
 
-            str += L"\n\n\nYour time is ";
+            str += L"Your time is ";
             addTimeToStr(str, diffTime);
             if (penality>0)
                 str += L" (including the penalities)";
@@ -1037,7 +1045,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
             str += L". Your current position is ";
             str += position;
 
-            str += L"\n\nYou can drive further or check your position in the Standings.";
+            str += L"\n\nYou can drive further or check the positions in the Standings.";
             
             if (oldStage+1 >= MAX_STAGES || stages[oldStage+1] == 0)
                 MessageText::addText(str.c_str(), 40);

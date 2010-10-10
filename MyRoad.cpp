@@ -688,6 +688,7 @@ ISceneNode* CMyRoad::generateRoadNode(SmallTerrain* p_smallTerrain, unsigned int
         dprintf(printf("collisionendbuild\n"));
         //NewtonWorldCriticalSectionLock(nWorld);
         NewtonTreeCollisionEndBuild(collision, 0);
+        dprintf(printf("collisionendbuild 1\n"));
         NewtonWorldCriticalSectionUnlock(nWorld);
         dprintf(printf("road build end\n"));
     

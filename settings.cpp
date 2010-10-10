@@ -122,6 +122,8 @@ char team_name[256] = "Players_Team";
 
 bool fps_compensation = true;
 
+int difficulty = 2;
+
 void readSettings(const char* fileName)
 {
     FILE* f;
@@ -392,6 +394,13 @@ void readSettings(const char* fileName)
         {
             ret = fscanf(f, "%d\n", &skin_type);
             if ( ret <=0 ) break;
+        } else
+        if (strcmp(key,"difficulty")==0)
+        {
+            ret = fscanf(f, "%d\n", &difficulty);
+            if ( ret <=0 ) break;
+            if (difficulty < 0) difficulty = 0;
+            if (difficulty > 4) difficulty = 4;
         } else
         if (strcmp(key,"auto_resolution")==0)
         {
@@ -880,6 +889,8 @@ bool writeSettings(const char* fileName)
     ret = fprintf(f, "joy_axis_clutch: %d\n", joy_axis_clutch);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "skin_type: %d\n", skin_type);
+    if ( ret <=0 ) {fclose(f); return false;}
+    ret = fprintf(f, "difficulty: %d\n", difficulty);
     if ( ret <=0 ) {fclose(f); return false;}
     ret = fprintf(f, "send_server_delay: %d\n", send_server_delay);
     if ( ret <=0 ) {fclose(f); return false;}

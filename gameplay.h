@@ -189,6 +189,8 @@ extern float car_ss_multi;
 extern float car_sd_multi;
 extern float car_sl_multi;
 
+extern unsigned int newtonUpdateCount;
+
 /*struct SRaceEngineState
 {
     u32 currentTime;

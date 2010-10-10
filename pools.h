@@ -104,5 +104,10 @@ void releaseItinerTypes();
 
 SAnimatedMesh* readMySimpleObject(const char* name);
 
+#ifdef USE_MESH_COMBINER
+void resetCombinedObjects();
+void finishCombinedObjects(ISceneManager* smgr);
+#endif
+
 #endif // __pools_h__
 

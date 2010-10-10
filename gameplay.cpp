@@ -142,6 +142,7 @@ float car_ss_multi = SUSPENSION_SPRING_MULTI_DEFAULT;
 float car_sd_multi = SUSPENSION_DAMPER_MULTI_DEFAULT;
 float car_sl_multi = SUSPENSION_LENGTH_MULTI_DEFAULT;
 
+unsigned int newtonUpdateCount = 0;
 
 const char* bgImagesHi[MAX_BGIMAGE+1] =
 {
@@ -416,12 +417,14 @@ void startGame(int stageNum, SState* state)
                 competitors[i]->lastPenalityTime = 0;
                 competitors[i]->globalPenalityTime = 0;
             }
+            CRaceEngine::clearStates();
             CRaceEngine::getRaceState() = competitors;
 #ifdef USE_EDITOR
             CRaceEngine::getRaceState().push_front(playerCompetitor);
 #else
             CRaceEngine::getRaceState().push_back(playerCompetitor);
 #endif
+            CRaceEngine::getStageState() = CRaceEngine::getRaceState();
         }
         else
         {
@@ -454,14 +457,18 @@ void startGame(int stageNum, SState* state)
 
     bgImage->setVisible(false);
     versionText->setVisible(false);
+#ifndef VIDEO_MODE
     fpsText->setVisible(display_extra_info);
     polyText->setVisible(display_extra_info);
     timeText->setVisible(true);
     speedText->setVisible(true);
     demageText->setVisible(true);
     hudImage->setVisible(draw_hud && !useCgShaders);
-    showMap = false;
     hudInfo->setVisible(info_bg);
+#else
+    draw_hud = false; // remove
+#endif
+    showMap = false;
     crossImage->setVisible(false);
 #ifdef USE_EDITOR
     posText->setVisible(display_extra_info);
@@ -530,7 +537,7 @@ void endGame()
         while (raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtTheEnd));
         printf("race engine: leave update loop\n");
         // todo update global states here
-        CRaceEngine::refreshRaceState(raceEngine);
+        CRaceEngine::refreshStates(raceEngine);
         delete raceEngine;
         raceEngine = 0;
     }
@@ -664,7 +671,10 @@ bool saveGame(const c8* name)
         return false;
     }
 
+    dprintf(printf("save game 1 savedState: %p\n", savedState);)
+
     saveStateInternal();
+    dprintf(printf("save game 2 savedState: %p\n", savedState);)
     
     ret = fprintf(f, "carpos: %f %f %f\ncarrot: %f %f %f\ncurrent_time: %u\ncps: %d\npenality: %u\n" \
                      "started: %u\nended: %u\ncpsize: %u\ntime_offset: %d\n" \
@@ -769,8 +779,12 @@ bool loadGame(const c8* name)
         return false;
     }
 
-    if (savedState==0)
-        savedState = new SState;
+    dprintf(printf("load game savedState: %p\n", savedState);)
+    if (savedState!=0)
+    {
+        delete savedState;
+    }
+    savedState = new SState;
 
     dprintf(printf("load game - load state: %p\n", savedState);)
     
@@ -816,6 +830,7 @@ bool loadGame(const c8* name)
 
     savedState->cpTime.clear();
     savedState->cpTimed.clear();
+    dprintf(printf("cp times cleared\n");)
     for (int i = 0; i < cpsize; i++)
     {
         int dummy = 0;
@@ -845,12 +860,17 @@ bool loadGame(const c8* name)
     }
     if (raceEngine)
     {
+        dprintf(printf("delete race engine %p\n", raceEngine);)
         delete raceEngine;
         raceEngine = 0;
     }
+    dprintf(printf("clear states\n");)
+    CRaceEngine::clearStates();
+    dprintf(printf("create new race engine\n");)
     loadedRaceEngine = new CRaceEngine(smgr, env, bigTerrain);
     CRaceEngine::getRaceState() = competitors;
     CRaceEngine::getRaceState().push_back(playerCompetitor);
+    CRaceEngine::getStageState() = CRaceEngine::getRaceState();
 
     dprintf(printf("load game - load raceEngine: %d\n", useRaceEngine);)
     
@@ -1024,5 +1044,10 @@ void releaseGameStuff()
         }
         delete [] stages;
         stages = 0;
+    }
+    if (savedState!=0)
+    {
+        delete savedState;
+        savedState = 0;
     }
 }

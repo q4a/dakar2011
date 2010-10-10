@@ -1,5 +1,5 @@
 data/bigterrains/bigterrain1.txt
-1130
+1100
 Buenos Aires -> Victoria
 NL
 Difficulty: easy
@@ -7,7 +7,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain2.txt
-1230
+1200
 Victoria -> Cordoba
 NL
 Difficulty: very easy
@@ -15,7 +15,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain3.txt
-2710
+2650
 Cordoba -> San Miguel de Tucuman
 NL
 Difficulty: medium
@@ -23,7 +23,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain4.txt
-2360
+2160
 San Miguel de Tucuman -> San Salvador de Jujuy
 NL
 Difficulty: medium
@@ -31,7 +31,7 @@ NL
 Type: grass / mud
 EOM
 data/bigterrains/bigterrain5.txt
-4050
+3530
 San Salvador de Jujuy (Arg) -> Calama (Chi)
 NL
 Difficulty: medium and long
@@ -39,7 +39,7 @@ NL
 Type: grass / mud / sand
 EOM
 data/bigterrains/bigterrain6.txt
-2910
+2530
 Calama -> Iquique
 NL
 Difficulty: hard
@@ -47,7 +47,7 @@ NL
 Type: sand
 EOM
 data/bigterrains/bigterrain7.txt
-1575
+1550
 Iquique -> Arica
 NL
 Difficulty: hard
@@ -55,7 +55,7 @@ NL
 Type: sand
 EOM
 data/bigterrains/bigterrain8.txt
-3140
+3220
 Arica -> Antofagasta
 NL
 Difficulty: hard and long
@@ -63,7 +63,7 @@ NL
 Type: sand
 EOM
 data/bigterrains/bigterrain9.txt
-4720
+4530
 Antofagasta -> Copiapo
 NL
 Difficulty: hard and long
@@ -71,7 +71,7 @@ NL
 Type: sand and rock
 EOM
 data/bigterrains/bigterrain10.txt
-2400
+2250
 Copiapo -> Copiapo
 NL
 Difficulty: medium
@@ -79,7 +79,7 @@ NL
 Type: sand
 EOM
 data/bigterrains/bigterrain11.txt
-3120
+3020
 Copiapo (Chi) -> Chilecito (Arg)
 NL
 Difficulty: hard and long
@@ -87,7 +87,7 @@ NL
 Type: sand and rock
 EOM
 data/bigterrains/bigterrain12.txt
-2400
+2190
 Chilecito -> San Juan
 NL
 Difficulty: medium
@@ -95,7 +95,7 @@ NL
 Type: sand and rock
 EOM
 data/bigterrains/bigterrain13.txt
-2430
+2240
 San Juan -> Cordoba
 NL
 Difficulty: hard
@@ -103,7 +103,7 @@ NL
 Type: sand and grass
 EOM
 data/bigterrains/bigterrain14.txt
-2410
+2210
 Cordoba -> Buenos Aires
 NL
 Difficulty: easy

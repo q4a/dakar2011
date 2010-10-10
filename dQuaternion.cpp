@@ -1,10 +1,14 @@
-//********************************************************************
-// Newton Game dynamics 
-// copyright 2000-2004
-// By Julio Jerez
-// VC: 6.0
-// basic Hierarchical Scene Node Class
-//********************************************************************
+/* Copyright (c) <2009> <Newton Game Dynamics>
+* 
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* 
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely
+*/
+
 #include "dMathDefines.h"
 #include "dVector.h"
 #include "dMatrix.h"
@@ -192,5 +196,4 @@ dVector dQuaternion::UnrotateVector (const dVector& point) const
 	dMatrix matrix (*this, dVector (0.0f, 0.0f, 0.0f, 1.0f));
 	return matrix.UnrotateVector(point);
 }
-
 

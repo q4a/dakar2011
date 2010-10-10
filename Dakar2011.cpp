@@ -202,7 +202,7 @@ int main()
     }
 
     initializeUsedMemory(device);
-
+    
 	core::array<SJoystickInfo> joystickInfo;
 	if(device->activateJoysticks(joystickInfo))
 	{
@@ -298,11 +298,42 @@ int main()
     //recreateRTTs(driver);
     
 	// Newton vars
+#if NEWTON_MINOR_VERSION < 24
 	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
+#else
+	NewtonWorld *nWorld = NewtonCreate(/*NULL, NULL*/);
+#endif
 	NewtonSetThreadsCount(nWorld, /*use_threads?*/2/*:1*/);
+	/*
+    {
+        NewtonCollision* collision = NewtonCreateTreeCollision(nWorld, roadID);
+        FILE* f = fopen("last_road_points", "r");
+        NewtonTreeCollisionBeginBuild(collision);
 
-	// Set up default material properties for newton
-	SetupMaterials(nWorld, soundEngine);
+        bool canRead = true;
+        float vArray[9];
+
+        printf("read points\n");
+        while (canRead)
+        {
+            for (int wi = 0; wi < 9 && canRead; wi++)
+            {
+                int ret = fscanf(f, "%f\n", &vArray[wi]);
+                if (ret < 1) canRead = false;
+            }
+            if (canRead)
+            {
+                NewtonTreeCollisionAddFace(collision, 3, (float*)vArray, 3 * sizeof(float), 1);
+            }
+        }
+        fclose(f);
+        printf("collisionendbuild\n");
+        NewtonTreeCollisionEndBuild(collision, 0);
+        printf("collisionendbuild done\n");
+    }
+    */
+    // Set up default material properties for newton
+    SetupMaterials(nWorld, soundEngine);
 	
     if (screenSize.Width > 1280)
     {
@@ -808,12 +839,18 @@ int main()
     unsigned int shadowObjs;
     
     u32 drawTick = 0;
-    u32 newtonUpdateCount = 0;
+    newtonUpdateCount = 0;
     u32 newtonUpdateCount_last = 0;
     s32 sleepTime = 0;
 #define NEWTONUPDATECOUNTCHANGE_LIMIT 10
     s32 fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
     int failed_render = 0;
+    
+    const int min_fps = 60;
+    const int ms_step = 1000 / min_fps;
+    const float sec_step = 1 / (float)min_fps;
+    //NewtonSetMinimumFrameRate(nWorld, (float)min_fps);
+    
     dprintf(printf("device %p\n", device));
     MessageText::hide();
     while(device->run())
@@ -828,7 +865,7 @@ int main()
             if (!fps_compensation)
             {
                 sleepTime = 0;
-                newtonUpdateCount = (tick - lasttick) / 16;
+                newtonUpdateCount = (tick - lasttick) / ms_step;
             }
             pdprintf(printf("1\n"));
             if (car && bigTerrain && inGame == 0)
@@ -1368,7 +1405,7 @@ int main()
             // with sleep
             if (fps_compensation)
             {
-                newtonUpdateCount = (drawTick + 16) / 16;
+                newtonUpdateCount = (drawTick + ms_step) / ms_step;
                 /*
                 if (newtonUpdateCount < newtonUpdateCount_last)
                 {
@@ -1388,10 +1425,10 @@ int main()
                 }
                 */
                 //newtonUpdateCount = 2;
-                sleepTime = (newtonUpdateCount * 16) - drawTick - (newtonUpdateCount/2);
+                sleepTime = (newtonUpdateCount * ms_step) - drawTick - (newtonUpdateCount/2);
             }
             newtonUpdateCount_last = newtonUpdateCount;
-            if (newtonUpdateCount > 16) newtonUpdateCount = 16;
+            if (newtonUpdateCount > 10) newtonUpdateCount = 10;
             //printf("dt: %u nuc: %u st: %u\n", drawTick, newtonUpdateCount, sleepTime);
             pdprintf(printf("14\n"));
             // display frames per second in window title
@@ -1567,9 +1604,9 @@ int main()
                             vehiclePool->updateActiveVehicles();
                         }
                         pdprintf(printf("17\n"));
-                        NewtonUpdate(nWorld, 0.015f/*1.066667f*/);
+                        NewtonUpdate(nWorld, 0.015f/*sec_step*//*1.066667f*/);
                         pdprintf(printf("17c\n"));
-                        lasttick += 16;
+                        lasttick += ms_step;
                         newtonUpdateCount--;
                     }
                     pdprintf(printf("18\n"));

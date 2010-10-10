@@ -42,6 +42,7 @@ enum
 	GUI_ID_SD_MULTI_SCROLL_BAR,
 	GUI_ID_SL_MULTI_SCROLL_BAR,
 	GUI_ID_DEAD_ZONE_SCROLL_BAR,
+	GUI_ID_DIFFICULTY_SCROLL_BAR,
 	GUI_ID_CHOOSE_CAR_BUTTON,
 	GUI_ID_APPLY_CAR_BUTTON,
 	GUI_ID_CONNECT_BUTTON,
@@ -134,6 +135,15 @@ extern int joy_show_map_p;
 extern int joy_repair_car_p;
 extern int joy_menu_p;
 
+
+const char* eventreceiver_menu::difficultyStr[5] =
+{
+    "Very hard",
+    "Hard",
+    "Medium",
+    "Easy",
+    "Very easy"    
+};
 
 eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
                     scene::ISceneNode* skybox,
@@ -925,6 +935,17 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         stateGlobalBox->setRelativePosition(rect);
                         break;
                     }
+    				case GUI_ID_DIFFICULTY_SCROLL_BAR:
+    				{
+    					s32 pos = ((IGUIScrollBar*)event.GUIEvent.Caller)->getPos();
+    					dprintf(printf("set difficulty to %d\n", pos));
+    					difficulty = pos;
+    					
+                    	core::stringw str = L"";
+                    	str += difficultyStr[difficulty];
+                    	difficulty_text->setText(str.c_str());
+    				    break;	
+    				}
                 }
 				break;
 			case EGET_BUTTON_CLICKED:
@@ -1152,7 +1173,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                         stateWindow->remove();
                         while (raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtTheEnd));
                         // todo update global states here
-                        CRaceEngine::refreshRaceState(raceEngine);
+                        CRaceEngine::refreshStates(raceEngine);
                         refreshStateWindow(false); // false - no need the leporget button again
                         return true;
                         break;
@@ -2526,6 +2547,29 @@ void eventreceiver_menu::openOptionsWindow()
     		gameTab,
             GUI_ID_TEAM_NAME_EBOX);
     }
+	line += 20;
+	env->addStaticText(L"Difficulty",
+		rect<s32>(indist,line,indist+firsttextlen,line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+	IGUIScrollBar* scrollbar = env->addScrollBar(true,
+			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen) - 30, line+16),
+            gameTab, GUI_ID_DIFFICULTY_SCROLL_BAR);
+	//scrollbar->setMin(1);
+	scrollbar->setMax(4);
+    scrollbar->setSmallStep(1);
+    scrollbar->setLargeStep(1);
+	// set scrollbar position to alpha value of an arbitrary element
+	scrollbar->setPos(difficulty);
+	str = L"";
+	str += difficultyStr[difficulty];
+	difficulty_text = env->addStaticText(str.c_str(),
+		rect<s32>(screenSize.Width - (indist*2+outdist*2+valuelen) - 30,line,screenSize.Width - (indist*2+outdist*2),line+16),
+		false, // border?
+		false, // wordwrap?
+		gameTab);
+
     line += 40;
 	env->addStaticText(L"Draw hud",
 		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2582,7 +2626,7 @@ void eventreceiver_menu::openOptionsWindow()
 		false, // border?
 		false, // wordwrap?
 		gameTab);
-	IGUIScrollBar* scrollbar = env->addScrollBar(true,
+	scrollbar = env->addScrollBar(true,
 			rect<s32>(indist*2+firsttextlen, line, screenSize.Width - (indist*3+outdist*2+valuelen), line+16),
             gameTab, GUI_ID_GRAVITY_SCROLL_BAR);
 	scrollbar->setMax(150);
@@ -3647,6 +3691,7 @@ void eventreceiver_menu::openStateWindow()
 
     stateWindowP = window;
 
+    CRaceEngine::refreshStates(raceEngine);
     refreshStateWindow(true);
     
 }	
@@ -3735,8 +3780,9 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         //str += bigTerrain->getStageTime();
         str += L" sec\n\n";
     }
-    core::array<SStarter*> stageStarters;
+    //core::array<SStarter*> stageStarters;
     unsigned int startingCD = 0;
+    /*
     for (int i = 0; i < raceEngine->getStarters().size(); i++)
     {
         int j = 0;
@@ -3764,11 +3810,18 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
             }
         }
         while (j < stageStarters.size() &&
-               (raceEngine->getStarters()[i]->nextPoint <= stageStarters[j]->nextPoint ||
-                raceEngine->getStarters()[i]->competitor->lastTime != 0
-               ) &&
-               (raceEngine->getStarters()[i]->competitor->lastTime >= stageStarters[j]->competitor->lastTime ||
-                raceEngine->getStarters()[i]->competitor->lastTime == 0
+               (
+                (raceEngine->getStarters()[i]->competitor->lastTime == 0 && stageStarters[j]->competitor->lastTime != 0)
+                ||
+                (raceEngine->getStarters()[i]->nextPoint <= stageStarters[j]->nextPoint &&
+                 raceEngine->getStarters()[i]->competitor->lastTime == 0 &&
+                 stageStarters[j]->competitor->lastTime == 0
+                )
+                ||
+                (raceEngine->getStarters()[i]->competitor->lastTime >= stageStarters[j]->competitor->lastTime &&
+                 raceEngine->getStarters()[i]->competitor->lastTime != 0 &&
+                 stageStarters[j]->competitor->lastTime != 0
+                )
                )
               )
         {
@@ -3776,12 +3829,13 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         stageStarters.insert(raceEngine->getStarters()[i], j);
     }
+    */
     // remove me
     unsigned int sneg = 0;
     unsigned int spos = 0;
     unsigned int cneg = 0;
     unsigned int cpos = 0;
-    for (int i = 0; i < stageStarters.size(); i++)
+    for (int i = 0; i < CRaceEngine::getStageStateStarters().size(); i++)
     {
         if (i < 99)
         {
@@ -3793,28 +3847,28 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         str += (i+1);
         str += L".     ";
-        if (stageStarters[i]->competitor->lastTime > 0)
+        if (CRaceEngine::getStageStateStarters()[i]->competitor->lastTime > 0)
         {
-            bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastTime);
+            bigTerrain->addTimeToStr(str, CRaceEngine::getStageStateStarters()[i]->competitor->lastTime);
         }
         else
         {
             str += L" --:-- ";
         }
         str += L"     ";
-        str += stageStarters[i]->competitor->num;
+        str += CRaceEngine::getStageStateStarters()[i]->competitor->num;
         str += L"   ";
-        str += stageStarters[i]->competitor->getName();
+        str += CRaceEngine::getStageStateStarters()[i]->competitor->getName();
         str += L"   ";
-        str += stageStarters[i]->competitor->getCoName();
+        str += CRaceEngine::getStageStateStarters()[i]->competitor->getCoName();
         str += L"   ";
-        str += stageStarters[i]->competitor->getTeamName();
+        str += CRaceEngine::getStageStateStarters()[i]->competitor->getTeamName();
         str += L"   ";
-        if (stageStarters[i]->competitor->lastTime==0)
+        if (CRaceEngine::getStageStateStarters()[i]->competitor->lastTime==0)
         {
-            if (stageStarters[i]->startingCD > 0)
+            if (CRaceEngine::getStageStateStarters()[i]->startingCD > 0)
             {
-                startingCD += stageStarters[i]->startingCD;
+                startingCD += CRaceEngine::getStageStateStarters()[i]->startingCD;
                 str += L"Start in ";
                 bigTerrain->addTimeToStr(str, startingCD);
                 str += L" seconds";
@@ -3826,7 +3880,7 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
                 if (bigTerrain->getAIPoints().size() != 0)
                 {
                     str += L"Passed ";
-                    str += ((stageStarters[i]->nextPoint*100) / bigTerrain->getAIPoints().size());
+                    str += ((CRaceEngine::getStageStateStarters()[i]->nextPoint*100) / bigTerrain->getAIPoints().size());
                     //str += (int)((stageStarters[i]->passedDistance/stageLength)*100.f);
                     str += L"%";
                 }
@@ -3835,10 +3889,10 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         }
         else
         {
-            if (stageStarters[i]->competitor->lastPenalityTime > 0)
+            if (CRaceEngine::getStageStateStarters()[i]->competitor->lastPenalityTime > 0)
             {
                 str += L"Penality: ";
-                bigTerrain->addTimeToStr(str, stageStarters[i]->competitor->lastPenalityTime);
+                bigTerrain->addTimeToStr(str, CRaceEngine::getStageStateStarters()[i]->competitor->lastPenalityTime);
             }
         }
         /*
@@ -4023,7 +4077,6 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
     // global stanging
     // ---------------
     str = L"";
-    CRaceEngine::refreshRaceState(raceEngine);
     if (CRaceEngine::getRaceState().size()==0)
         str = L"There is no result yet.";
 

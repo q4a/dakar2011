@@ -129,7 +129,7 @@ void calculate_day_delta(u32 ptick)
 
 void calculate_dirt(u32 ptick)
 {
-#define DIRT_TIME 170000
+#define DIRT_TIME 130000
 #define MAX_DIRT_TIME (MAX_CAR_DIRT * DIRT_TIME)
     u32 delta_time = ptick - car_dirt_last_tick;
     car_dirt_last_tick = ptick;

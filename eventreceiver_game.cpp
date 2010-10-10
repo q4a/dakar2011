@@ -279,9 +279,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                                                bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+3.f,
                                                /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
-                    if (bigTerrain->addPenality(RESET_PENALITY)!=(u32)-1)
+                    if (bigTerrain->addPenality(RESET_PENALITY - (15*difficulty))!=(u32)-1)
                     {
-                        MessageText::addText(L"Add 2 minutes penality, because of restoring car.", 5);
+                        core::stringw str = L"Add ";
+                        bigTerrain->addTimeToStr(str, (RESET_PENALITY - (15*difficulty)));
+                        str += L" penality, because of restoring car.";
+                        MessageText::addText(str.c_str(), 5);
                     }
                     return true;
                 }
@@ -292,12 +295,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 if (car && bigTerrain && inGame == 0)
                 {
                     float demage = car->getDemagePer();
-                    int penality = (int)(10.f*demage);
+                    int penality = (int)((float)(10-difficulty)*demage);
                     for (int i = 0; i < 4; i++) 
                     {
                         if (!car->isTyreConnected(i))
                         {
-                            penality += 60;
+                            penality += 60 - (difficulty*5);
                         }
                     }
                     if (!penality)
@@ -792,9 +795,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                                                bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+5.f,
                                                /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
-                    if (bigTerrain->addPenality(RESET_PENALITY)!=(u32)-1)
+                    if (bigTerrain->addPenality(RESET_PENALITY - (15*difficulty))!=(u32)-1)
                     {
-                        MessageText::addText(L"Add 2 minutes penality, because of restoring car.", 5);
+                        core::stringw str = L"Add ";
+                        bigTerrain->addTimeToStr(str, (RESET_PENALITY - (15*difficulty)));
+                        str += L" penality, because of restoring car.";
+                        MessageText::addText(str.c_str(), 5);
                     }
                 }
             }
@@ -811,12 +817,12 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                 if (car && bigTerrain && inGame == 0)
                 {
                     float demage = car->getDemagePer();
-                    int penality = (int)(10.f*demage);
+                    int penality = (int)((float)(10-difficulty)*demage);
                     for (int i = 0; i < 4; i++) 
                     {
                         if (!car->isTyreConnected(i))
                         {
-                            penality += 60;
+                            penality += 60 - (difficulty*5);
                         }
                     }
                     if (!penality)

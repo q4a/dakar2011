@@ -1246,6 +1246,8 @@ void NewtonRaceCar::ApplyGravityForce (const NewtonBody* body, float timestep, i
 // Set the vehicle matrix and all tire matrices
 void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr, int threadIndex)
 {
+    if (newtonUpdateCount != 1) return;
+    
 	void* tyreId;
 	float sign;
 	float angle;
@@ -1537,6 +1539,7 @@ void NewtonRaceCar::SetTransform (const NewtonBody* body, const float* matrixPtr
 
 void NewtonRaceCar::RaceCarTire::SetTransformTire (const NewtonBody* body, const float* matrixPtr, int threadIndex)
 {
+    if (newtonUpdateCount != 1) return;
 	
 	NewtonRaceCar::RaceCarTire* tire;
 

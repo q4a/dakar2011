@@ -135,6 +135,7 @@ private:
 	gui::IGUIStaticText* gra_density_text;
 	gui::IGUIStaticText* joy_text;
 	gui::IGUIStaticText* dead_zone_text;
+	gui::IGUIStaticText* difficulty_text;
     gui::IGUITabControl* tabControl;
     gui::IGUITabControl* stateTabControl;
     gui::IGUIStaticText* helpBox;
@@ -213,6 +214,8 @@ private:
 	gui::IGUIEditBox* player_name_text;
 	//gui::IGUIEditBox* player_coname_text;
 	gui::IGUIEditBox* team_name_text;
+	
+	const static char* difficultyStr[5];
 };
 
 

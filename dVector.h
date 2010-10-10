@@ -1,20 +1,22 @@
-//********************************************************************
-// Newton Game dynamics 
-// copyright 2000-2004
-// By Julio Jerez
-// VC: 6.0
-// simple 4d vector class
-//********************************************************************
-
+/* Copyright (c) <2009> <Newton Game Dynamics>
+* 
+* This software is provided 'as-is', without any express or implied
+* warranty. In no event will the authors be held liable for any damages
+* arising from the use of this software.
+* 
+* Permission is granted to anyone to use this software for any purpose,
+* including commercial applications, and to alter it and redistribute it
+* freely
+*/
 
 #ifndef __dVector__
 #define __dVector__
 
-//#define dFloat float
-//#include <stdafx.h>
-#include <Newton.h>
 
-// small but very effective 4 dimetional template vector class 
+#include "dMathDefines.h"
+
+
+// small but very effective 4 dimensional template vector class 
 
 template<class T>
 class TemplateVector
@@ -180,3 +182,4 @@ inline dVector::dVector (dFloat x, dFloat y, dFloat z, dFloat w)
 }
 
 #endif
+

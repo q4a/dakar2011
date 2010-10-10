@@ -5,14 +5,14 @@
 #define DAKAR2011_PRIVATE_H
 
 /* VERSION DEFINITIONS */
-#define VER_STRING	"2.1.1.2687"
+#define VER_STRING	"2.1.1.2814"
 #define VER_MAJOR	2
 #define VER_MINOR	1
 #define VER_RELEASE	1
-#define VER_BUILD	2687
+#define VER_BUILD	2814
 #define COMPANY_NAME	""
 #define FILE_VERSION	""
-#define FILE_DESCRIPTION	"Developed using the Dev-C++ IDE"
+#define FILE_DESCRIPTION	"Dakar 2011 Game"
 #define INTERNAL_NAME	""
 #define LEGAL_COPYRIGHT	""
 #define LEGAL_TRADEMARKS	""

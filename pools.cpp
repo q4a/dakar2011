@@ -72,7 +72,12 @@ struct ObjectWrapper
 public:
     ObjectWrapper(NewtonWorld* pnWorld)
         :objectNode(0), visible(true), fvisible(true), nWorld(pnWorld), body(0),
-         collision(0), addShadow(false), shadowNode(0), type(NONE), offsetObject(0)
+         collision(0),
+#ifdef USE_MESH_COMBINER
+         canCombine(false),
+#endif
+         addShadow(false), shadowNode(0),
+         type(NONE), offsetObject(0)
      {}
     ~ObjectWrapper()
     {
@@ -145,37 +150,51 @@ public:
                 }
                 */
             }
-            if (addShadow)
-            {
-                if (shadowNode)
-                    addToShadowNodes(shadowNode);
-                else
-                    addToShadowNodes(objectNode);
-            }
             offsetObject = new OffsetObject(objectNode, body);
             offsetManager->addObject(offsetObject);
-            addToObjectNodes(objectNode);
+#ifdef USE_MESH_COMBINER
+            if (!canCombine)
+            {
+#endif
+                if (addShadow)
+                {
+                    if (shadowNode)
+                        addToShadowNodes(shadowNode);
+                    else
+                        addToShadowNodes(objectNode);
+                }
+                addToObjectNodes(objectNode);
+#ifdef USE_MESH_COMBINER
+            }
+#endif
         }
         else
         {
-            if (addShadow)
+#ifdef USE_MESH_COMBINER
+            if (!canCombine)
             {
-                if (shadowNode)
-                    removeFromShadowNodes(shadowNode);
-                else
-                    removeFromShadowNodes(objectNode);
+#endif
+                if (addShadow)
+                {
+                    if (shadowNode)
+                        removeFromShadowNodes(shadowNode);
+                    else
+                        removeFromShadowNodes(objectNode);
+                }
+                removeFromObjectNodes(objectNode);
+#ifdef USE_MESH_COMBINER
             }
-            removeFromObjectNodes(objectNode);
-            if (body)
-            {
-                NewtonDestroyBody(nWorld, body);
-                body = 0;
-            }
+#endif
             if (offsetObject)
             {
                 offsetManager->removeObject(offsetObject);
                 delete offsetObject;
                 offsetObject = 0;
+            }
+            if (body)
+            {
+                NewtonDestroyBody(nWorld, body);
+                body = 0;
             }
         }
     }
@@ -186,6 +205,9 @@ public:
     bool addShadow;
     PoolObjectType type;
     NewtonCollision* collision;
+#ifdef USE_MESH_COMBINER
+    bool canCombine;
+#endif
 
 private:
     bool visible;
@@ -253,12 +275,73 @@ struct nameNum
         delete [] my_vertices;
     }
 
+#ifdef USE_MESH_COMBINER
+    void resetCombinedMesh()
+    {
+        if (offsetObject)
+        {
+            offsetManager->removeObject(offsetObject);
+            delete offsetObject;
+            offsetObject = 0;
+        }
+        combinedMesh = 0;
+        combinedNode = 0;
+    }
+    
+    void finishCombinedMesh(ISceneManager* smgr)
+    {
+        if (combinedMesh == 0) return;
+        combinedNode = smgr->addMeshSceneNode(combinedMesh);
+        offsetObject = new OffsetObject(combinedNode);
+        offsetManager->addObject(offsetObject);
+        combinedNode->setVisible(true);
+    }
+    
+    void appendCombinedMesh(const core::vector3df& newPos,
+                            const core::vector3df& scale)
+    {
+        if (objectMesh == 0) return;
+        for (int i = 0; i < objectMesh->getMeshBufferCount();i++)
+        {
+            IMeshBuffer* mb = objectMesh->getMeshBuffer(i);
+            irr::scene::SMeshBuffer* newMeshBuffer = new irr::scene::SMeshBuffer();
+            
+            video::S3DVertex* mb_vertices = (video::S3DVertex*)mb->getVertices();
+            //irr::video::S3DVertex* my_vertices = new char[sizeof(irr::video::S3DVertex)*mb->getVertexCount()];
+            newMeshBuffer->Vertices.reallocate(mb->getVertexCount());
+            newMeshBuffer->Indices.reallocate(mb->getIndexCount());
+/*
+            for (int j = 0; j < mb->getVertexCount(); j++)
+            {
+                newMeshBuffer->Vertices[j] = mb_vertices[j];
+                newMeshBuffer->Vertices[j].Pos *= scale;
+                newMeshBuffer->Vertices[j].Pos += newPos;
+            }
+            
+            memcpy((void*)newMeshBuffer->Indices.pointer(), (void*)mb->getIndices(), sizeof(irr::u16)*mb->getIndexCount());
+            */
+            if (combinedMesh==0)
+            {
+                combinedMesh = new scene::SMesh();
+            }
+            
+            combinedMesh->addMeshBuffer(newMeshBuffer);
+        }
+    }
+#endif
+
     c8 name[256];
     CMyList<ObjectWrapper*> objectPool;
     IAnimatedMesh* objectMesh;
     int category;
     NewtonCollision* collision;
     NewtonWorld* nWorld;
+#ifdef USE_MESH_COMBINER
+    SMesh* combinedMesh;
+    bool canCombine;
+    IMeshSceneNode* combinedNode;
+    OffsetObject* offsetObject;
+#endif
     //core::vector3df box;
     //core::vector3df ofs;
 };
@@ -300,6 +383,12 @@ int createObjectPool(const c8* name,
         strcpy(newElement->name, name);
         newElement->objectMesh = 0;
         newElement->collision = 0;
+#ifdef USE_MESH_COMBINER
+        newElement->combinedMesh = 0;
+        newElement->canCombine = false;
+        newElement->combinedNode = 0;
+        newElement->offsetObject = 0;
+#endif
         newElement->nWorld = nWorld;
         //if (category > 3) category = 3;
         if (category < 0) category = 0;
@@ -352,7 +441,9 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
         {
             nn->calculateCollisionMesh(box, sca);
         }
-
+#ifdef USE_MESH_COMBINER
+        nn->canCombine = true;
+#endif
         for (int j = 0; j < num /*&& numOfObjects < MAX_OBJECT_NUM*/; j++)
         {
             
@@ -388,6 +479,9 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectNode->setScale(sca);
             
             objectWrapper->collision = *poolCollision;
+#ifdef USE_MESH_COMBINER
+            objectWrapper->canCombine = nn->canCombine;
+#endif
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;
@@ -403,6 +497,10 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
         video::S3DVertex vtx;
         vtx.Color.set(255,255,255,255);
         vtx.Normal.set(0,1,0);
+#ifdef USE_MESH_COMBINER
+        if (grass_type==GRASS_GENERATED || grass_type==GRASS_OBJECT)
+            nn->canCombine = true;
+#endif
         for (int i = 0;i < num;i++)
         {
             ObjectWrapper* objectWrapper = new ObjectWrapper(nWorld);
@@ -604,6 +702,9 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     	    objectNode->setMaterialTexture(0, driver->getTexture(textureName));
     	    objectWrapper->setVisible(false);
             objectWrapper->type = GRASS;
+#ifdef USE_MESH_COMBINER
+            objectWrapper->canCombine = nn->canCombine;
+#endif
 
             objectPool.addLast(objectWrapper);
     	    //objectNode->setRotation(vector3df(0.f,(float)(rand()%180),0.f));
@@ -674,6 +775,9 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_tex_s);
             
             objectWrapper->collision = *poolCollision;
+#ifdef USE_MESH_COMBINER
+            objectWrapper->canCombine = nn->canCombine;
+#endif
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = true;
             objectWrapper->type = TREE;
@@ -738,6 +842,9 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             objectNode->setScale(sca);
             
             objectWrapper->collision = *poolCollision;
+#ifdef USE_MESH_COMBINER
+            objectWrapper->canCombine = nn->canCombine;
+#endif
             objectWrapper->setVisible(false);
             objectWrapper->addShadow = !stencil_shadows;
             objectWrapper->type = NORMAL;
@@ -765,6 +872,12 @@ void* getPoolElement(int poolId, const vector3df& pos)
             objectWrapper->objectNode->setPosition(pos);
         }
         objectWrapper->setVisible(true);
+#ifdef USE_MESH_COMBINER
+        if (objectPools[poolId]->canCombine)
+        {
+            objectPools[poolId]->appendCombinedMesh(pos, objectWrapper->objectNode->getScale());
+        }
+#endif
     }
     
     return (void*)objectWrapper;
@@ -1421,3 +1534,21 @@ void releaseItinerTypes()
     }
     itinerTypes.clear();
 }
+
+#ifdef USE_MESH_COMBINER
+void resetCombinedObjects()
+{
+    for (int ind = 0; ind < objectPools.size();ind++)
+    {
+        objectPools[ind]->resetCombinedMesh();
+    }
+}
+
+void finishCombinedObjects(ISceneManager* smgr)
+{
+    for (int ind = 0; ind < objectPools.size();ind++)
+    {
+        objectPools[ind]->finishCombinedMesh(smgr);
+    }
+}
+#endif

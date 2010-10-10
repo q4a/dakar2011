@@ -25,7 +25,7 @@
 #ifdef USE_EDITOR
 # define START_SECS 10
 #else
-# define START_SECS 40
+# define START_SECS 60
 #endif
 #define REACHED_POINT_DIST 15.f
 #define REACHED_POINT_DIST_NEAR 20.f
@@ -33,6 +33,8 @@
 #define AI_STEP (1.15f) // orig: (1.05f)
 
 core::array<SCompetitor*> CRaceEngine::raceState;
+core::array<SCompetitor*> CRaceEngine::stageState;
+core::array<SStarter*> CRaceEngine::stageStateStarters;
 
 //#define pdprintf(x) x
 
@@ -529,13 +531,10 @@ CRaceEngine::CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env,
     : m_bigTerrain(p_bigTerrain), starters(), cupdaters(), lastMTick(0),
       lastCTick(0), currentTime(0), raceFinished(false)
 {
-    for (int i = 0; i < raceState.size(); i++)
+    for (int i = 0; i < stageState.size(); i++)
     {
-        //if (raceState[i]->ai)
-        //{
-            SStarter* starter = new SStarter(smgr, env, m_bigTerrain, this, raceState[i], START_SECS);
-            starters.push_back(starter);
-        //}
+        SStarter* starter = new SStarter(smgr, env, m_bigTerrain, this, stageState[i], START_SECS);
+        starters.push_back(starter);
     }
 }
 
@@ -653,34 +652,83 @@ int CRaceEngine::insertIntoFinishedState(SCompetitor* competitor)
     return (i+1);
 }
 
-void CRaceEngine::refreshRaceState(CRaceEngine* stageState)
+void CRaceEngine::clearStates()
 {
     raceState.clear();
-/*
-    for (int i = 0; i < stageState->finishedState.size(); i++)
+    stageState.clear();
+    stageStateStarters.clear();
+}
+
+void CRaceEngine::refreshStates(CRaceEngine* re)
+{
+    clearStates();
+
+    for (int i = 0; i < re->starters.size(); i++)
     {
         int j = 0;
-        while (j < raceState.size() && stageState->finishedState[i]->lastTime >= raceState[j]->lastTime)
-        {
-            j++;
-        }
-        raceState.insert(stageState->finishedState[i], j);
-    }
-*/
-    for (int i = 0; i < stageState->starters.size(); i++)
-    {
-        int j = 0;
-        //if (stageState->starters[i]->competitor->lastTime == 0) continue;
+        //if (re->starters[i]->competitor->lastTime == 0) continue;
         while (j < raceState.size() &&
                (
-                (stageState->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime!=0) ||
-                (stageState->starters[i]->competitor->globalTime >= raceState[j]->globalTime)
+                (re->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime!=0)
+                ||
+                (re->starters[i]->competitor->globalTime >= raceState[j]->globalTime &&
+                 re->starters[i]->competitor->lastTime==0 && raceState[j]->lastTime==0
+                )
+                ||
+                (re->starters[i]->competitor->globalTime >= raceState[j]->globalTime &&
+                 re->starters[i]->competitor->lastTime!=0 && raceState[j]->lastTime!=0
+                )
                )
               )
         {
             j++;
         }
-        raceState.insert(stageState->starters[i]->competitor, j);
+        raceState.insert(re->starters[i]->competitor, j);
+
+        j = 0;
+        // update the player pos
+        if (re->getStarters()[i]->competitor == playerCompetitor &&
+            bigTerrain && car)
+        {
+            if (playerCompetitor->lastTime == 0)
+            {
+                float dist = 100000.f;
+                const vector3df my_pos = car->getMatrix().getTranslation() + offsetManager->getOffset();
+                for (int k = 0; k < bigTerrain->getAIPoints().size(); k++)
+                {
+                    float cd = bigTerrain->getAIPoints()[k]->getPosition().getDistanceFrom(my_pos);
+                    if (cd < dist)
+                    {
+                        dist = cd;
+                        re->getStarters()[i]->nextPoint = k;
+                    }
+                }
+            }
+            else
+            {
+                re->getStarters()[i]->nextPoint = bigTerrain->getAIPoints().size() - 1;
+            }
+        }
+        while (j < stageStateStarters.size() &&
+               (
+                (re->getStarters()[i]->competitor->lastTime == 0 && stageStateStarters[j]->competitor->lastTime != 0)
+                ||
+                (re->getStarters()[i]->nextPoint <= stageStateStarters[j]->nextPoint &&
+                 re->getStarters()[i]->competitor->lastTime == 0 &&
+                 stageStateStarters[j]->competitor->lastTime == 0
+                )
+                ||
+                (re->getStarters()[i]->competitor->lastTime >= stageStateStarters[j]->competitor->lastTime &&
+                 re->getStarters()[i]->competitor->lastTime != 0 &&
+                 stageStateStarters[j]->competitor->lastTime != 0
+                )
+               )
+              )
+        {
+            j++;
+        }
+        stageStateStarters.insert(re->getStarters()[i], j);
+        stageState.insert(re->getStarters()[i]->competitor, j);
     }
 }
 
@@ -801,7 +849,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
             printf("error reading save file ret %d errno %d\n", ret, errno);
             return false;
         }
-        //dprintf(printf("read stater[%d], num %d, raceState.size() = %d\n", tmpi, compnum, raceState.size());)
+        dprintf(printf("read stater[%d], num %d, raceState.size() = %d\n", tmpi, compnum, raceState.size());)
         
         for (j = 0; j < raceState.size(); j++)
         {
@@ -811,7 +859,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
         if (j < raceState.size())
         {
             starter = new SStarter(smgr, env, m_bigTerrain, this, raceState[j], START_SECS);
-            //dprintf(printf("found competitor, create starter %p\n", starter);)
+            dprintf(printf("found competitor, create starter %p\n", starter);)
         }
         else
         {

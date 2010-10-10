@@ -114,6 +114,8 @@ extern char team_name[256];
 
 extern bool fps_compensation;
 
+extern int difficulty;
+
 void readSettings(const char*);
 
 bool writeSettings(const char*);

@@ -99,8 +99,11 @@ public:
     
     bool isRaceFinished() {return raceFinished;}
     
-    static void refreshRaceState(CRaceEngine* stageState);
+    static void clearStates();
+    static void refreshStates(CRaceEngine* re);
     static core::array<SCompetitor*> &getRaceState() {return raceState;}
+    static core::array<SCompetitor*> &getStageState() {return stageState;}
+    static core::array<SStarter*> &getStageStateStarters() {return stageStateStarters;}
 
 private:
     BigTerrain* m_bigTerrain;
@@ -113,6 +116,8 @@ private:
     bool raceFinished;
 
     static core::array<SCompetitor*> raceState;
+    static core::array<SCompetitor*> stageState;
+    static core::array<SStarter*> stageStateStarters; // only for the state print
 };
 
 #endif // __RACEENGINE_H__
