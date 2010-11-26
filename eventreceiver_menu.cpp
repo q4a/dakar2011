@@ -168,7 +168,8 @@ eventreceiver_menu::eventreceiver_menu(IrrlichtDevice* pdevice,
         helpBox(0), helpScroll(0), helpBase(40),
         stateBox(0), stateScroll(0), stateBase(40),
         messageBox(0), //messageScroll(0), messageBase(40),
-        stateGlobalBox(0), stateGlobalScroll(0), stateGlobalBase(40)
+        stateGlobalBox(0), stateGlobalScroll(0), stateGlobalBase(40),
+        mouseButtonDown(false)
 {
     openSound = soundEngine->play2D("data/menu_sounds/open_window.wav", false, true, true);
     if (openSound)
@@ -968,7 +969,7 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             if (window)
                                 closeWindow(window);
                             currentStage = 0;
-                            startNewGame = 1;
+                            startNewGame = BrandNewGame;
                             startGame(0);
                             return true;
                             break;
@@ -1831,27 +1832,36 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                 refreshActiveElements();
                 break;
 			case EGET_ELEMENT_HOVERED:
+            {
                 //if (id==GUI_ID_HELP_BOX || event.GUIEvent.Caller->getType() == EGUIET_WINDOW
                 //     || event.GUIEvent.Caller->getType() == EGUIET_TAB
                 //     ) break;
-                if (!skipHover)
+                IGUIElement* oldFocus = env->getFocus();
+                //printf("hover: md: %s, oldFocus: %p\n", mouseButtonDown?"true":"false", oldFocus);
+                if (!mouseButtonDown &&
+                    (oldFocus==0 || (oldFocus->getType()!=irr::gui::EGUIET_LIST_BOX))
+                   )
                 {
-                    int i = 0;
-                    for (; i < activeElements.length(); i++)
-                        if (activeElements[i] == event.GUIEvent.Caller)
-                        {
-                            activeElement = i;
-                            break;
-                        }
-                    if (i < activeElements.length())
-                        env->setFocus(event.GUIEvent.Caller);
-                }
-                else
-                {
-                    skipHover = false;
+                    if (!skipHover)
+                    {
+                        int i = 0;
+                        for (; i < activeElements.length(); i++)
+                            if (activeElements[i] == event.GUIEvent.Caller)
+                            {
+                                activeElement = i;
+                                break;
+                            }
+                        if (i < activeElements.length())
+                            env->setFocus(event.GUIEvent.Caller);
+                    }
+                    else
+                    {
+                        skipHover = false;
+                    }
                 }
                 //refreshActiveElements();
                 break;
+            }
 			case EGET_ELEMENT_FOCUSED:
                 if (id==GUI_ID_HELP_BOX || id==GUI_ID_HELP_WINDOW)
                     env->setFocus(helpScroll);
@@ -2018,6 +2028,9 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
     else
 	if (event.EventType == irr::EET_MOUSE_INPUT_EVENT)
 	{
+        mouseButtonDown = event.MouseInput.isLeftPressed() ||
+                          event.MouseInput.isMiddlePressed() ||
+                          event.MouseInput.isRightPressed(); 
         if (!device->getCursorControl()->isVisible())
         {
             skipHover = true;
@@ -3570,7 +3583,7 @@ void eventreceiver_menu::openHelpWindow()
         L"system. While you are going on the stage the itinerary tables show you\n" \
         L"the right direction and the dangerous places.\n" \
         L"\n" \
-        L"The maps are in the game is from http://maps.google.com.\n" \
+        L"The maps in the game are from http://maps.google.com.\n" \
         L"\n" \
         L"-------------\n" \
         L" ROADBLOCKS\n" \
@@ -3862,8 +3875,10 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         str += L"   ";
         str += CRaceEngine::getStageStateStarters()[i]->competitor->getCoName();
         str += L"   ";
+        str += CRaceEngine::getStageStateStarters()[i]->competitor->getCarName();
+        str += L"   (";
         str += CRaceEngine::getStageStateStarters()[i]->competitor->getTeamName();
-        str += L"   ";
+        str += L")   ";
         if (CRaceEngine::getStageStateStarters()[i]->competitor->lastTime==0)
         {
             if (CRaceEngine::getStageStateStarters()[i]->startingCD > 0)
@@ -4107,19 +4122,21 @@ void eventreceiver_menu::refreshStateWindow(bool leporget)
         str += L"   ";
         str += CRaceEngine::getRaceState()[i]->getCoName();
         str += L"   ";
+        str += CRaceEngine::getRaceState()[i]->getCarName();
+        str += L"   (";
         str += CRaceEngine::getRaceState()[i]->getTeamName();
         if (CRaceEngine::getRaceState()[i]->globalPenalityTime > 0)
         {
-            str += L"   Penality: ";
+            str += L")   Penality: ";
             bigTerrain->addTimeToStr(str, CRaceEngine::getRaceState()[i]->globalPenalityTime);
         }
         if (CRaceEngine::getRaceState()[i]->lastTime==0)
         {
-            str += L"   (Not yet finished the current stage.)";
+            str += L")   (Not yet finished the current stage.)";
         }
         else        
         {
-            str += L"   (Finished the current stage.)";
+            str += L")   (Finished the current stage.)";
         }
         str += L"\n";
     }

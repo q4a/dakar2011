@@ -30,11 +30,13 @@ class SCompetitor
 {
 public:
     SCompetitor() {}
-    SCompetitor(int p_num, const char* p_name, const char* p_coName, const char* p_teamName,
+    SCompetitor(int p_num, const char* p_name, const char* p_coName,
+                const char* p_carName, const char* p_teamName,
                 int p_carIndex, int p_strength, bool p_ai);
     
     core::stringw getName();
     core::stringw getCoName();
+    core::stringw getCarName();
     core::stringw getTeamName();
 /*
     void setName(const core::stringw& newName);
@@ -44,6 +46,7 @@ public:
     int num;    
     char name[256];
     char coName[256];
+    char carName[256];
     char teamName[256];
     int carIndex;
     int strength;

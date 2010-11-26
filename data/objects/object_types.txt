@@ -5,6 +5,8 @@ sca: 5.0, 5.0, 5.0
 box: 0.0, 0.0, 0.0
 ofs: -0.8, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 0
 nam: data/objects/farn_1.ms3d
 tex: data/objects/farn_1.png
 rot: 0.0, 0.0, 0.0
@@ -12,6 +14,8 @@ sca: 5.0, 5.0, 5.0
 box: 0.0, 0.0, 0.0
 ofs: -0.8, 0.0, 0.0
 cat: 1
+wrp: 0
+rep: 0
 nam: data/objects/cactus.mso
 tex: data/objects/cactus_tex.png
 rot: 0.0, 0.0, 0.0
@@ -19,6 +23,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 6
+wrp: 0
+rep: -70
 nam: data/objects/cactus_s.mso
 tex: data/objects/cactus_tex_s.png
 rot: 0.0, 0.0, 0.0
@@ -26,6 +32,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 4
+wrp: 0
+rep: -50
 nam: data/objects/palm3.ms3d
 tex: data/objects/palm3.png
 rot: 0.0, 0.0, 0.0
@@ -33,6 +41,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.5, 4.0, 0.5
 ofs: -0.8, 0.0, 0.0
 cat: 2
+wrp: 0
+rep: -80
 nam: data/objects/palm3_more.ms3d
 tex: data/objects/palm3.png
 rot: 0.0, 0.0, 0.0
@@ -40,6 +50,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 2
+wrp: 0
+rep: -80
 nam: data/objects/tree1.ms3d
 tex: data/objects/tree1.png
 rot: 0.0, 0.0, 0.0
@@ -47,6 +59,8 @@ sca: 1.0, 1.0, 1.0
 box: 2.0, 2.0, 2.0
 ofs: 0.0, 0.0, 0.0
 cat: 3
+wrp: 0
+rep: 0
 nam: data/objects/palm3_s.ms3d
 tex: data/objects/palm3_s.png
 rot: 0.0, 0.0, 0.0
@@ -54,6 +68,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 4
+wrp: 0
+rep: -60
 nam: data/objects/palm3_more_s.ms3d
 tex: data/objects/palm3_s.png
 rot: 0.0, 0.0, 0.0
@@ -61,6 +77,8 @@ sca: 1.7, 1.7, 1.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 4
+wrp: 0
+rep: -60
 nam: data/objects/newrock1.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -68,6 +86,8 @@ sca: 1.0, 1.0, 1.0
 box: 0.5, 0.5, 0.5
 ofs: 0.5, 0.0, 0.5
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock2.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -75,6 +95,8 @@ sca: 1.0, 1.0, 1.0
 box: 0.5, 0.7, 0.5
 ofs: 0.5, 0.0, 0.5
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock1_.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -82,6 +104,8 @@ sca: 2.0, 2.0, 2.0
 box: 1.0, 1.0, 1.0
 ofs: 0.5, 0.0, 0.5
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock2_.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -89,6 +113,8 @@ sca: 2.0, 2.0, 2.0
 box: 1.0, 1.4, 1.0
 ofs: 0.5, 0.0, 0.5
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock1__.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -96,6 +122,8 @@ sca: 6.0, 6.0, 6.0
 box: 5.0, 3.0, 4.5
 ofs: 2.9, 0.0, 2.3
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock2__.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -103,6 +131,8 @@ sca: 6.0, 6.0, 6.0
 box: 5.0, 3.0, 4.5
 ofs: 2.9, 0.0, 2.3
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock1___.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -110,6 +140,8 @@ sca: 9.0, 7.0, 9.0
 box: 8.0, 3.0, 7.5
 ofs: 4.0, 0.0, 3.7
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/newrock2___.ms3d
 tex: data/objects/newrock1.png
 rot: 0.0, 0.0, 0.0
@@ -117,6 +149,8 @@ sca: 9.0, 7.0, 9.0
 box: 8.0, 3.0, 7.5
 ofs: 4.0, 0.0, 3.7
 cat: 0
+wrp: 0
+rep: -80
 nam: data/objects/house2_wood_1.mso
 tex: data/objects/house_wood_1.png
 rot: 0.0, 0.0, 0.0
@@ -124,6 +158,8 @@ sca: 4.7, 4.7, 4.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_wood_2.mso
 tex: data/objects/house_wood_2.png
 rot: 0.0, 0.0, 0.0
@@ -131,6 +167,8 @@ sca: 4.7, 4.7, 4.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_stone_1.mso
 tex: data/objects/house_stone_1.png
 rot: 0.0, 0.0, 0.0
@@ -138,6 +176,8 @@ sca: 7.0, 7.7, 7.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_stone_2.mso
 tex: data/objects/house_stone_2.png
 rot: 0.0, 0.0, 0.0
@@ -145,6 +185,8 @@ sca: 7.2, 8.7, 7.2
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_stone_3.mso
 tex: data/objects/house_stone_3.png
 rot: 0.0, 0.0, 0.0
@@ -152,6 +194,8 @@ sca: 4.7, 5.7, 4.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_stone_4.mso
 tex: data/objects/house_stone_4.png
 rot: 0.0, 0.0, 0.0
@@ -159,6 +203,8 @@ sca: 5.7, 8.7, 5.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_normal_1.mso
 tex: data/objects/house_normal_1.png
 rot: 0.0, 0.0, 0.0
@@ -166,6 +212,8 @@ sca: 10.7, 12.7, 10.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_normal_2.mso
 tex: data/objects/house_normal_2.png
 rot: 0.0, 0.0, 0.0
@@ -173,6 +221,8 @@ sca: 6.7, 8.7, 6.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house2_normal_3.mso
 tex: data/objects/house_normal_3.png
 rot: 0.0, 0.0, 0.0
@@ -180,6 +230,8 @@ sca: 11.7, 11.7, 11.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house1_normal_4.mso
 tex: data/objects/house_normal_4.png
 rot: 0.0, 0.0, 0.0
@@ -187,6 +239,8 @@ sca: 6.7, 10.7, 6.7
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house1_normal_5.mso
 tex: data/objects/house_normal_5.png
 rot: 0.0, 0.0, 0.0
@@ -194,6 +248,8 @@ sca: 6.3, 10.7, 6.3
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_1.mso
 tex: data/objects/house_old_1.png
 rot: 0.0, 0.0, 0.0
@@ -201,6 +257,8 @@ sca: 7.2, 10.7, 7.2
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_2.mso
 tex: data/objects/house_old_2.png
 rot: 0.0, 0.0, 0.0
@@ -208,6 +266,8 @@ sca: 6.8, 7.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high1_small.mso
 tex: data/objects/house_high_01_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -215,6 +275,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high2_small.mso
 tex: data/objects/house_high_02_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -222,6 +284,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high3_small.mso
 tex: data/objects/house_high_03_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -229,6 +293,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high4_small.mso
 tex: data/objects/house_high_04_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -236,6 +302,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high1_medium.mso
 tex: data/objects/house_high_01_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -243,6 +311,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high2_medium.mso
 tex: data/objects/house_high_02_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -250,6 +320,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high3_medium.mso
 tex: data/objects/house_high_03_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -257,6 +329,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high4_medium.mso
 tex: data/objects/house_high_04_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -264,6 +338,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high1_tall.mso
 tex: data/objects/house_high_01_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -271,6 +347,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high2_tall.mso
 tex: data/objects/house_high_02_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -278,6 +356,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high3_tall.mso
 tex: data/objects/house_high_03_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -285,6 +365,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house_high4_tall.mso
 tex: data/objects/house_high_04_tile.jpg
 rot: 0.0, 0.0, 0.0
@@ -292,6 +374,8 @@ sca: 14.0, 14.0, 14.0
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_3.mso
 tex: data/objects/house_old_3.png
 rot: 0.0, 0.0, 0.0
@@ -299,6 +383,8 @@ sca: 11.8, 6.0, 11.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_4.mso
 tex: data/objects/house_old_4.png
 rot: 0.0, 0.0, 0.0
@@ -306,6 +392,8 @@ sca: 6.8, 8.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_5_tall.mso
 tex: data/objects/house_old_5_tall.png
 rot: 0.0, 0.0, 0.0
@@ -313,6 +401,8 @@ sca: 10.8, 12.0, 10.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_6_tall.mso
 tex: data/objects/house_old_6_tall.png
 rot: 0.0, 0.0, 0.0
@@ -320,6 +410,8 @@ sca: 10.8, 12.0, 10.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_7_tall.mso
 tex: data/objects/house_old_7_tall.png
 rot: 0.0, 0.0, 0.0
@@ -327,6 +419,8 @@ sca: 7.8, 13.0, 7.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house1_old_8.mso
 tex: data/objects/house_old_8.png
 rot: 0.0, 0.0, 0.0
@@ -334,6 +428,8 @@ sca: 7.8, 10.0, 7.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house1_old_9.mso
 tex: data/objects/house_old_9.png
 rot: 0.0, 0.0, 0.0
@@ -341,6 +437,8 @@ sca: 8.8, 11.0, 8.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_10.mso
 tex: data/objects/house_old_10.png
 rot: 0.0, 0.0, 0.0
@@ -348,6 +446,8 @@ sca: 6.8, 9.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_11.mso
 tex: data/objects/house_old_11.png
 rot: 0.0, 0.0, 0.0
@@ -355,6 +455,8 @@ sca: 6.8, 9.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_12.mso
 tex: data/objects/house_old_12.png
 rot: 0.0, 0.0, 0.0
@@ -362,6 +464,8 @@ sca: 6.8, 7.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house3_old_13.mso
 tex: data/objects/house_old_13.png
 rot: 0.0, 0.0, 0.0
@@ -369,6 +473,8 @@ sca: 5.8, 10.0, 5.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_14.mso
 tex: data/objects/house_old_14.png
 rot: 0.0, 0.0, 0.0
@@ -376,6 +482,8 @@ sca: 6.8, 9.0, 6.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/house4_old_15.mso
 tex: data/objects/house_old_15.png
 rot: 0.0, 0.0, 0.0
@@ -383,6 +491,8 @@ sca: 7.8, 8.0, 7.8
 box: 0.7, 4.0, 0.35
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_concrete.mso
 tex: data/objects/barrier_concrete.png
 rot: 0.0, 0.0, 0.0
@@ -390,6 +500,8 @@ sca: 1.65, 1.65, 1.65
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_red.mso
 tex: data/objects/barrier_red.png
 rot: 0.0, 0.0, 0.0
@@ -397,6 +509,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_white.mso
 tex: data/objects/barrier_white.png
 rot: 0.0, 0.0, 0.0
@@ -404,6 +518,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_concrete_45.mso
 tex: data/objects/barrier_concrete.png
 rot: 0.0, 45.0, 0.0
@@ -411,6 +527,8 @@ sca: 1.65, 1.65, 1.65
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_red_45.mso
 tex: data/objects/barrier_red.png
 rot: 0.0, 45.0, 0.0
@@ -418,6 +536,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_white_45.mso
 tex: data/objects/barrier_white.png
 rot: 0.0, 45.0, 0.0
@@ -425,6 +545,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_concrete_90.mso
 tex: data/objects/barrier_concrete.png
 rot: 0.0, 90.0, 0.0
@@ -432,6 +554,8 @@ sca: 1.65, 1.65, 1.65
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_red_90.mso
 tex: data/objects/barrier_red.png
 rot: 0.0, 90.0, 0.0
@@ -439,6 +563,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_white_90.mso
 tex: data/objects/barrier_white.png
 rot: 0.0, 90.0, 0.0
@@ -446,6 +572,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_concrete_135.mso
 tex: data/objects/barrier_concrete.png
 rot: 0.0, 135.0, 0.0
@@ -453,6 +581,8 @@ sca: 1.65, 1.65, 1.65
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_red_135.mso
 tex: data/objects/barrier_red.png
 rot: 0.0, 135.0, 0.0
@@ -460,6 +590,8 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
 nam: data/objects/barrier_white_135.mso
 tex: data/objects/barrier_white.png
 rot: 0.0, 135.0, 0.0
@@ -467,3 +599,41 @@ sca: 1.5, 1.5, 1.5
 box: 1.0, 1.0, 1.0
 ofs: 0.0, 0.0, 0.0
 cat: 0
+wrp: 0
+rep: 20
+nam: data/objects/pristan.ms3d
+tex: data/objects/treetextures/branch1.png
+rot: 0.0, 0.0, 0.0
+sca: 0.2, 0.2, 0.2
+box: 2.0, 2.0, 2.0
+ofs: 0.0, 0.0, 0.0
+cat: 0
+wrp: 1
+rep: 15
+nam: data/objects/palm4.ms3d
+tex: data/objects/palm4.png
+rot: 0.0, 0.0, 0.0
+sca: 0.09, 0.09, 0.09
+box: 2.0, 2.0, 2.0
+ofs: 0.0, 0.0, 0.0
+cat: 2
+wrp: 1
+rep: -5
+nam: data/objects/palm4_s.ms3d
+tex: data/objects/palm4_s.png
+rot: 0.0, 0.0, 0.0
+sca: 0.1, 0.1, 0.1
+box: 2.0, 2.0, 2.0
+ofs: 0.0, 0.0, 0.0
+cat: 4
+wrp: 1
+rep: -5
+nam: data/objects/pine.ms3d
+tex: data/objects/pine.png
+rot: 0.0, 0.0, 0.0
+sca: 0.1, 0.1, 0.1
+box: 2.0, 2.0, 2.0
+ofs: 0.0, 0.0, 0.0
+cat: 1
+wrp: 1
+rep: -5

@@ -32,13 +32,15 @@ using namespace gui;
 
 core::array<SCompetitor*> competitors;
 
-SCompetitor::SCompetitor(int p_num, const char* p_name, const char* p_coName, const char* p_teamName,
+SCompetitor::SCompetitor(int p_num, const char* p_name, const char* p_coName,
+                         const char* p_carName, const char* p_teamName,
                          int p_carIndex, int p_strength, bool p_ai)
     : lastTime(0), globalTime(0), lastPenalityTime(0), globalPenalityTime(0)
 {
     num = p_num;
     strcpy(name, p_name);
     strcpy(coName, p_coName);
+    strcpy(carName, p_carName);
     strcpy(teamName, p_teamName);
     carIndex = p_carIndex;
     strength = p_strength;
@@ -61,6 +63,14 @@ core::stringw SCompetitor::getCoName()
     return str;
 }
 
+core::stringw SCompetitor::getCarName()
+{
+    core::stringw str = L" ";
+    str = carName;
+    str.replace(L'_', L' ');
+    return str;
+}
+
 core::stringw SCompetitor::getTeamName()
 {
     core::stringw str = L" ";
@@ -76,6 +86,7 @@ void loadCompetitors(const char* fname)
     int num;
     char name[256];
     char coName[256];
+    char carName[256];
     char teamName[256];
     int carIndex;
     int strength;
@@ -98,9 +109,9 @@ void loadCompetitors(const char* fname)
 
     while (1)
     {
-        ret = fscanf(f, "%d %s %s %s %d %d\n", &num, name, coName, teamName, &carIndex, &strength);
-        if (ret < 6) break;
-        SCompetitor* comp = new SCompetitor(num, name, coName, teamName, carIndex, strength, true);
+        ret = fscanf(f, "%d %s %s %s %s %d %d\n", &num, name, coName, carName, teamName, &carIndex, &strength);
+        if (ret < 7) break;
+        SCompetitor* comp = new SCompetitor(num, name, coName, carName, teamName, carIndex, strength, true);
         competitors.push_back(comp);
     }
     fclose(f);

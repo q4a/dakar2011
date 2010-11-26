@@ -55,7 +55,8 @@ float normalizeAngle180(float &angle)
 
 SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
                    BigTerrain* p_bigTerrain, CRaceEngine* p_raceEngine,
-                   SCompetitor* p_competitor, u32 p_startingCD)
+                   SCompetitor* p_competitor, u32 p_startingCD,
+                   unsigned int place)
     : m_bigTerrain(p_bigTerrain), m_raceEngine(p_raceEngine),
       competitor(p_competitor), startingCD(p_startingCD), startTime(0),
       finishTime(0), nextPoint(0), currentPos(),
@@ -69,17 +70,27 @@ SStarter::SStarter(ISceneManager* smgr, IGUIEnvironment* env,
 #endif
       , stageRand(0.f)
 {
-    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_SPECIAL14], competitor->getName().c_str(), video::SColor(255, 255, 255, 0));
+    const static float placeHardening[3] = {20.f, 8.f, 4.f};
+    core::stringw namePlusCar = competitor->getName() + L" (" + competitor->getCarName() + L")";
+    nameText = smgr->addTextSceneNode(/*env->getBuiltInFont()*/ fonts[FONT_SPECIAL14], namePlusCar.c_str(), video::SColor(255, 255, 255, 0));
     //nameText->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_transp_road);
     //nameText->setScale(vector3df(3.0f, 3.0f, 3.0f));
     nameText->setVisible(false);
-    stageRand = ((float)(rand() % 100) - 50.f) * ((110.f - (float)competitor->strength)/200.f);
+    if (place < 3)
+    {
+        stageRand = ((float)(rand() % 100) - 50.f - placeHardening[place]) * ((110.f - (float)competitor->strength)/200.f);
+    }
+    else
+    {
+        stageRand = ((float)(rand() % 100) - 50.f) * ((110.f - (float)competitor->strength)/200.f);
+    }
 }
 
 SStarter::~SStarter()
 {
     if (vehicle)
     {
+        vehicle->setNameText(0);
         vehiclePool->putVehicle(vehicle);
         vehicle = 0;
     }
@@ -134,7 +145,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
         float steer = 0.0f;
         float vehicleAngle = vehicle->getAngle(); normalizeAngle(vehicleAngle);
         const float speed = vehicle->getSpeed()*1.6f;
-        const float speedLimitLow = (((m_bigTerrain->getSpeed()-30.f) * ((float)competitor->strength+currentRand+stageRand)) / 100.f);
+        const float speedLimitLow = (((m_bigTerrain->getSpeed()-25.f-(float)(difficulty*5)) * ((float)competitor->strength+currentRand+stageRand)) / 100.f);
         //const float speedLimitLow = (((m_bigTerrain->getSpeed()-30.f) * ((float)competitor->strength)) / 100.f) * (1.f + currentRand);
         const float speedLimitDist = 40.f;
         const float speedLimitHigh = speedLimitLow + speedLimitDist;
@@ -191,7 +202,7 @@ bool SStarter::update(u32 currentTime, const vector3df& p_me, bool camActive)
             }
         }
         
-        if (vehicle->getDemagePer() > 40.f)
+        if (vehicle->getDemagePer() > 20.f)
         {
             float demage = vehicle->getDemagePer();
             int penality = (int)(3.f*demage);
@@ -368,7 +379,7 @@ void SStarter::switchToVisible()
     if (vehicle)
     {
         visible = true;
-        vector3df pos(currentPos.X, m_bigTerrain->getHeight(currentPos.X, currentPos.Y)+1.2f, currentPos.Y);
+        vector3df pos(currentPos.X, m_bigTerrain->getHeight(currentPos.X, currentPos.Y)+1.7f, currentPos.Y);
 #ifdef SPEED_BASE_AI
         vector3df rot(0.f, (float)dir.getAngle(/*With(vector2df(-1.0f, 0.0f)*/)/*-180.f*/, 0.f);
 #else
@@ -527,13 +538,49 @@ void SStarter::calculateTo(vector3df &p_nextPointPos)
 }
 
 CRaceEngine::CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env,
-                         BigTerrain* p_bigTerrain/*, core::array<SCompetitor*> &p_raceState*/)
+                         BigTerrain* p_bigTerrain/*, core::array<SCompetitor*> &p_raceState*/,
+                         int stageNum)
     : m_bigTerrain(p_bigTerrain), starters(), cupdaters(), lastMTick(0),
       lastCTick(0), currentTime(0), raceFinished(false)
 {
-    for (int i = 0; i < stageState.size(); i++)
+    for (unsigned int i = 0; i < stageState.size(); i++)
     {
-        SStarter* starter = new SStarter(smgr, env, m_bigTerrain, this, stageState[i], START_SECS);
+        u32 startCD = START_SECS;
+#ifndef USE_EDITOR
+        if (stageNum == 0)
+        {
+            if (i < 19)
+            {
+                startCD = 3 * 60;
+            }
+            else
+            if (i < 39)
+            {
+                startCD = 60;
+            }
+            else
+            {
+                startCD = 30;
+            }
+        }
+        else
+        {
+            if (i < 9)
+            {
+                startCD = 2 * 60;
+            }
+            else
+            if (i < 19)
+            {
+                startCD = 60;
+            }
+            else
+            {
+                startCD = 30;
+            }
+        }
+#endif
+        SStarter* starter = new SStarter(smgr, env, m_bigTerrain, this, stageState[i], startCD, i);
         starters.push_back(starter);
     }
 }
@@ -833,13 +880,13 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
         return false;
     }
     
-    for (int i = 0; i < starters.size();i++) delete starters[i];
+    for (unsigned int i = 0; i < starters.size();i++) delete starters[i];
     starters.clear();
     
-    for (int i = 0; i < startersSize; i++)
+    for (unsigned int i = 0; i < startersSize; i++)
     {
         SStarter* starter = 0;
-        int j = 0;
+        unsigned int j = 0;
         
         ret = fscanf(f, "starter[%d]: %d",
                       &tmpi,
@@ -858,7 +905,7 @@ bool CRaceEngine::load(FILE* f, ISceneManager* smgr, IGUIEnvironment* env/*, SCo
         //printf("read stater[%d], num %d, j %d, raceState.size() = %d\n", tmpi, compnum, j, raceState.size());
         if (j < raceState.size())
         {
-            starter = new SStarter(smgr, env, m_bigTerrain, this, raceState[j], START_SECS);
+            starter = new SStarter(smgr, env, m_bigTerrain, this, raceState[j], START_SECS, i);
             dprintf(printf("found competitor, create starter %p\n", starter);)
         }
         else

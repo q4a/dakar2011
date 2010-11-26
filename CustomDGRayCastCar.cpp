@@ -629,7 +629,7 @@ dFloat CustomDGRayCastCar::ApplySuspenssionLimit (Tire& tire)
 
 void CustomDGRayCastCar::ApplyOmegaCorrection ()
 { 
-	m_chassisOmega = m_chassisOmega.Scale(m_currentChassisRotation);
+	m_chassisOmega = m_chassisOmega.Scale(/*m_chassisRotationLimit*/m_currentChassisRotation);
 	NewtonBodySetOmega(m_body0, &m_chassisOmega[0]);
 }
 
@@ -934,6 +934,7 @@ void CustomDGRayCastCar::SubmitConstraints (dFloat timestep, int threadIndex)
 			m_tiresRollSide = 1;
 		}
 	}
+
 	if (new_vehicleOnAir && !m_vehicleOnAir)
 	{
 	   m_omegaCD = 10;
@@ -950,7 +951,6 @@ void CustomDGRayCastCar::SubmitConstraints (dFloat timestep, int threadIndex)
         //if (m_currentChassisRotation > 1.0f) m_currentChassisRotation = 1.0f;
         ApplyOmegaCorrection();  
     }
-    
 }
 
 

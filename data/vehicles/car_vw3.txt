@@ -3,8 +3,8 @@ texture: data/vehicles/texture/vw_tex3.png
 enginesound: data/vehicles/sound/engine_sound_02.wav
 scale: 1.0, 1.0, 1.2
 rotation: 0.0, 0.0, 0.0
-mass: 1760.0
-engine_centre_of_mass: -0.1
+mass: 1750.0
+engine_centre_of_mass: 0.0
 centre_of_mass: 0.1
 num_of_tyres: 4
 chassis_rotation_limit: 0.91

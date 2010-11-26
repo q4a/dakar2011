@@ -16,6 +16,7 @@ public:
 		Material.Lighting = false;
 		Material.ZWriteEnable = false;
 		Material.BackfaceCulling = false;
+		Material.ZBuffer = ECFN_ALWAYS/*ECFN_NEVER*/;
         //Material.setFlag(EMF_BILINEAR_FILTER, false);
         
         if ((useATI || pflip_vert) && !(useATI && pflip_vert))

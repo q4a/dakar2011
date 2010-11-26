@@ -173,6 +173,12 @@ extern u32 globalTime;
 //extern float day_delta_multi;
 
 extern int loading;
+
+enum {
+    NotNewGame = 0,
+    BrandNewGame,
+    LoadedGame
+};
 extern int startNewGame;
 
 extern CMapReaderThread* mapReader;

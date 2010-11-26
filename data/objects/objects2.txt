@@ -1865,6 +1865,8 @@ fix: data/objects/barrier_red.mso 4970.826172 56195.507813
 fix: data/objects/barrier_white.mso 4976.704102 56195.609375
 fix: data/objects/barrier_red.mso 4983.000488 56195.796875
 fix: data/objects/barrier_white.mso 4990.080078 56195.828125
+fix: data/objects/pristan.ms3d 95370.0 7502.0
+fix: data/objects/pristan.ms3d 95432.0 7460.0
 ran: data/objects/my_cactus_grass.mso 10000
 ran: data/objects/my_grass1.mso 10000
 ran: data/objects/my_grass5.mso 10000
@@ -1878,6 +1880,7 @@ ran: data/objects/trees/branch3.xml 40
 ran: data/objects/trees/branch4.xml 40
 ran: data/objects/trees/branch5.xml 40
 ran: data/objects/tree1.ms3d 3000
+ran: data/objects/pine.ms3d 500
 ran: data/objects/newrock1.ms3d 6000
 ran: data/objects/newrock2.ms3d 6000
 ran: data/objects/newrock1_.ms3d 3000

@@ -1,5 +1,5 @@
 data/bigterrains/bigterrain1.txt
-1100
+1080
 Buenos Aires -> Victoria
 NL
 Difficulty: easy
@@ -7,7 +7,7 @@ NL
 Type: grass
 EOM
 data/bigterrains/bigterrain2.txt
-1200
+1190
 Victoria -> Cordoba
 NL
 Difficulty: very easy

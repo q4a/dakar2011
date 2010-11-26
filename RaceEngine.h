@@ -36,7 +36,9 @@ class OffsetObject;
 class SStarter
 {
 public:
-    SStarter(ISceneManager* smgr, IGUIEnvironment* env, BigTerrain* p_bigTerrain, CRaceEngine* p_raceEngine, SCompetitor* p_competitor, u32 p_startingCD);
+    SStarter(ISceneManager* smgr, IGUIEnvironment* env, BigTerrain* p_bigTerrain,
+             CRaceEngine* p_raceEngine, SCompetitor* p_competitor, u32 p_startingCD,
+             unsigned int place);
     ~SStarter();
     
     bool update(u32 currentTime, const vector3df& p_me, bool camActive);
@@ -83,7 +85,8 @@ public:
         AtTheEnd
     };
     
-    CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env, BigTerrain* p_bigTerrain /*, core::array<SCompetitor*> &p_raceState*/);
+    CRaceEngine(ISceneManager* smgr, IGUIEnvironment* env, BigTerrain* p_bigTerrain /*, core::array<SCompetitor*> &p_raceState*/,
+                int stageNum);
     ~CRaceEngine();
     bool update(u32 p_tick, const vector3df& me, SCompetitor* p_playerCompetitor, irr::IrrlichtDevice* device, UpdateWhen when = InTheMiddle);
     void updateShowNames();

@@ -95,3 +95,55 @@ num_of_slice_indices: 12
 2
 4
 5
+texture: data/roads/asphalt_09.jpg
+friction_multi: 0.9
+num_of_slice_points: 4
+-5.000000 -0.200000
+-4.800000 0.300000
+4.800000 0.300000
+5.000000 -0.200000
+num_of_slice_indices: 18
+0
+4
+1
+1
+4
+5
+1
+5
+2
+2
+5
+6
+2
+6
+3
+3
+6
+7
+texture: data/roads/asphalt_10.jpg
+friction_multi: 0.9
+num_of_slice_points: 4
+-5.000000 -0.200000
+-4.800000 0.300000
+4.800000 0.300000
+5.000000 -0.200000
+num_of_slice_indices: 18
+0
+4
+1
+1
+4
+5
+1
+5
+2
+2
+5
+6
+2
+6
+3
+3
+6
+7

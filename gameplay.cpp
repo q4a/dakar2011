@@ -125,7 +125,7 @@ core::array<video::IRenderTarget> mrtList;
 //video::ITexture* motiondir_mapSide = 0;
 
 int loading = 0;
-int startNewGame = 1;
+int startNewGame = BrandNewGame;
 
 CMapReaderThread* mapReader = 0;
 
@@ -332,14 +332,14 @@ void startGame(int stageNum, SState* state)
     }
     bgImage->setVisible(true);
 
-    if (stageNum == 0 && startNewGame == 1)
+    if (stageNum == 0 && startNewGame == BrandNewGame)
     {
         globalTime = 0;
     }
 //    else
 //        if (!startNewGame && bigTerrain && bigTerrain->getEndTime()) globalTime += bigTerrain->getEndTime() - bigTerrain->getStartTime();
     //printf("startNewGame: %u, bigTerrain: %p, TimeEnded: %u\n", startNewGame, bigTerrain, bigTerrain?bigTerrain->getCurrentTime():0);
-    if (startNewGame==0 && bigTerrain && bigTerrain->getTimeEnded())
+    if (startNewGame==NotNewGame && bigTerrain && bigTerrain->getTimeEnded())
     {
         globalTime += bigTerrain->getCurrentTime();
     }
@@ -353,10 +353,11 @@ void startGame(int stageNum, SState* state)
     str = L"Loading: 50%";
     MessageText::addText(str.c_str(), 1, true, false);
 
-    if (/*stages[stageNum]->stagePart <= 1 && */startNewGame != 2)
+    if (/*stages[stageNum]->stagePart <= 1 && */startNewGame != LoadedGame)
     {
         savedCarDirt = 0;
         car_dirt = 0.f;
+        car_dirt_delta = 0;
     }
 
     camera->setPosition(state ? state->carPos : bigTerrain->getStartPos());
@@ -440,7 +441,7 @@ void startGame(int stageNum, SState* state)
         if (!editorMode)
         {
 #endif
-            raceEngine = new CRaceEngine(smgr, env, bigTerrain);
+            raceEngine = new CRaceEngine(smgr, env, bigTerrain, stageNum);
             while (raceEngine && raceEngine->update(0, vector3df(), playerCompetitor, device, CRaceEngine::AtStart));
 #ifdef USE_EDITOR
         }
@@ -499,14 +500,9 @@ void startGame(int stageNum, SState* state)
         day_start_time = (u32)(lasttick - state->day_start_time_offset);
     }
     //day_delta_time = 0;
-    if (/*stages[stageNum]->stagePart <= 1 &&*/ startNewGame != 1)
-    {
-        car_dirt = 0.f;
-        car_dirt_delta = 0;
-    }
 
     oldStage = stageNum;
-    startNewGame = 0;
+    startNewGame = NotNewGame;
 
     if (!state)
     {
@@ -565,7 +561,7 @@ void endGame()
             camera->setFarValue(DEFAULT_FAR_VALUE);
             camera->setNearValue(nearValue);
         }
-        if (startNewGame == 0)
+        if (startNewGame == NotNewGame)
             savedCarDirt = car->getDirt();
         vehiclePool->putVehicle(car);
         car = 0;
@@ -683,7 +679,7 @@ bool saveGame(const c8* name)
                      "car_pressure_multi: %f\ncar_ss_multi: %f\n" \
                      "car_sd_multi: %f\ncar_sl_multi: %f\n",
                 offsetManager->getOffset().X+savedState->carPos.X,
-                savedState->carPos.Y+1.2f,
+                savedState->carPos.Y+1.7f,
                 offsetManager->getOffset().Z+savedState->carPos.Z,
                 savedState->carRot.X,
                 savedState->carRot.Y,
@@ -867,7 +863,7 @@ bool loadGame(const c8* name)
     dprintf(printf("clear states\n");)
     CRaceEngine::clearStates();
     dprintf(printf("create new race engine\n");)
-    loadedRaceEngine = new CRaceEngine(smgr, env, bigTerrain);
+    loadedRaceEngine = new CRaceEngine(smgr, env, bigTerrain, savedState->currentStage);
     CRaceEngine::getRaceState() = competitors;
     CRaceEngine::getRaceState().push_back(playerCompetitor);
     CRaceEngine::getStageState() = CRaceEngine::getRaceState();
@@ -889,7 +885,7 @@ bool loadGame(const c8* name)
 
     dprintf(printf("load game end, restore state\n");)
     
-    restoreStateInternal(2);
+    restoreStateInternal(LoadedGame);
     
     //startNewGame = 2; // TODO: what is it for?
     
@@ -902,7 +898,7 @@ void restartStage()
         savedCarDirt = car->getDirt();
     else
         savedCarDirt = 0;
-    startNewGame = 1;
+    startNewGame = BrandNewGame;
     currentStage = oldStage;
     startGame(currentStage);
 }

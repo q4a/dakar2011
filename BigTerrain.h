@@ -93,10 +93,10 @@ public:
        //u32 getCpTime(int i) {return i<CP_NUM?cpTime[i]:0;}
        //u32 getEndTime() {return endTime;}
        u32 getPenality() {return penality;}
-       u32 addPenality(u32 ap);
+       u32 addPenality(u32 ap, bool force = false);
        static void addTimeToStr(core::stringw& str, u32 diffTime);
        
-       vector3df getStartPos() {return vector3df(startPos.X+startOffset.X, getHeight(startPos.X+startOffset.X,startPos.Z+startOffset.Z)+1.2f, startPos.Z+startOffset.Z);}
+       vector3df getStartPos() {return vector3df(startPos.X+startOffset.X, getHeight(startPos.X+startOffset.X,startPos.Z+startOffset.Z)+1.7f, startPos.Z+startOffset.Z);}
        vector3df getStartRot() {return startRot;}
 
        c8* getGroundSoundName() {return groundSoundName;}

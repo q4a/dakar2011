@@ -1181,6 +1181,7 @@ ran: data/objects/my_grass5.mso 7000
 ran: data/objects/cactus.mso 2500
 ran: data/objects/palm3.ms3d 200
 ran: data/objects/palm3_more.ms3d 200
+ran: data/objects/palm4.ms3d 100
 ran: data/objects/trees/Oak.xml 500
 ran: data/objects/trees/Aspen.xml 500
 ran: data/objects/trees/Pine_rep.xml 500
@@ -1191,6 +1192,7 @@ ran: data/objects/trees/branch3.xml 340
 ran: data/objects/trees/branch4.xml 340
 ran: data/objects/trees/branch5.xml 340
 ran: data/objects/tree1.ms3d 1000
+ran: data/objects/pine.ms3d 100
 ran: data/objects/newrock1.ms3d 6000
 ran: data/objects/newrock2.ms3d 6000
 ran: data/objects/newrock1_.ms3d 3000

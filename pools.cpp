@@ -363,7 +363,8 @@ int createObjectPool(const c8* name,
                     const vector3df& sca,
                     const vector3df& box,
                     const vector3df& ofs,
-                    int category
+                    int category,
+                    bool textureWrap
 )
 {
     int ind = 0;
@@ -397,7 +398,8 @@ int createObjectPool(const c8* name,
         generateElementsToPool(smgr, driver, nWorld,
                             ind, num, type,
                             textureName,
-                            rot, sca, box, ofs);
+                            rot, sca, box, ofs,
+                            textureWrap);
     }
 
     //printf("pool created: %s, t: %s, ind: %d\n", name, textureName, ind);
@@ -411,7 +413,8 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                             const vector3df& rot,
                             const vector3df& sca,
                             const vector3df& box,
-                            const vector3df& ofs
+                            const vector3df& ofs,
+                            bool textureWrap
 )
 {
     c8* name;
@@ -429,6 +432,7 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     if (type==NORMAL) // normal object
     {
         IAnimatedMesh* objectMesh = *poolMesh;
+        
         if(objectMesh == 0)
         {
             if(!strcmp(name+strlen(name)-3, "mso"))
@@ -475,6 +479,8 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
             {
                 objectNode->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_light_notex);
             }
+            objectNode->setMaterialFlag(video::EMF_TEXTURE_WRAP, textureWrap);
+
             objectNode->setRotation(rot);
             objectNode->setScale(sca);
             
@@ -1114,6 +1120,8 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
     vector3df box(0.f,0.f,0.f);
     vector3df ofs(0.f,0.f,0.f);
     int category = 0;
+    int textureWrap = 0;
+    int rep_override = 0;
 
     dprintf(printf("Read object types: %s\n", name));
     
@@ -1136,15 +1144,19 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
                         "sca: %f, %f, %f\n" \
                         "box: %f, %f, %f\n" \
                         "ofs: %f, %f, %f\n" \
-                        "cat: %d\n",
+                        "cat: %d\n" \
+                        "wrp: %d\n" \
+                        "rep: %d\n"
+                        ,
                 meshName, textureName,
                 &rot.X, &rot.Y, &rot.Z,
                 &sca.X, &sca.Y, &sca.Z,
                 &box.X, &box.Y, &box.Z,
                 &ofs.X, &ofs.Y, &ofs.Z,
-                &category
+                &category, &textureWrap,
+                &rep_override
                 );
-        if (ret < 15)
+        if (ret < 17)
         {
             // no more object
             //printf("|%s| |%s|\n", meshName, textureName);
@@ -1162,23 +1174,34 @@ void loadObjectTypes(const c8* name, ISceneManager* smgr, IVideoDriver* driver, 
 #endif
                               NORMAL,
                               textureName,
-                              rot, sca, box, ofs, category);
+                              rot, sca, box, ofs, category, textureWrap);
         }
         else
         {
-            if (!strstr(meshName, "my_tree"))
+            int rep = object_pool_size;
+            if (rep_override > 0) // override
+            {
+                rep = rep_override;
+            }
+            else
+            if (rep_override < 0 && rep_override > -100) // override with a percentage
+            {
+                rep_override = -rep_override;
+                rep = (object_pool_size * rep_override) / 100;
+            }
+            //if (!strstr(meshName, "my_tree"))
                 // normal object, high poly
                 createObjectPool(meshName,
-                                  smgr, driver, nWorld,
-                                  object_pool_size, NORMAL,
-                                  textureName,
-                                  rot, sca, box, ofs, category);
-            else // my tree object, like the grass
-                createObjectPool(meshName,
-                                  smgr, driver, nWorld,
-                                  grass_pool_size, NORMAL,
-                                  textureName,
-                                  rot, sca, box, ofs, category);
+                                 smgr, driver, nWorld,
+                                 rep, NORMAL,
+                                 textureName,
+                                 rot, sca, box, ofs, category, textureWrap);
+            //else // my tree object, like the grass
+            //    createObjectPool(meshName,
+            //                      smgr, driver, nWorld,
+            //                      grass_pool_size, NORMAL,
+            //                      textureName,
+            //                      rot, sca, box, ofs, category, textureWrap);
         }
         MessageText::refresh();
     }

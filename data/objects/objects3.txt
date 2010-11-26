@@ -1606,6 +1606,7 @@ ran: data/objects/trees/branch3.xml 140
 ran: data/objects/trees/branch4.xml 140
 ran: data/objects/trees/branch5.xml 140
 ran: data/objects/tree1.ms3d 1000
+ran: data/objects/pine.ms3d 300
 ran: data/objects/newrock1.ms3d 6000
 ran: data/objects/newrock2.ms3d 6000
 ran: data/objects/newrock1_.ms3d 3000

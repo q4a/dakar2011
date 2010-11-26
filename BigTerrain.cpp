@@ -765,7 +765,7 @@ core::vector3df BigTerrain::updatePos(float newX, float newY, int obj_density, b
     {    
         pdprintf(printf("b 1b\n"));
         int nearestInd = -1;
-        float nearestDist = 50.f;
+        float nearestDist = 80.f;
         
         for (int i = 0; i < activeItinerPoints.size(); i++)
         {
@@ -1352,12 +1352,21 @@ void BigTerrain::addTimeToStr(core::stringw& str, u32 diffTime)
         }
 }
 
-u32 BigTerrain::addPenality(u32 ap)
+u32 BigTerrain::addPenality(u32 ap, bool force)
 {
     //if (startTime && !endTime)
     if (timeStarted && !timeEnded)
     {
         penality += ap;
+        return penality;
+    }
+    else
+    if (force)
+    {
+        penality += ap;
+        currentTime += ap;
+        playerCompetitor->lastTime += ap;
+        playerCompetitor->globalTime += ap;
         return penality;
     }
     return (u32)-1;

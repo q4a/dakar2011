@@ -15,6 +15,7 @@
 #include "gameplay.h"
 #include "effects.h"
 #include "MyList.h"
+#include "message.h"
 #include <assert.h>
 
 #include "linux_includes.h"
@@ -25,6 +26,9 @@ int treeID = 3;
 int roadID = 4;
 int tireID = 5;
 //irrklang::ISoundEngine* se = 0;
+
+#define LAST_CONTACT_DIFF 2000
+static u32 last_contact_tick = 0;
 
 #ifdef USE_MY_SOUNDENGINE
 CMySound* puffVTSound = 0;
@@ -93,6 +97,8 @@ void vehicleContactProcess (const NewtonJoint* contactJoint, dFloat timestep, in
         if (max_speed > 5.f)
         {
             NewtonRaceCar* collcar = 0;
+            bool playerCollide = false;
+            int vehicleCount = 0;
             
             if (NewtonBodyGetMaterialGroupID(body0)==vehicleID)
             {
@@ -111,6 +117,8 @@ void vehicleContactProcess (const NewtonJoint* contactJoint, dFloat timestep, in
                                  normal,
 //                                 vector3df(veloc.m_x,veloc.m_y,veloc.m_z),
                                  max_speed);
+                if (collcar == car) playerCollide = true;
+                vehicleCount++;
                 collcar = 0;
             }
 
@@ -125,7 +133,8 @@ void vehicleContactProcess (const NewtonJoint* contactJoint, dFloat timestep, in
                                  normal,
 //                                 vector3df(veloc.m_x,veloc.m_y,veloc.m_z),
                                  max_speed);
-
+                if (collcar == car) playerCollide = true;
+                vehicleCount++;
                 collcar = 0;
             }
             
@@ -134,6 +143,18 @@ void vehicleContactProcess (const NewtonJoint* contactJoint, dFloat timestep, in
                 //printf("update collision effect true\n");
                 coll_start_time = tick;
                 update_collision_effect = true;
+            }
+
+            if (playerCollide && vehicleCount >= 2 && tick - last_contact_tick > LAST_CONTACT_DIFF) // player hit an other car -> penality
+            {
+                if (bigTerrain->addPenality((2*RESET_PENALITY) - (20*difficulty), true)!=(u32)-1) // should be always true
+                {
+                    core::stringw str = L"Unfair behaviour!\n\nAdd ";
+                    BigTerrain::addTimeToStr(str, (2*RESET_PENALITY) - (20*difficulty));
+                    str += L" penality, because of hitting the opponent's car.";
+                    MessageText::addText(str.c_str(), 5);
+                }
+                last_contact_tick = tick;
             }
         }
     }

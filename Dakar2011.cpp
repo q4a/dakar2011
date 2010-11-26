@@ -106,7 +106,7 @@ int main()
     view_num = 0;
     view_mask = 0;
     loading = 0;
-    startNewGame = 1;
+    startNewGame = BrandNewGame;
     for (int i = 0; i < MAX_BGIMAGE+1; i++) bgImagesTextures[i] = 0;
     for (int i = 0; i < MAX_HUD+2; i++) hudTextures[i] = 0;
     for (int i = 0; i < MAX_SCREENRTT; i++) screenRTT[i] = 0;
@@ -758,7 +758,7 @@ int main()
     MessageText::addText(L"Please wait [          * ]", 1, true, false);
     loadItinerTypes("data/itiner/itiner_types.txt", smgr, driver, nWorld);
     loadCompetitors("data/competitors/car.txt");
-    playerCompetitor = new SCompetitor(444, player_name, "", team_name,
+    playerCompetitor = new SCompetitor(444, player_name, "", "-", team_name,
                                        0, 100, false);
 
     MessageText::addText(L"Please wait [           *]", 1, true, false);
@@ -879,6 +879,12 @@ int main()
                 vector3df campos;
                 vector3df camtar;
                 vector3df centar;
+                vector3df camup = vector3df(0.f, 1.f, 0.f);
+                vector3df carrot;
+                
+                // up_with_matrix: matrix4 camup_m;
+                // up_with_matrix: matrix4 carrot_m;
+                // up_with_matrix: camup_m[13] = 1.f;
 #ifdef USE_EDITOR
                 bool useCarlosView = false;
                 int carlosNum = 1;
@@ -905,9 +911,11 @@ int main()
                 if (!useCarlosView)
                 {
 #endif // USE_EDITOR
-                    /*vector3df */campos = (car->getMatrix() * viewpos_cur).getTranslation();
-                    /*vector3df */camtar = (car->getMatrix() * viewdest_cur).getTranslation();
-                    /*vector3df */centar = (car->getMatrix() * tcentar).getTranslation();
+                    campos = (car->getMatrix() * viewpos_cur).getTranslation();
+                    camtar = (car->getMatrix() * viewdest_cur).getTranslation();
+                    centar = (car->getMatrix() * tcentar).getTranslation();
+                    carrot = car->getMatrix().getRotationDegrees();
+                    // up_with_matrix: carrot_m = car->getMatrix();
 #ifdef USE_EDITOR
                 }
                 else
@@ -915,10 +923,23 @@ int main()
                     campos = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * viewpos_cur).getTranslation();
                     camtar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * viewdest_cur).getTranslation();
                     centar = (raceEngine->getStarters()[carlosNum]->vehicle->getMatrix() * tcentar).getTranslation();
+                    carrot = raceEngine->getStarters()[carlosNum]->vehicle->getMatrix().getRotationDegrees();
+                    // up_with_matrix: carrot_m = raceEngine->getStarters()[carlosNum]->vehicle->getMatrix();
                 }
 #endif // USE_EDITOR
                 
                 camera->setTarget(camtar);
+                if (view_num==0)
+                {
+                    camera->setUpVector(camup);
+                }
+                else
+                {
+                    // up_with_matrix: carrot_m[12] = carrot_m[13] = carrot_m[14] = 0.f;
+                    // up_with_matrix: matrix4 up_m = carrot_m * camup_m;
+                    // up_with_matrix: camera->setUpVector(up_m.getTranslation());
+                    camera->setUpVector(carrot.rotationToDirection(camup));
+                }
                 if ((view_num+view_mask)!=0 || !useDynCam || dynCamReset)
                 {
                     //campos = car->getMatrix() * viewpos_cur;
@@ -1605,6 +1626,8 @@ int main()
                         }
                         pdprintf(printf("17\n"));
                         NewtonUpdate(nWorld, 0.015f/*sec_step*//*1.066667f*/);
+                        //NewtonUpdate(nWorld, 0.0075f/*sec_step*//*1.066667f*/);
+                        //NewtonUpdate(nWorld, sec_step/*1.066667f*/);
                         pdprintf(printf("17c\n"));
                         lasttick += ms_step;
                         newtonUpdateCount--;

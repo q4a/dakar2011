@@ -5,7 +5,7 @@ data/bigterrains/texturemaps/stage3_tm.png
 data/bigterrains/textures/dirt_19.jpg
 data/bigterrains/textures/grass_02.jpg
 data/bigterrains/textures/dirt_03.jpg
-data/bigterrains/textures/dirt_04.jpg
+data/bigterrains/textures/dirt_20.jpg
 data/bigterrains/textures/concrete_03.jpg
 data/skys/fairday.jpg
 data/roads/roads3.txt

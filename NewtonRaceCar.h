@@ -19,7 +19,12 @@
 
 
 #define OLD_CDGRCC
+
+#ifdef OLD_CDGRCC
 #include "CustomDGRayCastCar.h"
+#else
+#include "CustomMultiBodyVehicle.h"
+#endif
 
 #include "irrlicht.h"
 // Irrlicht Namespaces
@@ -273,7 +278,11 @@ public:
     {
         if (num >= 0 && num < m_tires.size())
         {
+#ifdef OLD_CDGRCC
             return m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_groundFriction;
+#else
+            return 0.8f;
+#endif
         }
         return 0.f;
     }
@@ -282,7 +291,11 @@ public:
     {
         if (num >= 0 && num < m_tires.size())
         {
+#ifdef OLD_CDGRCC
             return (unsigned int)m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
+#else
+            return (unsigned int)0;
+#endif
         }
         return (unsigned int)0;
     }
@@ -291,8 +304,12 @@ public:
     {
         if (num >= 0 && num < m_tires.size())
         {
+#ifdef OLD_CDGRCC
             NewtonBody* hb = m_vehicleJoint->GetTire(m_tires[num]->tire_num).m_HitBody;
             return hb?NewtonBodyGetMaterialGroupID(hb):(unsigned int)-1;
+#else
+            return (unsigned int)0;
+#endif
         }
         return (unsigned int)0;
     }
@@ -327,7 +344,11 @@ private:
 	static void SetTransform (const NewtonBody* body, const float* matrixPtr, int threadIndex);
 	static void offsetObjectCallback(void* userData, const irr::core::vector3df& newPos);
 
+#ifdef OLD_CDGRCC
 	CustomDGRayCastCar* GetJoint() const;
+#else
+	CustomMultiBodyVehicle* GetJoint() const;
+#endif
 
 	void setMatrix(matrix4& newMatrix);
 	
@@ -353,7 +374,11 @@ private:
 #endif
 
 	NewtonBody* m_vehicleBody;
-	CustomDGRayCastCar* m_vehicleJoint;
+#ifdef OLD_CDGRCC
+    CustomDGRayCastCar* m_vehicleJoint;
+#else
+    CustomMultiBodyVehicle* m_vehicleJoint;
+#endif
 	Smoke** smokes;
 //public:
 	matrix4 m_matrix;
@@ -433,7 +458,7 @@ private:
     OffsetObject* offsetObject;
     matrix4 viewdest[view_max*view_multi];
     matrix4 viewpos[view_max*view_multi];
-    
+    matrix4 soundMatrix;
 };
 
 #endif // !defined(AFX_NEWTONRACECAR_H__96CF72A9_A2BD_4A11_9F6D_40DD9A3CCC12__INCLUDED_)

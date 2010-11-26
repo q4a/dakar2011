@@ -215,6 +215,8 @@ private:
 	//gui::IGUIEditBox* player_coname_text;
 	gui::IGUIEditBox* team_name_text;
 	
+	bool mouseButtonDown;
+	
 	const static char* difficultyStr[5];
 };
 

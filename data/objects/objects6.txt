@@ -2115,6 +2115,19 @@ fix: data/objects/barrier_white_90.mso 13812.211914 85067.695313
 fix: data/objects/barrier_white_90.mso 13815.945313 85049.007813
 fix: data/objects/barrier_white_90.mso 13795.982422 85056.140625
 fix: data/objects/barrier_white_90.mso 13790.909180 85075.843750
+fix: data/objects/pristan.ms3d 9440.0 128290.0
+fix: data/objects/pristan.ms3d 9560.0 128070.0
+fix: data/objects/pristan.ms3d 9630.0 127910.0
+fix: data/objects/pristan.ms3d 13240.0 85400.0
+fix: data/objects/pristan.ms3d 13330.0 85270.0
+fix: data/objects/pristan.ms3d 13405.0 85155.0
+fix: data/objects/pristan.ms3d 7450.0 4320.0
+fix: data/objects/pristan.ms3d 7575.0 4050.0
+fix: data/objects/pristan.ms3d 7585.0 3855.0
+fix: data/objects/pristan.ms3d 7500.0 3620.0
+fix: data/objects/pristan.ms3d 7465.0 3455.0
+fix: data/objects/pristan.ms3d 7450.0 3285.0
+fix: data/objects/pristan.ms3d 7375.0 3085.0
 ran: data/objects/my_cactus_grass.mso 4000
 ran: data/objects/my_cactus_grass_ss.mso 7000
 ran: data/objects/my_grass1_ss.mso 6000
@@ -2124,8 +2137,10 @@ ran: data/objects/cactus.mso 4000
 ran: data/objects/cactus_s.mso 4000
 ran: data/objects/palm3.ms3d 500
 ran: data/objects/palm3_more.ms3d 500
+ran: data/objects/palm4.ms3d 300
 ran: data/objects/palm3_s.ms3d 300
 ran: data/objects/palm3_more_s.ms3d 300
+ran: data/objects/palm4_s.ms3d 100
 ran: data/objects/trees/Willow.xml 300
 ran: data/objects/trees/branch1.xml 340
 ran: data/objects/trees/branch2.xml 340

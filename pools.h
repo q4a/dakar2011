@@ -52,7 +52,8 @@ int createObjectPool(const c8* name,
                     const vector3df& sca,
                     const vector3df& box,
                     const vector3df& ofs,
-                    int category
+                    int category,
+                    bool textureWrap = false
 );
 
 void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWorld* nWorld,
@@ -61,7 +62,8 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
                             const vector3df& rot,
                             const vector3df& sca,
                             const vector3df& box,
-                            const vector3df& ofs
+                            const vector3df& ofs,
+                            bool textureWrap = false
 );
 
 //void generateTreeTypes(const c8* treetype,
