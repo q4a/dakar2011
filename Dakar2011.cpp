@@ -15,7 +15,39 @@
 -DMY_DEBUG
 -DUSE_EDITOR
 -DUSE_MY_SOUNDENGINE
+../Dev-Cpp/lib/libopengl32.a
+../Dev-Cpp/lib/libwsock32.a
+
+../irrlicht-svn/bin/Win32-gcc/libIrrlicht.a
+../irrKlang-1.3.0/lib/Win32-gcc/libirrKlang.a
+../NewtonWin-2.09/sdk/x32/dll_vs7/newton.lib
+../Cg/lib/cg.lib
+../Cg/lib/cgD3D8.lib
+../Cg/lib/cgD3D9.lib
+../Cg/lib/cgGL.lib
+../freealut-1.1.0-bin/lib/alut.lib
+../openal11sdk/libs/Win32/OpenAL32.lib
+-lopengl32
+
 */
+#ifdef _MSC_VER
+#pragma comment(lib, "Irrlicht.lib")
+#pragma comment(lib, "newton.lib")
+#pragma comment(lib, "cg.lib")
+#pragma comment(lib, "cgD3D9.lib")
+#pragma comment(lib, "cgGL.lib")
+#pragma comment(lib, "opengl32.lib")
+#ifdef USE_MY_SOUNDENGINE
+#pragma comment(lib, "alut.lib")
+#pragma comment(lib, "OpenAl32.lib")
+#else
+#pragma comment(lib, "alut.lib")
+#pragma comment(lib, "OpenAl32.lib")
+#pragma comment(lib, "irrKlang.lib")
+#endif
+#endif // _MSC_VER
+
+
 
 #include "irrlicht.h"
 #include <iostream>
@@ -55,6 +87,11 @@
 
 #ifdef __linux__
 #include "linux_includes.h"
+#endif
+
+#ifdef _MSC_VER
+#include <assert.h>
+#include <direct.h>
 #endif
 
 /*
@@ -119,7 +156,7 @@ int main()
     for (int i = 0; i < MAX_CAR_DIRT; i++) car_dirttexture_array[i] = 0;
     //////
     
-    getcwd(currentDirectory, 256);
+    _getcwd(currentDirectory, 256);
     readSettings("data/settings.txt");
     
     reinitialize = false;

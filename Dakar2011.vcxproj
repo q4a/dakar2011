@@ -1,0 +1,196 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{68522446-1E6B-4A16-BD02-2E5B0AA56A92}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Dakar2011</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)\</OutDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level2</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>USE_MY_SOUNDENGINE;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\dx_stuff\include;..\openal11sdk\include;..\freealut-1.1.0-bin\include;..\NewtonWin-2.09\sdk;..\irrKlang-1.3.0\include;..\irrlicht-svn-vs\source\Irrlicht;..\irrlicht-svn-vs\include;..\Cg30\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\openal11sdk\libs\Win32;..\freealut-1.1.0-bin\lib;..\NewtonWin-2.09\sdk\x32\dll_vs9;..\irrlicht-svn-vs\lib\Win32-visualstudio;..\irrKlang-1.3.0\lib\Win32-visualStudio;..\Cg30\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="BigTerrain.cpp" />
+    <ClCompile Include="CBillboardGroupSceneNode.cpp" />
+    <ClCompile Include="CConfigMap.cpp" />
+    <ClCompile Include="CConfigReader.cpp" />
+    <ClCompile Include="CGUITexturedSkin.cpp" />
+    <ClCompile Include="CImageGUISkin.cpp" />
+    <ClCompile Include="CObjectWire.cpp" />
+    <ClCompile Include="competitors.cpp" />
+    <ClCompile Include="CTreeGenerator.cpp" />
+    <ClCompile Include="CTreeSceneNode.cpp" />
+    <ClCompile Include="CustomDGRayCastCar.cpp" />
+    <ClCompile Include="CustomMultiBodyVehicle.cpp" />
+    <ClCompile Include="Dakar2011.cpp" />
+    <ClCompile Include="dMathDefines.cpp" />
+    <ClCompile Include="dMatrix.cpp" />
+    <ClCompile Include="dQuaternion.cpp" />
+    <ClCompile Include="editor.cpp" />
+    <ClCompile Include="effects.cpp" />
+    <ClCompile Include="error.cpp" />
+    <ClCompile Include="eventreceiver_game.cpp" />
+    <ClCompile Include="eventreceiver_menu.cpp" />
+    <ClCompile Include="fonts.cpp" />
+    <ClCompile Include="gameplay.cpp" />
+    <ClCompile Include="IrrCg.cpp" />
+    <ClCompile Include="IrrCgMaterial.cpp" />
+    <ClCompile Include="IrrCgSceneNode.cpp" />
+    <ClCompile Include="itiner_hud.cpp" />
+    <ClCompile Include="MapReaderThread.cpp" />
+    <ClCompile Include="Materials.cpp" />
+    <ClCompile Include="message.cpp" />
+    <ClCompile Include="multiplayer.cpp" />
+    <ClCompile Include="MyRoad.cpp" />
+    <ClCompile Include="mySound.cpp" />
+    <ClCompile Include="MyThread.cpp" />
+    <ClCompile Include="my_shaders.cpp" />
+    <ClCompile Include="my_shaders2.cpp" />
+    <ClCompile Include="my_shaders3.cpp" />
+    <ClCompile Include="NewtonCustomJoint.cpp" />
+    <ClCompile Include="NewtonRaceCar.cpp" />
+    <ClCompile Include="OffsetManager.cpp" />
+    <ClCompile Include="pools.cpp" />
+    <ClCompile Include="RaceEngine.cpp" />
+    <ClCompile Include="settings.cpp" />
+    <ClCompile Include="SkinLoader.cpp" />
+    <ClCompile Include="SmallTerrain.cpp" />
+    <ClCompile Include="TerrainPool.cpp" />
+    <ClCompile Include="VehiclePool.cpp" />
+    <ClCompile Include="wrappers.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="BigTerrain.h" />
+    <ClInclude Include="CBillboardGroupSceneNode.h" />
+    <ClInclude Include="CConfigMap.h" />
+    <ClInclude Include="CConfigReader.h" />
+    <ClInclude Include="CGUITexturedSkin.h" />
+    <ClInclude Include="CImageGUISkin.h" />
+    <ClInclude Include="clipRects.h" />
+    <ClInclude Include="CObjectWire.h" />
+    <ClInclude Include="competitors.h" />
+    <ClInclude Include="CQuad.h" />
+    <ClInclude Include="CScreenQuad.h" />
+    <ClInclude Include="CTreeGenerator.h" />
+    <ClInclude Include="CTreeSceneNode.h" />
+    <ClInclude Include="CustomDGRayCastCar.h" />
+    <ClInclude Include="CustomJointLibraryStdAfx.h" />
+    <ClInclude Include="CustomMultiBodyVehicle.h" />
+    <ClInclude Include="dMathDefines.h" />
+    <ClInclude Include="dMatrix.h" />
+    <ClInclude Include="dQuaternion.h" />
+    <ClInclude Include="dVector.h" />
+    <ClInclude Include="editor.h" />
+    <ClInclude Include="effects.h" />
+    <ClInclude Include="error.h" />
+    <ClInclude Include="eventreceiver.h" />
+    <ClInclude Include="eventreceiver_dummy.h" />
+    <ClInclude Include="eventreceiver_game.h" />
+    <ClInclude Include="eventreceiver_menu.h" />
+    <ClInclude Include="fonts.h" />
+    <ClInclude Include="gameplay.h" />
+    <ClInclude Include="IrrCg.h" />
+    <ClInclude Include="IrrCgExtensionHandler.h" />
+    <ClInclude Include="IrrCgMaterial.h" />
+    <ClInclude Include="IrrCgSceneNode.h" />
+    <ClInclude Include="itiner_hud.h" />
+    <ClInclude Include="linux_includes.h" />
+    <ClInclude Include="MapReaderThread.h" />
+    <ClInclude Include="Materials.h" />
+    <ClInclude Include="message.h" />
+    <ClInclude Include="multiplayer.h" />
+    <ClInclude Include="MyList.h" />
+    <ClInclude Include="MyLock.h" />
+    <ClInclude Include="MyRoad.h" />
+    <ClInclude Include="mySound.h" />
+    <ClInclude Include="MyThread.h" />
+    <ClInclude Include="my_shaders.h" />
+    <ClInclude Include="NewtonCustomJoint.h" />
+    <ClInclude Include="NewtonRaceCar.h" />
+    <ClInclude Include="OffsetManager.h" />
+    <ClInclude Include="pools.h" />
+    <ClInclude Include="RaceEngine.h" />
+    <ClInclude Include="settings.h" />
+    <ClInclude Include="SkinLoader.h" />
+    <ClInclude Include="SmallTerrain.h" />
+    <ClInclude Include="STreeMesh.h" />
+    <ClInclude Include="TerrainPool.h" />
+    <ClInclude Include="VehiclePool.h" />
+    <ClInclude Include="wrappers.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Dakar2011.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

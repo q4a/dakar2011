@@ -24,7 +24,7 @@ class CustomMultiBodyVehicleTire;
 class CustomMultiBodyVehicleAxleDifferencial;
 #define MULTI_BODY_VEHICLE_MAX_TIRES	16
 
-class JOINTLIBRARY_API CustomMultiBodyVehicle : public NewtonCustomJoint  
+class /*JOINTLIBRARY_API*/ CustomMultiBodyVehicle : public NewtonCustomJoint  
 {
 public:
 	CustomMultiBodyVehicle (const dVector& frontDir, const dVector& upDir, const NewtonBody* carBody);

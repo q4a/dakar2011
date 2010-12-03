@@ -37,7 +37,6 @@
 #define	dAtan2(x,y) dFloat (atan2 (dFloat(x), dFloat(y)))
 
 #ifndef _MSC_VER
-	#define _ASSERTE(x)
 	#ifndef min
 		#define min(a,b) ((a < b) ? (a) : (b))
 		#define max(a,b) ((a > b) ? (a) : (b))
@@ -46,6 +45,11 @@
 
 
 #ifdef _MSC_VER
+	#define _ASSERTE(x)
+	#ifndef min
+		#define min(a,b) ((a < b) ? (a) : (b))
+		#define max(a,b) ((a > b) ? (a) : (b))
+	#endif 
 	#ifdef _DEBUG
 		void dExpandTraceMessage (const char *fmt, ...);
 		#define dTrace(x)										\

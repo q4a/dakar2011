@@ -11,7 +11,7 @@
 
 
 // Dave Gravel raycas/convexcat contribution
-class JOINTLIBRARY_API CustomDGRayCastCar: public NewtonCustomJoint  
+class /*JOINTLIBRARY_API*/ CustomDGRayCastCar: public NewtonCustomJoint  
 {
 public:
 

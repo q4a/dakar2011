@@ -31,7 +31,9 @@ using namespace gui;
 #include "competitors.h"
 #include "editor.h"
 #include <assert.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #ifdef __linux__
 #include "linux_includes.h"

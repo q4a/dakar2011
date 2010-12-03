@@ -62,7 +62,7 @@ typedef void (*JointUserSubmitConstraintCallBack) (const NewtonUserJoint* me, dF
 
 // this is the base class to implement custom joints, it is not a joint it just provide functionality
 // for the user to implement it own joints
-class JOINTLIBRARY_API NewtonCustomJoint  
+class /*JOINTLIBRARY_API*/ NewtonCustomJoint  
 {
 	public:
 

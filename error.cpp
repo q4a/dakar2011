@@ -84,7 +84,11 @@ extern "C" void myError(int num, const char *msg, ...)
     _vsnprintf(s, sizeof(s), msg, ap);
     s[sizeof(s)-1] = 0;
     printMessage(num, "Dakar 2011 error", msg, ap);
+#ifdef _MSC_VER
+    //MessageBox(0, /*s, title,*/, "Title" MB_OK | MB_ICONSTOP);
+#else
     MessageBox(0, s, title, MB_OK | MB_ICONSTOP);
+#endif
     exit(1);
 }
 
@@ -112,7 +116,11 @@ extern "C" void myMessage(int num, const char *msg, ...)
     _vsnprintf(s, sizeof(s), msg, ap);
     s[sizeof(s)-1] = 0;
     printMessage(num, "Dakar 2011 message", msg, ap);
-    MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
+#ifdef _MSC_VER
+	//MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
+#else
+	MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
+#endif
 //    printMessage (num,"ODE Message",msg,ap);
 }
 

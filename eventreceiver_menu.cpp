@@ -1427,10 +1427,10 @@ bool eventreceiver_menu::OnEvent(const SEvent& event)
                             default:
                             {
                                 auto_resolution = 0;
-                                core::dimension2d<u32> res = device->getVideoModeList()->getVideoModeResolution(pos);
+                                core::dimension2d<u32> res = device->getVideoModeList()->getVideoModeResolution(pos-2);
                                 resolutionX = res.Width;
                                 resolutionY = res.Height;
-                                display_bits = device->getVideoModeList()->getVideoModeDepth(pos);
+                                display_bits = device->getVideoModeList()->getVideoModeDepth(pos-2);
                                 break;
                             }
                         }
