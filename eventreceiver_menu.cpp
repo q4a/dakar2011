@@ -2548,6 +2548,7 @@ void eventreceiver_menu::openOptionsWindow()
     		true, // border?
     		gameTab,
             GUI_ID_PLAYER_NAME_EBOX);
+        player_name_text->setMax(255);
         line += 20;
     	env->addStaticText(L"Team name",
     		rect<s32>(indist,line,indist+firsttextlen,line+16),
@@ -2559,6 +2560,7 @@ void eventreceiver_menu::openOptionsWindow()
     		true, // border?
     		gameTab,
             GUI_ID_TEAM_NAME_EBOX);
+        team_name_text->setMax(255);
     }
 	line += 20;
 	env->addStaticText(L"Difficulty",
@@ -3228,6 +3230,7 @@ void eventreceiver_menu::openOptionsWindow()
 		true, // border?
 		networkTab,
         GUI_ID_SERVER_NAME_EBOX);
+    server_name_text->setMax(15);
 	str = L"";
     str += server_port;
 	server_port_text = env->addEditBox(str.c_str(),
@@ -3235,6 +3238,7 @@ void eventreceiver_menu::openOptionsWindow()
 		true, // border?
 		networkTab,
         GUI_ID_SERVER_PORT_EBOX);
+    server_port_text->setMax(5);
 	if (isMultiplayer)
 	  str = L"Discon.";
 	else
@@ -3257,6 +3261,7 @@ void eventreceiver_menu::openOptionsWindow()
 		true, // border?
 		networkTab,
         GUI_ID_SERVER_DELAY_EBOX);
+    server_delay_text->setMax(5);
 
     line += 20;
 	env->addStaticText(L"Network messages",

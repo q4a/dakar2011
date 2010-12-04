@@ -13,3 +13,5 @@
 // remains consistent on all systems.
 
 IDI_APPLICATION     ICON          "Dakar2011.ico"
+IDR_MAINFRAME       ICON    DISCARDABLE     "Dakar2011.ico"
+IDR_DEVICETYPE      ICON    DISCARDABLE     "Dakar2011.ico"

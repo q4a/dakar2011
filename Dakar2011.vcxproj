@@ -145,6 +145,7 @@
     <ClInclude Include="CustomDGRayCastCar.h" />
     <ClInclude Include="CustomJointLibraryStdAfx.h" />
     <ClInclude Include="CustomMultiBodyVehicle.h" />
+    <ClInclude Include="Dakar2011_private.h" />
     <ClInclude Include="dMathDefines.h" />
     <ClInclude Include="dMatrix.h" />
     <ClInclude Include="dQuaternion.h" />

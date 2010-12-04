@@ -85,7 +85,11 @@ extern "C" void myError(int num, const char *msg, ...)
     s[sizeof(s)-1] = 0;
     printMessage(num, "Dakar 2011 error", msg, ap);
 #ifdef _MSC_VER
-    //MessageBox(0, /*s, title,*/, "Title" MB_OK | MB_ICONSTOP);
+    core::stringw ws = L" ";
+    core::stringw wtitle = L" ";
+    ws = s;
+    wtitle = title;
+    MessageBox(0, ws.c_str(), wtitle.c_str(), MB_OK | MB_ICONSTOP);
 #else
     MessageBox(0, s, title, MB_OK | MB_ICONSTOP);
 #endif
@@ -117,9 +121,13 @@ extern "C" void myMessage(int num, const char *msg, ...)
     s[sizeof(s)-1] = 0;
     printMessage(num, "Dakar 2011 message", msg, ap);
 #ifdef _MSC_VER
-	//MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
+    core::stringw ws = L" ";
+    core::stringw wtitle = L" ";
+    ws = s;
+    wtitle = title;
+    MessageBox(0, ws.c_str(), wtitle.c_str(), MB_OK | MB_ICONWARNING);
 #else
-	MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
+    MessageBox(0, s, title, MB_OK | MB_ICONWARNING);
 #endif
 //    printMessage (num,"ODE Message",msg,ap);
 }

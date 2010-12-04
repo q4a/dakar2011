@@ -144,7 +144,7 @@ void vehicleContactProcess (const NewtonJoint* contactJoint, dFloat timestep, in
                 coll_start_time = tick;
                 update_collision_effect = true;
             }
-
+            //printf("lct: %u, t: %u\n", last_contact_tick, tick);
             if (playerCollide && vehicleCount >= 2 && tick - last_contact_tick > LAST_CONTACT_DIFF) // player hit an other car -> penality
             {
                 if (bigTerrain->addPenality((2*RESET_PENALITY) - (20*difficulty), true)!=(u32)-1) // should be always true

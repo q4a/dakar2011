@@ -35,7 +35,7 @@ using namespace gui;
 
 //#define CP_NUM 6
 
-class SState;
+struct SState;
 class CMapReaderThread;
 class CMyRoad;
 

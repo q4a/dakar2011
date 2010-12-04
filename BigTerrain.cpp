@@ -1364,9 +1364,12 @@ u32 BigTerrain::addPenality(u32 ap, bool force)
     if (force)
     {
         penality += ap;
-        currentTime += ap;
-        playerCompetitor->lastTime += ap;
-        playerCompetitor->globalTime += ap;
+        if (timeEnded)
+        {
+            currentTime += ap;
+            playerCompetitor->lastTime += ap;
+            playerCompetitor->globalTime += ap;
+        }
         return penality;
     }
     return (u32)-1;

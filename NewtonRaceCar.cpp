@@ -2248,7 +2248,7 @@ NewtonRaceCar::Smoke::Smoke(ISceneManager* smgr, IVideoDriver* driver,
     float addrX = (float)((rand()%20) - 10) / 20.0f;
     float addrZ = (float)((rand()%20) - 10) / 20.0f;
 
-    node = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(0.2, 0.2), vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
+    node = smgr->addBillboardSceneNode(0, core::dimension2d<f32>(0.2f, 0.2f), vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
 	//node->setMaterialFlag(video::EMF_LIGHTING, false);
 	node->setMaterialType((video::E_MATERIAL_TYPE)myMaterialType_smoke/*video::EMT_TRANSPARENT_ALPHA_CHANNEL*/);
     //node->getMaterial(0).MaterialTypeParam = 0.5f;
@@ -2291,7 +2291,7 @@ void NewtonRaceCar::Smoke::renew(ISceneManager* smgr, IVideoDriver* driver,
     animePhase = 0;
 
     node->getMaterial(0).MaterialTypeParam2 = 1.0f;
-    node->setSize(core::dimension2d<f32>(0.2, 0.2));
+    node->setSize(core::dimension2d<f32>(0.2f, 0.2f));
     node->setPosition(vector3df(pos.X+addrX, pos.Y, pos.Z+addrZ));
     node->setVisible(true);
     if (pos.Y - offset > p_waterHeight)

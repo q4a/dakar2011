@@ -332,6 +332,9 @@
     <ClInclude Include="wrappers.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="Dakar2011_private.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Dakar2011.rc">

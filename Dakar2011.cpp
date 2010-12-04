@@ -15,9 +15,13 @@
 -DMY_DEBUG
 -DUSE_EDITOR
 -DUSE_MY_SOUNDENGINE
+USE_MY_SOUNDENGINE;
+
+Not used
 ../Dev-Cpp/lib/libopengl32.a
 ../Dev-Cpp/lib/libwsock32.a
 
+Used
 ../irrlicht-svn/bin/Win32-gcc/libIrrlicht.a
 ../irrKlang-1.3.0/lib/Win32-gcc/libirrKlang.a
 ../NewtonWin-2.09/sdk/x32/dll_vs7/newton.lib
@@ -118,7 +122,7 @@ using namespace gui;
  using namespace irrklang;
 #endif
 
-c8 currentDirectory[256];
+// c8 currentDirectory[256];
 const static video::SColor colors_for_hdr[] =
 {
 	video::SColor(255,96,96,96),
@@ -155,8 +159,13 @@ int main()
     for (int i = 0; i < view_multi; i++) motiondir_map[i] = 0;
     for (int i = 0; i < MAX_CAR_DIRT; i++) car_dirttexture_array[i] = 0;
     //////
-    
+/*
+#ifdef _MSC_VER
     _getcwd(currentDirectory, 256);
+#else
+    getcwd(currentDirectory, 256);
+#endif
+*/
     readSettings("data/settings.txt");
     
     reinitialize = false;
@@ -1224,10 +1233,10 @@ int main()
                 if (useAdvCgShaders)
                 {
                     sunSphere->setPosition(camera->getPosition()+lnode_4_shaders->getPosition());
-                    sunSphere1->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.9);
-                    sunSphere2->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.8);
-                    sunSphere3->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.7);
-                    sunSphere4->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.6);
+                    sunSphere1->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.9f);
+                    sunSphere2->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.8f);
+                    sunSphere3->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.7f);
+                    sunSphere4->setPosition(camera->getPosition()+lnode_4_shaders->getPosition()*0.6f);
                     driver->setRenderTarget(mrtList, true, true, video::SColor(0, 255, 255, 0));
                 }
                 else
@@ -1483,7 +1492,7 @@ int main()
                 }
                 */
                 //newtonUpdateCount = 2;
-                sleepTime = (newtonUpdateCount * ms_step) - drawTick - (newtonUpdateCount/2);
+                sleepTime = (newtonUpdateCount * ms_step) - drawTick - 1;
             }
             newtonUpdateCount_last = newtonUpdateCount;
             if (newtonUpdateCount > 10) newtonUpdateCount = 10;

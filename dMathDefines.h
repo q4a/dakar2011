@@ -36,20 +36,24 @@
 #define dAcos(x)	dFloat (acos (dFloat(x)))
 #define	dAtan2(x,y) dFloat (atan2 (dFloat(x), dFloat(y)))
 
+#ifndef _ASSERTE
+	#define _ASSERTE(x) ((void)0)
+#endif
+#ifndef min
+	#define min(a,b) ((a < b) ? (a) : (b))
+	#define max(a,b) ((a > b) ? (a) : (b))
+#endif 
+
+/*
 #ifndef _MSC_VER
 	#ifndef min
 		#define min(a,b) ((a < b) ? (a) : (b))
 		#define max(a,b) ((a > b) ? (a) : (b))
 	#endif 
 #endif
-
+*/
 
 #ifdef _MSC_VER
-	#define _ASSERTE(x)
-	#ifndef min
-		#define min(a,b) ((a < b) ? (a) : (b))
-		#define max(a,b) ((a > b) ? (a) : (b))
-	#endif 
 	#ifdef _DEBUG
 		void dExpandTraceMessage (const char *fmt, ...);
 		#define dTrace(x)										\
