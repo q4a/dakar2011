@@ -1,0 +1,47 @@
+
+# name of the binary - only valid for targets which set SYSTEM
+DESTNAME = Dakar2011.bin
+
+SRCS = $(shell ls *.cpp)
+
+OBJS = $(SRCS:.cpp=.o)
+
+# general compiler settings
+CPPFLAGS = -I. -I/usr/X11R6/include @CPPFLAGS@
+CXXFLAGS = -O3 -ffast-math @USE_MY_SOUNDENGINE@
+#  -DMY_DEBUG -DUSE_EDITOR -DUSE_MY_SOUNDENGINE
+#CXXFLAGS = -g -Wall
+
+#default target is Linux
+all: all_linux
+
+#ifeq ($(HOSTTYPE), x86_64)
+#LIBSELECT=64
+#endif
+
+all_linux: LDFLAGS = -L/usr/X11R6/lib @LDFLAGS@ -lGL -lopenal -lalut -lXxf86vm -lXext -lX11 -lXcursor -lpthread -lNewton -lCg -lCgGL -lIrrlicht @IRRKLANG_LIB@
+all_linux clean_linux: SYSTEM=Linux
+
+
+SUFFIXES : .o .cpp
+.cpp.o :
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+#	clang $(CPPFLAGS) $(CXXFLAGS) -c -o $@ $<
+
+all_linux: $(OBJS)
+	$(CXX) -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+#	clang -o $(DESTNAME) $(OBJS) $(LDFLAGS)
+#	$(CXX) -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
+#	clang -D__my_server__ -o server/own_server_udp server/own_server_udp.cpp
+#$(warning Building...)
+#$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(srcs) -o $(DESTNAME) $(LDFLAGS)
+
+clean: clean_linux
+	$(warning Cleaning...)
+
+clean_linux:
+	@$(RM) $(OBJS)
+	@$(RM) $(DESTNAME)
+#	@$(RM) server/own_server_udp
+
+.PHONY: all clean clean_linux

@@ -1,0 +1,1 @@
+./configure --with-irrlicht=../irrlicht-svn-3473-patch4 --with-newton=../newtonSDK --with-openal=../openal-soft-1.10.622 --with-alut=../freealut-1.1.0-src/build --with-cg=../Cg30 --with-irrklang=../irrKlang-1.3.0
