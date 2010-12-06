@@ -28,7 +28,7 @@ else
     AC_MSG_NOTICE([irrlicht is not set])
 fi
 
-AC_ARG_WITH(newton, [  --with-newton=ARG         use Newton from the path at ARG], [], [])
+AC_ARG_WITH(newton, [  --with-newton=ARG       use Newton from the path at ARG], [], [])
 if test -n "$with_newton"
 then
     if test "$with_newton" != "yes"
@@ -43,7 +43,7 @@ else
     AC_MSG_NOTICE([newton is not set])
 fi
 
-AC_ARG_WITH(cg, [  --with-cg=ARG                 use Cg from the path at ARG], [], [])
+AC_ARG_WITH(cg, [  --with-cg=ARG           use Cg from the path at ARG], [], [])
 if test -n "$with_cg"
 then
     if test "$with_cg" != "yes"
@@ -58,7 +58,7 @@ else
     AC_MSG_NOTICE([cg is not set])
 fi
 
-AC_ARG_WITH(openal, [  --with-openal=ARG         use OpenAL from the path at ARG], [], [])
+AC_ARG_WITH(openal, [  --with-openal=ARG       use OpenAL from the path at ARG], [], [])
 if test -n "$with_openal"
 then
     if test "$with_openal" != "yes"
@@ -73,7 +73,7 @@ else
     AC_MSG_NOTICE([openal is not set])
 fi
 
-AC_ARG_WITH(alut, [  --with-alut=ARG             use alut from the path at ARG], [], [])
+AC_ARG_WITH(alut, [  --with-alut=ARG         use alut from the path at ARG], [], [])
 if test -n "$with_alut"
 then
     if test "$with_alut" != "yes"
@@ -88,7 +88,7 @@ else
     AC_MSG_NOTICE([alut is not set])
 fi
 
-AC_ARG_WITH(irrklang, [  --with-irrklang=[ARG]   use irrKlang [at path ARG] instead of the pure OpenAL], [AC_SUBST([USE_MY_SOUNDENGINE],[])], [AC_SUBST([USE_MY_SOUNDENGINE],[-DUSE_MY_SOUNDENGINE])])
+AC_ARG_WITH(irrklang, [  --with-irrklang[[=ARG]]   use irrKlang [[at path ARG]] instead of the pure OpenAL], [AC_SUBST([USE_MY_SOUNDENGINE],[])], [AC_SUBST([USE_MY_SOUNDENGINE],[-DUSE_MY_SOUNDENGINE])])
 if test -n "$with_irrklang"
 then
     if test "$with_irrklang" != "yes"
@@ -118,17 +118,17 @@ AC_CHECK_LIB([Xext], [XextCreateExtension], [], [AC_MSG_ERROR([Install devel lib
 AC_CHECK_LIB([Xxf86vm], [XF86VidModeGetViewPort], [], [AC_MSG_ERROR([Install devel libraries for X11 and set LDFLAGS and CPPFLAGS])])
 
 
-AC_CHECK_LIB([Irrlicht], [createDevice], [], [AC_MSG_ERROR([Download and unpack Irrlicht and set --with-irrlicht : $LDFLAGS])])
+AC_CHECK_LIB([Irrlicht], [createDevice], [], [AC_MSG_ERROR([Download (from http://irrlicht.sourceforge.net/) and unpack Irrlicht and set --with-irrlicht])])
 AC_CHECK_LIB([Irrlicht], [ _ZN3irr5scene13CSceneManager19addTerrainSceneNodeEPK10CHeightmapPNS0_10ISceneNodeEiRKNS_4core8vector3dIfEESB_SB_NS_5video6SColorEiNS0_20E_TERRAIN_PATCH_SIZEEibiii], [], [AC_MSG_ERROR([Download Irrlicht patch and patch the Irrlicht])])
-AC_CHECK_LIB([Newton], [NewtonCreate], [], [AC_MSG_ERROR([Download and unpack Newton and set --with-newton])])
-AC_CHECK_LIB([Cg], [cgCreateContext], [], [AC_MSG_ERROR([Download and unpack Cg and set --with-cg])])
-AC_CHECK_LIB([CgGL], [cgGLLoadProgram], [], [AC_MSG_ERROR([Download and unpack Cg and set --with-cg])])
-AC_CHECK_LIB([openal], [alBuffer3f], [], [AC_MSG_ERROR([Download and unpack OpenAL and set --with-openal])])
-AC_CHECK_LIB([alut], [alutInit], [], [AC_MSG_ERROR([Download and unpack alut and set --with-alut])])
+AC_CHECK_LIB([Newton], [NewtonCreate], [], [AC_MSG_ERROR([Download (from http://www.newtondynamics.com/) and unpack Newton and set --with-newton])])
+AC_CHECK_LIB([Cg], [cgCreateContext], [], [AC_MSG_ERROR([Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg])])
+AC_CHECK_LIB([CgGL], [cgGLLoadProgram], [], [AC_MSG_ERROR([Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg])])
+AC_CHECK_LIB([openal], [alBuffer3f], [], [AC_MSG_ERROR([Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack OpenAL and set --with-openal])])
+AC_CHECK_LIB([alut], [alutInit], [], [AC_MSG_ERROR([Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack alut and set --with-alut])])
 
 if test -n "$with_irrklang"
 then
-    AC_CHECK_LIB([IrrKlang], [_ZN8irrklang20createIrrKlangDeviceENS_21E_SOUND_OUTPUT_DRIVEREiPKcS2_], [], [AC_MSG_ERROR([Download and unpack IrrKlang and set --with-irrklang])])
+    AC_CHECK_LIB([IrrKlang], [_ZN8irrklang20createIrrKlangDeviceENS_21E_SOUND_OUTPUT_DRIVEREiPKcS2_], [], [AC_MSG_ERROR([Download (from http://www.ambiera.com/irrklang/) and unpack IrrKlang and set --with-irrklang])])
 fi
 
 # Checks for header files.

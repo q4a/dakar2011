@@ -850,11 +850,11 @@ Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
   --without-PACKAGE       do not use PACKAGE (same as --with-PACKAGE=no)
   --with-irrlicht=ARG     use Irrlicht from the path at ARG
-  --with-newton=ARG         use Newton from the path at ARG
-  --with-cg=ARG                 use Cg from the path at ARG
-  --with-openal=ARG         use OpenAL from the path at ARG
-  --with-alut=ARG             use alut from the path at ARG
-  --with-irrklang=ARG   use irrKlang at path ARG instead of the pure OpenAL
+  --with-newton=ARG       use Newton from the path at ARG
+  --with-cg=ARG           use Cg from the path at ARG
+  --with-openal=ARG       use OpenAL from the path at ARG
+  --with-alut=ARG         use alut from the path at ARG
+  --with-irrklang[=ARG]   use irrKlang [at path ARG] instead of the pure OpenAL
 
 Some influential environment variables:
   CXX         C++ compiler command
@@ -3292,8 +3292,8 @@ _ACEOF
   LIBS="-lIrrlicht $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack Irrlicht and set --with-irrlicht : $LDFLAGS" >&5
-echo "$as_me: error: Download and unpack Irrlicht and set --with-irrlicht : $LDFLAGS" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://irrlicht.sourceforge.net/) and unpack Irrlicht and set --with-irrlicht" >&5
+echo "$as_me: error: Download (from http://irrlicht.sourceforge.net/) and unpack Irrlicht and set --with-irrlicht" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3448,8 +3448,8 @@ _ACEOF
   LIBS="-lNewton $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack Newton and set --with-newton" >&5
-echo "$as_me: error: Download and unpack Newton and set --with-newton" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://www.newtondynamics.com/) and unpack Newton and set --with-newton" >&5
+echo "$as_me: error: Download (from http://www.newtondynamics.com/) and unpack Newton and set --with-newton" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3526,8 +3526,8 @@ _ACEOF
   LIBS="-lCg $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack Cg and set --with-cg" >&5
-echo "$as_me: error: Download and unpack Cg and set --with-cg" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg" >&5
+echo "$as_me: error: Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3604,8 +3604,8 @@ _ACEOF
   LIBS="-lCgGL $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack Cg and set --with-cg" >&5
-echo "$as_me: error: Download and unpack Cg and set --with-cg" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg" >&5
+echo "$as_me: error: Download (from http://developer.nvidia.com/page/cg_main.html) and unpack Cg and set --with-cg" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3682,8 +3682,8 @@ _ACEOF
   LIBS="-lopenal $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack OpenAL and set --with-openal" >&5
-echo "$as_me: error: Download and unpack OpenAL and set --with-openal" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack OpenAL and set --with-openal" >&5
+echo "$as_me: error: Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack OpenAL and set --with-openal" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3760,8 +3760,8 @@ _ACEOF
   LIBS="-lalut $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack alut and set --with-alut" >&5
-echo "$as_me: error: Download and unpack alut and set --with-alut" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack alut and set --with-alut" >&5
+echo "$as_me: error: Download (from http://connect.creativelabs.com/openal/default.aspx) and unpack alut and set --with-alut" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
@@ -3841,8 +3841,8 @@ _ACEOF
   LIBS="-lIrrKlang $LIBS"
 
 else
-  { { echo "$as_me:$LINENO: error: Download and unpack IrrKlang and set --with-irrklang" >&5
-echo "$as_me: error: Download and unpack IrrKlang and set --with-irrklang" >&2;}
+  { { echo "$as_me:$LINENO: error: Download (from http://www.ambiera.com/irrklang/) and unpack IrrKlang and set --with-irrklang" >&5
+echo "$as_me: error: Download (from http://www.ambiera.com/irrklang/) and unpack IrrKlang and set --with-irrklang" >&2;}
    { (exit 1); exit 1; }; }
 fi
 
