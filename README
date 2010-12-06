@@ -1,0 +1,29 @@
+
+Compile under Windows
+---------------------
+
+You can use Dev-Cpp or VC++ 2010. There is project files for both.
+
+Further in formation is on http://dakar2011.sourceforge.net/index.php?page=download
+
+
+
+
+Compile under Linux
+-------------------
+
+First you need a patched and compiled Irrlicht (both are checket by the configure script).
+And you need also several libraries to be installed (this is also checked by the configure).
+
+Then do the following:
+./configure
+make
+
+There is not make install. To run the compiled binary you need to download the binary
+package and overwrite the binaries in there.
+
+Further in formation is on http://dakar2011.sourceforge.net/index.php?page=download
+
+
+If you have question write a mail to btuska at elte dot hu!
+
