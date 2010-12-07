@@ -76,3 +76,12 @@ data/vehicles/car_jeep_big_wheel.txt
 Blue_Jeep
 data/vehicles/car_blue_jeep.txt
 2
+Mc_Rae
+data/vehicles/car_mcrae.txt
+2
+Buggy
+data/vehicles/car_buggy.txt
+2
+Mini_All4_Racing_(Monster)
+data/vehicles/car_mini.txt
+2
