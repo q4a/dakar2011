@@ -3460,12 +3460,12 @@ void eventreceiver_menu::openOptionsWindow()
 		rect<s32>(outdist, outdistH, screenSize.Width - outdist, outdistH + line + indist));
     tabControl->setRelativePosition(
 		rect<s32>(indist/2, indist+20, screenSize.Width - (outdist*2) - indist/2, line + indist - 30 - indist/2));
-		
+
     // reinitialize button
     if (show_reinitialize_button)
     {
         env->addButton(
-             rect<s32>(screenSize.Width - (120*3+outdist*2+indist*2),screenSize.Height - (42+outdistH*2),screenSize.Width - (120*2+outdist*2+indist*2),screenSize.Height - (10+outdistH*2)),
+             rect<s32>(screenSize.Width - (40+120*3+outdist*2+indist*2),screenSize.Height - (42+outdistH*2),screenSize.Width - (120*2+outdist*2+indist*2),screenSize.Height - (10+outdistH*2)),
              window, GUI_ID_REINITIALIZE_BUTTON,
              L"Restart program"/*, L"Reinitialize the device and the whole game, current game will be lost."*/);
     }

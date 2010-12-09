@@ -125,10 +125,10 @@ using namespace gui;
 // c8 currentDirectory[256];
 const static video::SColor colors_for_hdr[] =
 {
-	video::SColor(255,96,96,96),
-	video::SColor(255,96,96,96),
-	video::SColor(255,96,96,96),
-	video::SColor(255,96,96,96)
+    video::SColor(255,96,96,96),
+    video::SColor(255,96,96,96),
+    video::SColor(255,96,96,96),
+    video::SColor(255,96,96,96)
 };
 
 void BodyLeaveWorld (const NewtonBody* body, int threadId);
@@ -247,64 +247,69 @@ int main()
         return 1;  // failed to initialize driver
     }
 
+    //bool tmprc = false;
+    //tmprc = device->run();
+    //printf("myp: %u\n", tmprc);
+    //assert(tmprc);
     initializeUsedMemory(device);
     
-	core::array<SJoystickInfo> joystickInfo;
-	if(device->activateJoysticks(joystickInfo))
-	{
-		dprintf(printf("Joystick support is enabled and %d joystick(s) are present.\n", joystickInfo.size()));
+    core::array<SJoystickInfo> joystickInfo;
+    if(device->activateJoysticks(joystickInfo))
+    {
+        dprintf(printf("Joystick support is enabled and %d joystick(s) are present.\n", joystickInfo.size()));
 
         if (joystickInfo.size()==0)
-    		joy_axis_clutch = -1;
+        {
+            joy_axis_clutch = -1;
+        }
 
-		for(u32 joystick = 0; joystick < joystickInfo.size(); ++joystick)
-		{
-			dprintf(printf("Joystick %d:\n", joystick));
-			dprintf(printf("\tName: '%s'\n", joystickInfo[joystick].Name.c_str()));
-			dprintf(printf("\tAxes: %d\n", joystickInfo[joystick].Axes));
-			dprintf(printf("\tButtons: %d\n", joystickInfo[joystick].Buttons));
+        for(u32 joystick = 0; joystick < joystickInfo.size(); ++joystick)
+        {
+            dprintf(printf("Joystick %d:\n", joystick));
+            dprintf(printf("\tName: '%s'\n", joystickInfo[joystick].Name.c_str()));
+            dprintf(printf("\tAxes: %d\n", joystickInfo[joystick].Axes));
+            dprintf(printf("\tButtons: %d\n", joystickInfo[joystick].Buttons));
 
-			dprintf(printf("\tHat is: "));
+            dprintf(printf("\tHat is: "));
 
-			switch(joystickInfo[joystick].PovHat)
-			{
-			case SJoystickInfo::POV_HAT_PRESENT:
-				dprintf(printf("present\n"));
-				break;
+            switch(joystickInfo[joystick].PovHat)
+            {
+                case SJoystickInfo::POV_HAT_PRESENT:
+                    dprintf(printf("present\n"));
+                    break;
 
-			case SJoystickInfo::POV_HAT_ABSENT:
-				dprintf(printf("absent\n"));
-				break;
+                case SJoystickInfo::POV_HAT_ABSENT:
+                    dprintf(printf("absent\n"));
+                    break;
 
-			case SJoystickInfo::POV_HAT_UNKNOWN:
-			default:
-				dprintf(printf("unknown\n"));
-				break;
-			}
-		}
-	}
-	else
-	{
-		dprintf(printf("Joystick support is not enabled.\n"));
-		joy_axis_clutch = -1;
-	}
+                case SJoystickInfo::POV_HAT_UNKNOWN:
+                default:
+                    dprintf(printf("unknown\n"));
+                    break;
+            }
+        }
+    }
+    else
+    {
+        dprintf(printf("Joystick support is not enabled.\n"));
+        joy_axis_clutch = -1;
+    }
 
-                                          
     device->setWindowCaption(L"Dakar 2011");
 
-	// start the sound engine with default parameters
+    // start the sound engine with default parameters
 #ifdef USE_MY_SOUNDENGINE
     CMySoundEngine* soundEngine = new CMySoundEngine();
 #else
-	irrklang::ISoundEngine* soundEngine = createIrrKlangDevice();
+    irrklang::ISoundEngine* soundEngine = createIrrKlangDevice();
 #endif
 
-	if (!soundEngine)
-	{
+    if (!soundEngine)
+    {
         myError(2, "Cannot initialize sound device!");
-		return 1; // error starting up the engine     
+        return 1; // error starting up the engine     
     }
-		
+
     IVideoDriver* driver = device->getVideoDriver();
     ISceneManager* smgr = device->getSceneManager();
     IGUIEnvironment* env = device->getGUIEnvironment();
@@ -343,14 +348,14 @@ int main()
     }
     //recreateRTTs(driver);
     
-	// Newton vars
+    // Newton vars
 #if NEWTON_MINOR_VERSION < 24
-	NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
+    NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
 #else
-	NewtonWorld *nWorld = NewtonCreate(/*NULL, NULL*/);
+    NewtonWorld *nWorld = NewtonCreate(/*NULL, NULL*/);
 #endif
-	NewtonSetThreadsCount(nWorld, /*use_threads?*/2/*:1*/);
-	/*
+    NewtonSetThreadsCount(nWorld, /*use_threads?*/2/*:1*/);
+    /*
     {
         NewtonCollision* collision = NewtonCreateTreeCollision(nWorld, roadID);
         FILE* f = fopen("last_road_points", "r");
@@ -380,7 +385,7 @@ int main()
     */
     // Set up default material properties for newton
     SetupMaterials(nWorld, soundEngine);
-	
+    
     if (screenSize.Width > 1280)
     {
         bgImages = (char**)bgImagesHi;
@@ -390,16 +395,16 @@ int main()
         bgImages = (char**)bgImagesLo;
     }
     
-	bgImage = env->addImage(core::rect<int>(0,0,screenSize.Width,screenSize.Height), 0, -1, L"data/bg/dakar_bg1.jpg");
-	bgImage->setScaleImage(true);
-	bgImagesTextures[5] = bgImageTexture = driver->getTexture(bgImages[5]);
+    bgImage = env->addImage(core::rect<int>(0,0,screenSize.Width,screenSize.Height), 0, -1, L"data/bg/dakar_bg1.jpg");
+    bgImage->setScaleImage(true);
+    bgImagesTextures[5] = bgImageTexture = driver->getTexture(bgImages[5]);
     bgImage->setImage(bgImageTexture);
 
     if (this_will_display)
     {
         env->addStaticText(
             L"This will be the Dakar 2011 simulator program",
-	        core::rect<int>(10,10,210,26), true, true, 0, -1, true);
+            core::rect<int>(10,10,210,26), true, true, 0, -1, true);
     }
 
     fpsText = env->addStaticText(L"FPS: ",
@@ -441,9 +446,9 @@ int main()
     const int fontO = 10;
 
     ITexture* hudInfoTexture = driver->getTexture("data/hud/info_bg.png");
-	hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-1, 7+hudInfoTexture->getSize().Width, screenSize.Height-(fontO+fontH*3)-1+hudInfoTexture->getSize().Height), 0, -1, L"hudInfo");
-	hudInfo->setScaleImage(false);
-	hudInfo->setUseAlphaChannel(true);
+    hudInfo = env->addImage(core::rect<int>(7, screenSize.Height-(fontO+fontH*3)-1, 7+hudInfoTexture->getSize().Width, screenSize.Height-(fontO+fontH*3)-1+hudInfoTexture->getSize().Height), 0, -1, L"hudInfo");
+    hudInfo->setScaleImage(false);
+    hudInfo->setUseAlphaChannel(true);
     hudInfo->setImage(hudInfoTexture);
     hudInfo->setVisible(false);
 
@@ -462,7 +467,7 @@ int main()
 
     MessageText::init(device, env, screenSize);
 
-	driver->setTextureCreationFlag(video::ETCF_ALWAYS_32_BIT, true);
+    driver->setTextureCreationFlag(video::ETCF_ALWAYS_32_BIT, true);
     
     // setskin
     switch (skin_type)
@@ -497,13 +502,13 @@ int main()
             break;
         }
     }
-	setupFonts(env);
-	
-	env->getSkin()->setFont(fonts[FONT_NORMALBOLD]);
-	env->getSkin()->setFont(fonts[FONT_BUILTIN], EGDF_TOOLTIP);
+    setupFonts(env);
+    
+    env->getSkin()->setFont(fonts[FONT_NORMALBOLD]);
+    env->getSkin()->setFont(fonts[FONT_BUILTIN], EGDF_TOOLTIP);
     SColor guicol(255, 90, 70, 16);
     SColor guicol2(255, 255, 255, 255);
-	env->getSkin()->setColor(EGDC_BUTTON_TEXT, guicol);
+    env->getSkin()->setColor(EGDC_BUTTON_TEXT, guicol);
     demageText->setOverrideFont(fonts[FONT_SPECIAL16]);
     speedText->setOverrideFont(fonts[FONT_SPECIAL16]);
     timeText->setOverrideFont(fonts[FONT_SPECIAL16]);
@@ -560,15 +565,15 @@ int main()
     const float hudPos2Y = (440.f-397.f) * hudRate;
     const int hudPositionX = screenSize.Width-(int)hudSize-10;
     const int hudPositionY = screenSize.Height-(int)hudSize-10;
-	hudImage = env->addImage(core::rect<int>(hudPositionX, hudPositionY, screenSize.Width-10, screenSize.Height-10), 0, -1, L"hud");
+    hudImage = env->addImage(core::rect<int>(hudPositionX, hudPositionY, screenSize.Width-10, screenSize.Height-10), 0, -1, L"hud");
 
     speedHud.set2DVertexPos(0, irr::core::position2d<s32>(hudPositionX, screenSize.Height-10), screenSize);
     speedHud.set2DVertexPos(1, irr::core::position2d<s32>(hudPositionX, hudPositionY), screenSize);
     speedHud.set2DVertexPos(2, irr::core::position2d<s32>(screenSize.Width-10, hudPositionY), screenSize);
     speedHud.set2DVertexPos(3, irr::core::position2d<s32>(screenSize.Width-10, screenSize.Height-10), screenSize);
 
-	hudImage->setScaleImage(true);
-	hudImage->setUseAlphaChannel(true);
+    hudImage->setScaleImage(true);
+    hudImage->setUseAlphaChannel(true);
     hudImage->setImage(hudTextures[1]);
     dprintf(printf("1 %p\n", hudImage));
     hudImage->setVisible(false);
@@ -577,11 +582,11 @@ int main()
 
     // FPS cross at the middle of the screen
     ITexture* crossTexture = driver->getTexture("data/hud/cross.png");
-	crossImage = env->addImage(core::rect<int>(screenSize.Width/2-10, screenSize.Height/2-10,
+    crossImage = env->addImage(core::rect<int>(screenSize.Width/2-10, screenSize.Height/2-10,
                                                screenSize.Width/2+10, screenSize.Height/2+10),
                                0, -1, L"cross");
-	crossImage->setScaleImage(false);
-	crossImage->setUseAlphaChannel(true);
+    crossImage->setScaleImage(false);
+    crossImage->setUseAlphaChannel(true);
     crossImage->setImage(crossTexture);
     crossImage->setVisible(false);
 
@@ -717,7 +722,7 @@ int main()
         shadowMap = shadowMapGame = shadowMapMenu = shadowMapCar = 0;
     }
     recreateRTTs(driver);
-    
+
     dprintf(printf("2b %p\n", hudImage));
 
     driver->setTextureCreationFlag(video::ETCF_CREATE_MIP_MAPS, false);
@@ -885,8 +890,8 @@ int main()
     unsigned int shadowObjs;
     
     u32 drawTick = 0;
-    newtonUpdateCount = 0;
-    u32 newtonUpdateCount_last = 0;
+    newtonUpdateCount = 1;
+    //u32 newtonUpdateCount_last = 0;
     s32 sleepTime = 0;
 #define NEWTONUPDATECOUNTCHANGE_LIMIT 10
     s32 fasterDraw = NEWTONUPDATECOUNTCHANGE_LIMIT;
@@ -908,10 +913,67 @@ int main()
         )
         {
             tick = device->getTimer()->getTime();
-            if (!fps_compensation)
+            if (inGame == 0)
             {
-                sleepTime = 0;
-                newtonUpdateCount = (tick - lasttick) / ms_step;
+                if (newtonUpdateCount)
+                {
+                    if (bigTerrain)
+                    {
+                        bigTerrain->checkMapsQueue();
+                        bigTerrain->updateTime(tick);
+                    }
+                    if (raceEngine)
+                    {
+                        raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
+                    }
+                    while (newtonUpdateCount)
+                    {
+                        if (car)
+                        {
+                            float kbs = car->getSteerKb();
+                            if (fabsf(kbs) > 0.01f)
+                            {
+                                float cs = car->getSteer();
+                                if (fabsf(kbs-cs) > car->getSteerRate()/*0.01f*/)
+                                {
+                                    //car->setSteering(kbs);
+                                    if (kbs > cs)
+                                       car->setSteering(cs + car->getSteerRate());
+                                    else
+                                        if (kbs < cs)
+                                           car->setSteering(cs - car->getSteerRate());
+                                }
+                                else
+                                {
+                                    car->setSteering(kbs);
+                                }
+                            }
+                          
+#ifdef USE_MULTIPLAYER
+                            if (isMultiplayer)
+                            {
+                                updateOtherDatas();
+                            }
+#endif // USE_MULTIPLAYER
+    
+                            pdprintf(printf("16b\n"));
+                            vehiclePool->updateActiveVehicles();
+                        }
+                        pdprintf(printf("17\n"));
+                        NewtonUpdate(nWorld, 0.015f/*sec_step*//*1.066667f*/);
+                        //NewtonUpdate(nWorld, 0.0075f/*sec_step*//*1.066667f*/);
+                        //NewtonUpdate(nWorld, sec_step/*1.066667f*/);
+                        pdprintf(printf("17c\n"));
+                        lasttick += ms_step;
+                        newtonUpdateCount--;
+                    }
+                    pdprintf(printf("18\n"));
+                    soundEngine->setListenerPosition(camera->getPosition(), camera->getTarget()-camera->getPosition());
+                }
+            }
+            else // inGame == 0
+            {
+                lasttick = tick;
             }
             pdprintf(printf("1\n"));
             if (car && bigTerrain && inGame == 0)
@@ -1110,7 +1172,7 @@ int main()
                 driver->setTransform(ETS_PROJECTION, lightCam->getProjectionMatrix());
 
                 pdprintf(printf("6i\n"));
-    			driver->setRenderTarget(shadowMapGame, true, true, video::SColor(0, 0, 0, 0));
+                driver->setRenderTarget(shadowMapGame, true, true, video::SColor(0, 0, 0, 0));
                 
                 pdprintf(printf("6j\n"));
                 for (int i = 0; i<shadowNodes.size();i++)
@@ -1121,12 +1183,12 @@ int main()
                         core::array<s32> BufferMaterialList(CurrentMaterialCount);
                         bool cardraw = false;
                         BufferMaterialList.set_used(0);
-                            
+                        
                         for(u32 m = 0;m < CurrentMaterialCount;++m)
                         {
                             BufferMaterialList.push_back(shadowNodes[i]->getMaterial(m).MaterialType);
                             shadowNodes[i]->getMaterial(m).MaterialType = (E_MATERIAL_TYPE)myMaterialType_shadow;
-        				}
+                        }
                         if (car && (car->getSceneNode()==shadowNodes[i] ||
                             car->getTyreSceneNode(0)==shadowNodes[i] ||
                             car->getTyreSceneNode(1)==shadowNodes[i] ||
@@ -1151,7 +1213,7 @@ int main()
                             max_shadow = 0.0f;
                             cardraw = false;
                         }
-    
+                        
                         const u32 BufferMaterialListSize = BufferMaterialList.size();
                         for(u32 m = 0;m < BufferMaterialListSize;++m)
                             shadowNodes[i]->getMaterial(m).MaterialType = (E_MATERIAL_TYPE)BufferMaterialList[m];
@@ -1174,14 +1236,14 @@ int main()
             {
                 pdprintf(printf("10e\n"));
                 driver->setRenderTarget(depthRTT, true, true, video::SColor(0, 0, 0, 255));
-                   
+                
                 smgr->setActiveCamera(camera);
                 camera->OnAnimate(tick);
                 camera->OnRegisterSceneNode();
                 camera->render();
                 driver->setTransform(ETS_VIEW, camera->getViewMatrix());
                 driver->setTransform(ETS_PROJECTION, camera->getProjectionMatrix());
-                   
+                
                 //if (!fpsCam)
                 {
                     for (int i = 0; i<depthNodes.size();i++)
@@ -1197,31 +1259,31 @@ int main()
                             const u32 CurrentMaterialCount = depthNodes[i]->getMaterialCount();
                             core::array<irr::s32> BufferMaterialList(CurrentMaterialCount);
                             BufferMaterialList.set_used(0);
-                                                                                                          
+                            
                             for(u32 m = 0;m < CurrentMaterialCount;++m)
                             {
                                 BufferMaterialList.push_back(depthNodes[i]->getMaterial(m).MaterialType);
                                 depthNodes[i]->getMaterial(m).MaterialType = (E_MATERIAL_TYPE)myMaterialType_depth;
                             }
-           
+                            
                             depthNodes[i]->OnAnimate(tick);
                             depthNodes[i]->OnRegisterSceneNode();
                             depthNodes[i]->render();
-           
+                            
                             const u32 BufferMaterialListSize = BufferMaterialList.size();
                             for(u32 m = 0;m < BufferMaterialListSize;++m)
                                 depthNodes[i]->getMaterial(m).MaterialType = (E_MATERIAL_TYPE)BufferMaterialList[m];
                         }
                     }
                 }
-                   
+                
                 sunSphere->setPosition(camera->getPosition()+vector3df(100.f, 250.f, 600.f));
                 sunSphere->setVisible(true);
                 sunSphere->OnAnimate(tick);
                 //sunSphere->OnRegisterSceneNode();
                 sunSphere->render();
                 sunSphere->setVisible(false);
-                   
+                
                 pdprintf(printf("9\n"));
             }
             pdprintf(printf("10 useScreenRTT: %u, depth_effect: %u\n", useScreenRTT, depth_effect));
@@ -1249,12 +1311,12 @@ int main()
 #if 1
                 if (useAdvCgShaders)
                 {
-	                driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
+                    driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
                     screenQuad.getMaterial().setTexture(0, screenRTT[finalScreenRTT]);
                     screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_palca;
                     screenQuad.render(driver);
                 }
-	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
+                driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
                 screenQuad.getMaterial().setTexture(0, screenRTT[usedScreenRTT]);
                 screenQuad.getMaterial().setTexture(1, depthRTT);
                 screenQuad.getMaterial().setTexture(2, motiondir_map[view_mask]);
@@ -1262,19 +1324,19 @@ int main()
                 screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
                 screenQuad.render(driver);
 #else
-	            driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
+                driver->setRenderTarget(screenRTT[bloomScreenRTT], true, true, video::SColor(0, 0, 0, 0));
                 driver->draw2DImage(screenRTT[usedScreenRTT],
                     core::rect<s32>(0,0,screenRTT[bloomScreenRTT]->getOriginalSize().Width,
                         screenRTT[bloomScreenRTT]->getOriginalSize().Height),
                     core::rect<s32>(0,0,screenRTT[usedScreenRTT]->getOriginalSize().Width,
                         screenRTT[usedScreenRTT]->getOriginalSize().Height),
-					0,
+                    0,
                     colors_for_hdr
-				);
+                );
                 screenQuad.getMaterial().setTexture(0, screenRTT[(usedScreenRTT)%MAX_SCREENRTT]);
                 screenQuad.getMaterial().setTexture(1, screenRTT[(bloomScreenRTT)%MAX_SCREENRTT]);
                 screenQuad.getMaterial().MaterialType = (E_MATERIAL_TYPE)myMaterialType_screenRTT;
-	            driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
+                driver->setRenderTarget(0, true, true, video::SColor(0, 255, 0, 0));
                 screenQuad.render(driver);
 #endif
             }
@@ -1494,7 +1556,13 @@ int main()
                 //newtonUpdateCount = 2;
                 sleepTime = (newtonUpdateCount * ms_step) - drawTick - 1;
             }
-            newtonUpdateCount_last = newtonUpdateCount;
+            else
+            //if (!fps_compensation)
+            {
+                sleepTime = 0;
+                newtonUpdateCount = (tick - lasttick) / ms_step;
+            }
+            //newtonUpdateCount_last = newtonUpdateCount;
             if (newtonUpdateCount > 10) newtonUpdateCount = 10;
             //printf("dt: %u nuc: %u st: %u\n", drawTick, newtonUpdateCount, sleepTime);
             pdprintf(printf("14\n"));
@@ -1511,7 +1579,7 @@ int main()
                         str = L"FPS: ";
                         str += (int)fps;
                         fpsText->setText(str.c_str());
-        
+                        
                         str = L"POLYS: ";
                         str += driver->getPrimitiveCountDrawn();
 #ifdef USE_EDITOR
@@ -1523,7 +1591,7 @@ int main()
                         str += shadowObjs;
 #endif // USE_EDITOR
                         polyText->setText(str.c_str());
-        
+                        
 #ifdef USE_EDITOR
                         str = L"POS: ";
                         str += (int)(offsetManager->getOffset().X+camera->getPosition().X);
@@ -1571,7 +1639,7 @@ int main()
                 str += (int)(car->getDemagePer());
                 str += "%";
                 demageText->setText(str.c_str());
-        
+                
                 str = L"Speed: ";
                 str += (int)(car->getSpeed()*1.6f/*3.0f*/);
                 str += " km/h (";
@@ -1612,7 +1680,7 @@ int main()
             }
 #endif // USE_EDITOR
             pdprintf(printf("15\n"));
-          
+            
 #ifdef USE_MULTIPLAYER
             if (isMultiplayer)
             {
@@ -1623,69 +1691,6 @@ int main()
                 }
             }
 #endif // USE_MULTIPLAYER
-          
-            if (inGame == 0)
-            {
-                if (newtonUpdateCount)
-                {
-                    if (bigTerrain)
-                    {
-                        bigTerrain->checkMapsQueue();
-                        bigTerrain->updateTime(tick);
-                    }
-                    if (raceEngine)
-                    {
-                        raceEngine->update(tick, offsetManager->getOffset()+camera->getPosition(), playerCompetitor, device);
-                    }
-                    while (newtonUpdateCount)
-                    {
-                        if (car)
-                        {
-                            float kbs = car->getSteerKb();
-                            if (fabsf(kbs) > 0.01f)
-                            {
-                                float cs = car->getSteer();
-                                if (fabsf(kbs-cs) > car->getSteerRate()/*0.01f*/)
-                                {
-                                    //car->setSteering(kbs);
-                                    if (kbs > cs)
-                                       car->setSteering(cs + car->getSteerRate());
-                                    else
-                                        if (kbs < cs)
-                                           car->setSteering(cs - car->getSteerRate());
-                                }
-                                else
-                                {
-                                    car->setSteering(kbs);
-                                }
-                            }
-                          
-#ifdef USE_MULTIPLAYER
-                            if (isMultiplayer)
-                            {
-                                updateOtherDatas();
-                            }
-#endif // USE_MULTIPLAYER
-    
-                            pdprintf(printf("16b\n"));
-                            vehiclePool->updateActiveVehicles();
-                        }
-                        pdprintf(printf("17\n"));
-                        NewtonUpdate(nWorld, 0.015f/*sec_step*//*1.066667f*/);
-                        //NewtonUpdate(nWorld, 0.0075f/*sec_step*//*1.066667f*/);
-                        //NewtonUpdate(nWorld, sec_step/*1.066667f*/);
-                        pdprintf(printf("17c\n"));
-                        lasttick += ms_step;
-                        newtonUpdateCount--;
-                    }
-                    pdprintf(printf("18\n"));
-                    soundEngine->setListenerPosition(camera->getPosition(), camera->getTarget()-camera->getPosition());
-                }
-            }
-            else // inGame == 0
-            {
-                lasttick = tick;
-            }
             
             if (sleepTime > 1 && sleepTime < 1000)
             {
@@ -1717,49 +1722,49 @@ int main()
     
     driver->setMaterial(video::SMaterial());
     printf("end game\n");
-	endGame();
+    endGame();
 #ifdef USE_MULTIPLAYER
     printf("disconnect from server\n");
-	disconnectFromServer(false);
+    disconnectFromServer(false);
 #endif // USE_MULTIPLAYER
     printf("delete event receivers\n");
-	delete menu_receiver; //.releaseResources();
-	delete game_receiver; //.releaseResources();
-	delete dummy_receiver;
-	
-	printf("release game stuffs\n");
-	releaseGameStuff();
-	
-	printf("release competitors\n");
-	if (!reinitialize)
-	{
-    	destroyCompetitors();
-    	delete playerCompetitor;
-    	playerCompetitor = 0;
-    	CRaceEngine::getRaceState().clear();
+    delete menu_receiver; //.releaseResources();
+    delete game_receiver; //.releaseResources();
+    delete dummy_receiver;
+    
+    printf("release game stuffs\n");
+    releaseGameStuff();
+    
+    printf("release competitors\n");
+    if (!reinitialize)
+    {
+        destroyCompetitors();
+        delete playerCompetitor;
+        playerCompetitor = 0;
+        CRaceEngine::getRaceState().clear();
     }
 
-	printf("release pools\n"); // will release tree designs, and my tree designs
-	releasePools();
+    printf("release pools\n"); // will release tree designs, and my tree designs
+    releasePools();
 
-	printf("release itiner types\n");
-	releaseItinerTypes();
-	
-	printf("delete vehiclePool");
-	if (vehiclePool)
-	{
-	   delete vehiclePool;
-	   vehiclePool = 0;
+    printf("release itiner types\n");
+    releaseItinerTypes();
+    
+    printf("delete vehiclePool");
+    if (vehiclePool)
+    {
+       delete vehiclePool;
+       vehiclePool = 0;
     }
     
     printf("release fonts\n");
     releaseFonts();
 
     printf("cleanup materials\n");
-	CleanUpMaterials(nWorld);
-	// finish newton & irrlicht
+    CleanUpMaterials(nWorld);
+    // finish newton & irrlicht
     printf("destroy world\n");
-	NewtonDestroy(nWorld);
+    NewtonDestroy(nWorld);
 
     printf("sound engine drop\n");
 #ifdef USE_MY_SOUNDENGINE

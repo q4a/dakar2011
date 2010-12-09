@@ -93,7 +93,7 @@ void loadCompetitors(const char* fname)
     
     if (competitors.size()>0)
     {
-        printf("no not read competitor file, because of existinf competitors: %s\n", fname);
+        printf("Do not read competitor file, because of existing competitors: %s\n", fname);
         return;
     }
     

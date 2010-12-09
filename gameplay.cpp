@@ -144,7 +144,7 @@ float car_ss_multi = SUSPENSION_SPRING_MULTI_DEFAULT;
 float car_sd_multi = SUSPENSION_DAMPER_MULTI_DEFAULT;
 float car_sl_multi = SUSPENSION_LENGTH_MULTI_DEFAULT;
 
-unsigned int newtonUpdateCount = 0;
+unsigned int newtonUpdateCount = 1;
 
 const char* bgImagesHi[MAX_BGIMAGE+1] =
 {
