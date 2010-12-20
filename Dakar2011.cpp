@@ -900,8 +900,8 @@ int main()
     const int min_fps = 60;
     const int ms_step = 1000 / min_fps;
     const float sec_step = 1 / (float)min_fps;
+    lasttick -= ms_step;
     //NewtonSetMinimumFrameRate(nWorld, (float)min_fps);
-    
     dprintf(printf("device %p\n", device));
     MessageText::hide();
     while(device->run())
@@ -1079,11 +1079,11 @@ int main()
             if (!driver->beginScene(true, true, SColor(0,192,192,192)))
             {
                 printf("beginScene failed (Irrlicht bug). Program will be quit.\n");
-                reinitialize = true;
                 //env->drawAll();
                 driver->endScene();
-                driver->setMaterial(video::SMaterial());
-                recreateRTTs(driver);
+                //driver->setMaterial(video::SMaterial());
+                driver->OnResize(screenSize);
+                //recreateRTTs(driver);
                 /*
                 int rtt_count = 0;
                 
@@ -1097,15 +1097,21 @@ int main()
                 
                 printf("rtt_count: %d driver->check %d failed renders %d\n", rtt_count, driver->checkDriverReset(), failed_render);
                 */
-                if (quitGame) break;
+                if (quitGame)
+                {
+                    reinitialize = true;
+                    break;
+                }
                 failed_render++;
                 if (failed_render < 5)
                 {
                     continue;
                 }
+                reinitialize = true;
                 saveState();
                 break;
-            }     
+            }
+            failed_render = 0;
             pdprintf(printf("3\n"));
 
             pdprintf(printf("4\n"));

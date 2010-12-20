@@ -82,7 +82,7 @@ tyre_rotation: 0.0, -90.0, 0.0
 tyre_local_position: -1.4, 0.0, -0.8
 tyre_mass: 30.0
 friction: 1.4
-suspension_length: 0.31
+suspension_length: 0.38
 suspension_spring: 150.0
 suspension_damper: 6.0
 steer_tyres: 0

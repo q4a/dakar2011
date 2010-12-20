@@ -279,7 +279,11 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                                                bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+3.f,
                                                /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
-                    if (newtonUpdateCount == 0) newtonUpdateCount = 1;
+                    if (newtonUpdateCount == 0)
+                    {
+                        newtonUpdateCount = 1;
+                        lasttick -= 16; // hack, it should be the ms_step
+                    }
                     if (bigTerrain->addPenality(RESET_PENALITY - (15*difficulty))!=(u32)-1)
                     {
                         core::stringw str = L"Add ";
@@ -796,7 +800,11 @@ bool eventreceiver_game::OnEvent(const SEvent& event)
                                                bigTerrain->getHeight(offsetManager->getOffset().X+camera->getPosition().X,offsetManager->getOffset().Z+camera->getPosition().Z)+5.f,
                                                /*offsetManager->getOffset().Z+*/camera->getPosition().Z));
                     dynCamReset = true;
-                    if (newtonUpdateCount == 0) newtonUpdateCount = 1;
+                    if (newtonUpdateCount == 0)
+                    {
+                        newtonUpdateCount = 1;
+                        lasttick -= 16; // hack, it should be the ms_step
+                    }
                     if (bigTerrain->addPenality(RESET_PENALITY - (15*difficulty))!=(u32)-1)
                     {
                         core::stringw str = L"Add ";
