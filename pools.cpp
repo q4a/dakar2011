@@ -720,19 +720,19 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     else
     if (type==TREE) // trees
     {
-        int type = (int) textureName;
+        unsigned long type = (unsigned long) textureName;
         s32 seed = 0;
-        if (type>=treeDesigns.size())
+        if (type>=(unsigned long)treeDesigns.size())
         {
-            printf("no such tree type %d, we have types to %d\n", type, treeDesigns.size());
+            printf("no such tree type %lu, we have types to %u\n", type, treeDesigns.size());
             return;
         }        
         if (treeDesigns[type]->Generator==0)
         {
-            printf("no such tree type generator %d\n", type);
+            printf("no such tree type generator %lu\n", type);
             return;
         }
-        dprintf(printf("tree name %s, type %d rep %d\n", name, type, num));
+        dprintf(printf("tree name %s, type %lu rep %d\n", name, type, num));
         if (*poolCollision == 0 && box != vector3df(0.0f, 0.0f, 0.0f))
         {
             nn->calculateCollisionBox(box, ofs);
@@ -793,11 +793,11 @@ void generateElementsToPool(ISceneManager* smgr, IVideoDriver* driver, NewtonWor
     else
     if (type==MY_TREE) // normal object
     {
-        int type = (int) textureName;
+        unsigned long type = (unsigned long)textureName;
 
-        if (type>=myTreeDesigns.size())
+        if (type>=(unsigned long)myTreeDesigns.size())
         {
-            printf("no such my tree type %d, we have types to %d\n", type, myTreeDesigns.size());
+            printf("no such my tree type %lu, we have types to %u\n", type, myTreeDesigns.size());
             return;
         }
 
