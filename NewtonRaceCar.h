@@ -286,7 +286,7 @@ public:
         }
         return 0.f;
     }
-
+/*
     unsigned int getHitBody(int num)
     {
         if (num >= 0 && num < m_tires.size())
@@ -313,7 +313,7 @@ public:
         }
         return (unsigned int)0;
     }
-    
+*/    
     matrix4& getViewPos(unsigned int num)
     {
         if (num >= view_max*view_multi)

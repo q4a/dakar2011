@@ -349,7 +349,7 @@ int main()
     //recreateRTTs(driver);
     
     // Newton vars
-#if NEWTON_MINOR_VERSION < 24
+#if NEWTON_MINOR_VERSION < 23
     NewtonWorld *nWorld = NewtonCreate(NULL, NULL);
 #else
     NewtonWorld *nWorld = NewtonCreate(/*NULL, NULL*/);
